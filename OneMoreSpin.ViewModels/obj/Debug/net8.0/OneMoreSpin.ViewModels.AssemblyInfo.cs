@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OneMoreSpin.ViewModels")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cddd61aec19d6281a45ad8cfe65cd0e83a651be9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cc935a15d7463894999c2ea71cbc9b41831f3913")]
 [assembly: System.Reflection.AssemblyProductAttribute("OneMoreSpin.ViewModels")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OneMoreSpin.ViewModels")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

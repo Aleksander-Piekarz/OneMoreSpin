@@ -1,0 +1,16 @@
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\bin\Debug\net8.0\OneMoreSpin.DAL.deps.json
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\bin\Debug\net8.0\OneMoreSpin.DAL.dll
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\bin\Debug\net8.0\OneMoreSpin.DAL.pdb
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\bin\Debug\net8.0\OneMoreSpin.Model.dll
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\bin\Debug\net8.0\OneMoreSpin.Model.pdb
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\OneMoreSpin.DAL.csproj.AssemblyReference.cache
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\OneMoreSpin.DAL.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\OneMoreSpin.DAL.AssemblyInfoInputs.cache
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\OneMoreSpin.DAL.AssemblyInfo.cs
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\OneMoreSpin.DAL.csproj.CoreCompileInputs.cache
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\OneMoreSpin.DAL.sourcelink.json
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\OneMoreS.2B05BE41.Up2Date
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\OneMoreSpin.DAL.dll
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\refint\OneMoreSpin.DAL.dll
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\OneMoreSpin.DAL.pdb
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\ref\OneMoreSpin.DAL.dll
