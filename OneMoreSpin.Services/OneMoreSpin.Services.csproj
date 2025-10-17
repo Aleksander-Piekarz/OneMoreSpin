@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OneMoreSpin.Model\OneMoreSpin.Model.csproj" />
+    <ProjectReference Include="..\OneMoreSpin.DAL\OneMoreSpin.DAL.csproj" />
+    <ProjectReference Include="..\OneMoreSpin.ViewModels\OneMoreSpin.ViewModels.csproj" />
+  </ItemGroup>
+</Project>
