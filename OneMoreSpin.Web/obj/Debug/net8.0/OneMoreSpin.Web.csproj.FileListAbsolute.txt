@@ -460,3 +460,5 @@ C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.
 C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.Web\obj\Debug\net8.0\OneMoreSpin.Web.pdb
 C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.Web\obj\Debug\net8.0\OneMoreSpin.Web.genruntimeconfig.cache
 C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.Web\obj\Debug\net8.0\ref\OneMoreSpin.Web.dll
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.Web\bin\Debug\net8.0\Castle.Core.dll
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.Web\bin\Debug\net8.0\Microsoft.EntityFrameworkCore.Proxies.dll

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OneMoreSpin.Services")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8c9b9edba1396d2315f7611f721e3774aea08561")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ce711e16c7e17caa34ee3348ad49b0b32cc60c2c")]
 [assembly: System.Reflection.AssemblyProductAttribute("OneMoreSpin.Services")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OneMoreSpin.Services")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

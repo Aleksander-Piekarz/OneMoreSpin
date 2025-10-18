@@ -14,3 +14,5 @@ C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.
 C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\refint\OneMoreSpin.DAL.dll
 C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\OneMoreSpin.DAL.pdb
 C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\ref\OneMoreSpin.DAL.dll
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\bin\Debug\net8.0\OneMoreSpin.DAL.runtimeconfig.json
+C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.DAL\obj\Debug\net8.0\OneMoreSpin.DAL.genruntimeconfig.cache
