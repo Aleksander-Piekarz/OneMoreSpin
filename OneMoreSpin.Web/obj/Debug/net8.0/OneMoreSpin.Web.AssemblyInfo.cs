@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OneMoreSpin.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cc935a15d7463894999c2ea71cbc9b41831f3913")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8c9b9edba1396d2315f7611f721e3774aea08561")]
 [assembly: System.Reflection.AssemblyProductAttribute("OneMoreSpin.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OneMoreSpin.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
