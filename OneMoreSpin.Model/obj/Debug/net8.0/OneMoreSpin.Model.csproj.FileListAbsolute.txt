@@ -11,5 +11,3 @@ C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.
 C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.Model\obj\Debug\net8.0\refint\OneMoreSpin.Model.dll
 C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.Model\obj\Debug\net8.0\OneMoreSpin.Model.pdb
 C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.Model\obj\Debug\net8.0\ref\OneMoreSpin.Model.dll
-C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.Model\bin\Debug\net8.0\OneMoreSpin.Model.runtimeconfig.json
-C:\Users\miota\OneDrive\Dokumenty\Programowanie\3_5_rok\OneMoreSpin\OneMoreSpin.Model\obj\Debug\net8.0\OneMoreSpin.Model.genruntimeconfig.cache
