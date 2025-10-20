@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OneMoreSpin.Model")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b7f43c4a9d8aabdfbb4088fea69e09bdc4d5b46b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+410c659212be2ee6fc4a3d21089cffb3c99da9ec")]
 [assembly: System.Reflection.AssemblyProductAttribute("OneMoreSpin.Model")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OneMoreSpin.Model")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
