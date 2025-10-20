@@ -1,4 +1,4 @@
-namespace OneMoreSpin.Web.Models;
+namespace OneMoreSpin.ViewModels.VM;
 
 public class ErrorViewModel
 {
