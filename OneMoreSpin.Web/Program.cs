@@ -14,7 +14,7 @@ AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder
-    .Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = false)
+    .Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<Role>()
     .AddRoleManager<RoleManager<Role>>()
     .AddUserManager<UserManager<User>>()
