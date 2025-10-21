@@ -9,4 +9,9 @@
     <ProjectReference Include="..\OneMoreSpin.DAL\OneMoreSpin.DAL.csproj" />
     <ProjectReference Include="..\OneMoreSpin.ViewModels\OneMoreSpin.ViewModels.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.19" />
+    <PackageReference Include="MailKit" Version="4.14.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+  </ItemGroup>
 </Project>
