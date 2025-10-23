@@ -116,8 +116,9 @@ namespace OneMoreSpin.Web.Areas.Identity.Pages.Account
             public string Surname { get; set; }
 
             [Required]
-            [Display(Name = "Balance")]
-            public decimal Balance { get; set; }
+            [DataType(DataType.DateTime)]
+            [Display(Name = "Date of Birth")]
+            public DateTime DateOfBirth { get; set; }
 
 
         }
@@ -141,7 +142,7 @@ namespace OneMoreSpin.Web.Areas.Identity.Pages.Account
                 var user = CreateUser();
                 user.Name = Input.Name;
                 user.Surname = Input.Surname;
-                
+                user.DateOfBirth = Input.DateOfBirth;
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
                 var result = await _userManager.CreateAsync(user, Input.Password);
