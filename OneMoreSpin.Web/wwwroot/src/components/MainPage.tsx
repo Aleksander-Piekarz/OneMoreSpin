@@ -3,7 +3,7 @@ import AuthModal, { type AuthMode } from "./AuthModal";
 
 const MainPage: React.FC = () => {
   const [showAuth, setShowAuth] = useState(false);
-  const [authMode, setAuthMode] = useState<AuthMode>("register");
+  const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [activeVideo, setActiveVideo] = useState(0);
   const video1Ref = useRef<HTMLVideoElement>(null);
   const video2Ref = useRef<HTMLVideoElement>(null);
@@ -13,6 +13,10 @@ const MainPage: React.FC = () => {
   const openAuth = (mode: AuthMode) => {
     setAuthMode(mode);
     setShowAuth(true);
+  };
+
+  const goToRegister = () => {
+    window.location.href = '/register';
   };
 
   useEffect(() => {
@@ -32,7 +36,7 @@ const MainPage: React.FC = () => {
       const video = e.target as HTMLVideoElement;
       const timeLeft = video.duration - video.currentTime;
       
-      if (timeLeft <= 1.5) {
+      if (timeLeft <= 1.0) {
         if (video === vid1 && !vid1Triggered) {
           vid1Triggered = true;
           vid2.currentTime = 0;
@@ -56,31 +60,42 @@ const MainPage: React.FC = () => {
         }
       } else {
         // Reset flags when we're not near the end
-        if (video === vid1 && timeLeft > 2.5) {
+        if (video === vid1 && timeLeft > 2.0) {
           vid1Triggered = false;
-        } else if (video === vid2 && timeLeft > 2.5) {
+        } else if (video === vid2 && timeLeft > 2.0) {
           vid2Triggered = false;
-        } else if (video === vid3 && timeLeft > 2.5) {
+        } else if (video === vid3 && timeLeft > 2.0) {
           vid3Triggered = false;
-        } else if (video === vid4 && timeLeft > 2.5) {
+        } else if (video === vid4 && timeLeft > 2.0) {
           vid4Triggered = false;
         }
       }
     };
+
+    // Preload all videos
+    vid1.load();
+    vid2.load();
+    vid3.load();
+    vid4.load();
 
     vid1.addEventListener("timeupdate", handleTimeUpdate);
     vid2.addEventListener("timeupdate", handleTimeUpdate);
     vid3.addEventListener("timeupdate", handleTimeUpdate);
     vid4.addEventListener("timeupdate", handleTimeUpdate);
     
-    // Start first video
-    vid1.play();
+    // Start first video when it's ready
+    const handleCanPlay = () => {
+      vid1.play();
+      vid1.removeEventListener("canplay", handleCanPlay);
+    };
+    vid1.addEventListener("canplay", handleCanPlay);
 
     return () => {
       vid1.removeEventListener("timeupdate", handleTimeUpdate);
       vid2.removeEventListener("timeupdate", handleTimeUpdate);
       vid3.removeEventListener("timeupdate", handleTimeUpdate);
       vid4.removeEventListener("timeupdate", handleTimeUpdate);
+      vid1.removeEventListener("canplay", handleCanPlay);
     };
   }, []);
 
@@ -92,6 +107,7 @@ const MainPage: React.FC = () => {
           className={`background-video ${activeVideo === 0 ? "active" : ""}`}
           muted
           playsInline
+          preload="auto"
         >
           <source src="res/background-video-1.mp4" type="video/mp4" />
         </video>
@@ -100,6 +116,7 @@ const MainPage: React.FC = () => {
           className={`background-video ${activeVideo === 1 ? "active" : ""}`}
           muted
           playsInline
+          preload="auto"
         >
           <source src="res/background-video-2.mp4" type="video/mp4" />
         </video>
@@ -108,6 +125,7 @@ const MainPage: React.FC = () => {
           className={`background-video ${activeVideo === 2 ? "active" : ""}`}
           muted
           playsInline
+          preload="auto"
         >
           <source src="res/background-video-3.mp4" type="video/mp4" />
         </video>
@@ -116,6 +134,7 @@ const MainPage: React.FC = () => {
           className={`background-video ${activeVideo === 3 ? "active" : ""}`}
           muted
           playsInline
+          preload="auto"
         >
           <source src="res/background-video-4.mp4" type="video/mp4" />
         </video>
@@ -137,7 +156,7 @@ const MainPage: React.FC = () => {
 
         <button
           className="create-account-btn"
-          onClick={() => openAuth("register")}
+          onClick={goToRegister}
         >
           CREATE ACCOUNT
         </button>

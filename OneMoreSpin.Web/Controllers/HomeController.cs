@@ -18,6 +18,11 @@ public class HomeController : Controller
         return View();
     }
 
+    public IActionResult Register()
+    {
+        return View("Index"); // Use the same Index view for React routing
+    }
+
     public IActionResult Privacy()
     {
         return View();
