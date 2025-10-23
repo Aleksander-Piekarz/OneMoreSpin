@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using OneMoreSpin.Model.DataModels;
+using OneMoreSpin.Model.ValidationAttributes;
 
 namespace OneMoreSpin.Web.Areas.Identity.Pages.Account
 {
@@ -116,10 +117,10 @@ namespace OneMoreSpin.Web.Areas.Identity.Pages.Account
             public string Surname { get; set; }
 
             [Required]
-            [Display(Name = "Balance")]
-            public decimal Balance { get; set; }
-
-
+            [DataType(DataType.Date)]
+            [Display(Name = "Date of Birth")]
+            [MinimumAge(18)]
+            public DateTime DateOfBirth { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -141,7 +142,8 @@ namespace OneMoreSpin.Web.Areas.Identity.Pages.Account
                 var user = CreateUser();
                 user.Name = Input.Name;
                 user.Surname = Input.Surname;
-                
+            
+                user.DateOfBirth = Input.DateOfBirth;
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
                 var result = await _userManager.CreateAsync(user, Input.Password);

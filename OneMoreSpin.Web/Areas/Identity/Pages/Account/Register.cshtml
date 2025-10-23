@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model RegisterModel
 @{
     ViewData["Title"] = "Register";
@@ -13,14 +13,19 @@
             <hr />
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
              <div class="form-floating mb-3">
-                <input asp-for="Input.Name" class="form-control" autocomplete="username" aria-required="true" placeholder="Name" />
+                <input asp-for="Input.Name" class="form-control"  aria-required="true" placeholder="Name" />
                 <label asp-for="Input.Name">Name</label>
                 <span asp-validation-for="Input.Name" class="text-danger"></span>
             </div>
              <div class="form-floating mb-3">
-                <input asp-for="Input.Surname" class="form-control" autocomplete="username" aria-required="true" placeholder="Surname" />
+                <input asp-for="Input.Surname" class="form-control"  aria-required="true" placeholder="Surname" />
                 <label asp-for="Input.Surname">Surname</label>
                 <span asp-validation-for="Input.Surname" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.DateOfBirth" class="form-control" aria-required="true" type="date" />
+                <label asp-for="Input.DateOfBirth">Date of Birth</label>
+                <span asp-validation-for="Input.DateOfBirth" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
                 <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
@@ -74,4 +79,29 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(function () {
+            $.validator.addMethod('minimumage',
+                function (value, element, params) {
+                    if (!value) {
+                        return true; // Not validated, server-side will handle required.
+                    }
+                    var dateOfBirth = new Date(value);
+                    var today = new Date();
+                    var age = today.getFullYear() - dateOfBirth.getFullYear();
+                    var m = today.getMonth() - dateOfBirth.getMonth();
+                    if (m < 0 || (m === 0 && today.getDate() < dateOfBirth.getDate())) {
+                        age--;
+                    }
+                    return age >= params.age;
+                });
+
+            $.validator.unobtrusive.adapters.add('minimumage', ['age'], function (options) {
+                options.rules['minimumage'] = {
+                    age: options.params.age
+                };
+                options.messages['minimumage'] = options.message;
+            });
+        }(jQuery));
+    </script>
 }

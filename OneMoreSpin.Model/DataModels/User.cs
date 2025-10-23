@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Identity;
+using OneMoreSpin.Model.ValidationAttributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace OneMoreSpin.Model.DataModels;
 
@@ -7,6 +9,9 @@ public class User : IdentityUser<int>
     public string Name { get; set; } = null!;
     public string Surname { get; set; } = null!;
     public DateTime CreatedAt { get; set; } = DateTime.Now;
+    [MinimumAge(18)]
+    [DataType(DataType.Date)]
+    public DateTime DateOfBirth { get; set; }
     public decimal Balance { get; set; }
     public bool IsVip { get; set; }
     public bool IsActive { get; set; }
