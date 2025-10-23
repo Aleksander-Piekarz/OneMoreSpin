@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using OneMoreSpin.ViewModels.VM;
+using OneMoreSpin.Web.Models;
 
 namespace OneMoreSpin.Web.Controllers;
 
