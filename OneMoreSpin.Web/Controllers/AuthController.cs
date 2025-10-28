@@ -43,7 +43,7 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
 
-        // --- generowanie linku potwierdzającego
+        // 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var confirmUrl = $"{Request.Scheme}://{Request.Host}/api/auth/confirm-email?userId={user.Id}&token={encoded}";
@@ -71,6 +71,35 @@ public class AuthController : ControllerBase
             return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
 
         return Ok(new { message = "Email confirmed successfully." });
+    }
+     [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
+    {
+        var user = await _userManager.FindByEmailAsync(dto.Email);
+        if (user == null)
+            return Unauthorized(new { error = "Invalid credentials" });
+
+        if (!user.EmailConfirmed)
+            return Unauthorized(new { error = "Please confirm your e-mail before logging in." });
+
+        var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, lockoutOnFailure: false);
+        if (!result.Succeeded)
+            return Unauthorized(new { error = "Invalid credentials" });
+
+        // 4️⃣ (opcjonalnie) możesz tu dodać generowanie JWT, ale na razie tylko OK
+        return Ok(new
+        {
+            message = "Login successful",
+            user = new
+            {
+                user.Id,
+                user.Email,
+                user.Name,
+                user.Surname,
+                user.IsVip,
+                user.Balance
+            }
+        });
     }
 }
 
