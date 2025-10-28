@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "./api";
 
 export type AuthMode = "login" | "register";
@@ -9,6 +10,7 @@ type Props = {
 };
 
 const AuthModal: React.FC<Props> = ({ mode = "login", onClose }) => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -21,9 +23,9 @@ const AuthModal: React.FC<Props> = ({ mode = "login", onClose }) => {
     try {
       const res = await api.auth.login({ email, password });
       localStorage.setItem("jwt", res.token);
-      // możesz też zapisać usera, jeśli chcesz:
       localStorage.setItem("user", JSON.stringify(res.user));
       onClose();
+      navigate("/home");
     } catch (err: any) {
       setError(err.message || "Login failed");
     } finally {
@@ -76,7 +78,6 @@ const AuthModal: React.FC<Props> = ({ mode = "login", onClose }) => {
         ) : (
           <>
             <h3 className="auth-modal-title">REGISTER</h3>
-            {/* W tym modalu nic nie robimy z rejestracją — odsyłamy do /register, zgodnie z Twoim flow */}
             <p className="auth-modal-info">Please use the Create Account form.</p>
             <a className="create-account-btn" href="/register">CREATE ACCOUNT</a>
           </>

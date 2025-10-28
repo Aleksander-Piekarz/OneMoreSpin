@@ -569,3 +569,69 @@ small.error,
     font-size: 16px;
   }
 }
+
+/* STRONA GŁÓWNA */
+.home-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+}
+
+.home-content {
+  text-align: center;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 60px 80px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 90%;
+}
+
+.home-title {
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  font-size: 64px;
+  font-weight: 900;
+  color: #000000;
+  letter-spacing: 4px;
+  margin: 0 0 20px 0;
+  text-transform: uppercase;
+}
+
+.home-user-info {
+  font-size: 18px;
+  color: #666666;
+  margin: 0 0 30px 0;
+}
+
+.logout-btn {
+  background: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 40px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: #1a1a1a;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .home-content {
+    padding: 40px 30px;
+  }
+
+  .home-title {
+    font-size: 42px;
+  }
+}

@@ -14,12 +14,18 @@ const MainPage: React.FC = () => {
   const video3Ref = useRef<HTMLVideoElement>(null);
   const video4Ref = useRef<HTMLVideoElement>(null);
 
+  useEffect(() => {
+    const token = localStorage.getItem("jwt");
+    if (token) {
+      navigate("/home");
+    }
+  }, [navigate]);
+
   const openAuth = (mode: AuthMode) => {
     setAuthMode(mode);
     setShowAuth(true);
   };
 
-  // ZAMIANA: router zamiast window.location.href
   const goToRegister = () => {
     navigate("/register");
   };
