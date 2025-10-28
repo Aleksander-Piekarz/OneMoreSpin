@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using OneMoreSpin.Model.DataModels;
 using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+
 
 namespace OneMoreSpin.Web.Controllers;
 
@@ -21,6 +25,32 @@ public class AuthController : ControllerBase
         _signInManager = signInManager;
         _emailSender = emailSender;
     }
+
+    private string GenerateJwt(User user, IConfiguration cfg)
+    {
+        var key = cfg["Jwt:Key"]!;
+        var issuer = cfg["Jwt:Issuer"]!;
+        var creds = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)), SecurityAlgorithms.HmacSha256);
+
+        var claims = new[]
+        {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()), // user id
+        new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
+        new Claim("name", user.Name ?? ""),
+        new Claim("surname", user.Surname ?? "")
+    };
+
+        var jwt = new JwtSecurityToken(
+            issuer: issuer,
+            audience: issuer,
+            claims: claims,
+            expires: DateTime.UtcNow.AddDays(7),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(jwt);
+    }
+
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
@@ -72,33 +102,23 @@ public class AuthController : ControllerBase
 
         return Ok(new { message = "Email confirmed successfully." });
     }
-     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto dto)
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDto dto, [FromServices] IConfiguration cfg)
     {
         var user = await _userManager.FindByEmailAsync(dto.Email);
-        if (user == null)
-            return Unauthorized(new { error = "Invalid credentials" });
+        if (user == null) return Unauthorized(new { error = "Invalid credentials" });
+        if (!user.EmailConfirmed) return Unauthorized(new { error = "Please confirm your e-mail before logging in." });
 
-        if (!user.EmailConfirmed)
-            return Unauthorized(new { error = "Please confirm your e-mail before logging in." });
+        var ok = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
+        if (!ok.Succeeded) return Unauthorized(new { error = "Invalid credentials" });
 
-        var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, lockoutOnFailure: false);
-        if (!result.Succeeded)
-            return Unauthorized(new { error = "Invalid credentials" });
+        var token = GenerateJwt(user, cfg);
 
-        // 4️⃣ (opcjonalnie) możesz tu dodać generowanie JWT, ale na razie tylko OK
         return Ok(new
         {
-            message = "Login successful",
-            user = new
-            {
-                user.Id,
-                user.Email,
-                user.Name,
-                user.Surname,
-                user.IsVip,
-                user.Balance
-            }
+            token,
+            user = new { user.Id, user.Email, user.Name, user.Surname, user.IsVip, user.Balance }
         });
     }
 }
