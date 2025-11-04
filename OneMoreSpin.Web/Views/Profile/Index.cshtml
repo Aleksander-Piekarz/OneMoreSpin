@@ -1,0 +1,107 @@
+@model OneMoreSpin.ViewModels.VM.UserProfileVm
+
+@{
+    ViewData["Title"] = "User Profile";
+}
+
+<div class="container">
+    <h1 class="my-4">@ViewData["Title"]</h1>
+
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" id="profileTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="profile-details-tab" data-bs-toggle="tab" data-bs-target="#profile-details" type="button" role="tab" aria-controls="profile-details" aria-selected="true">Profile Details</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="payment-history-tab" data-bs-toggle="tab" data-bs-target="#payment-history" type="button" role="tab" aria-controls="payment-history" aria-selected="false">Payment History</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="game-history-tab" data-bs-toggle="tab" data-bs-target="#game-history" type="button" role="tab" aria-controls="game-history" aria-selected="false">Game History</button>
+        </li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content" id="profileTabContent">
+        <!-- Profile Details Tab -->
+        <div class="tab-pane fade show active" id="profile-details" role="tabpanel" aria-labelledby="profile-details-tab">
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4>Welcome, @Model.UserName</h4>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Email</dt>
+                        <dd class="col-sm-9">@Model.Email</dd>
+
+                        <dt class="col-sm-3">Name</dt>
+                        <dd class="col-sm-9">@Model.Name</dd>
+
+                        <dt class="col-sm-3">Surname</dt>
+                        <dd class="col-sm-9">@Model.Surname</dd>
+
+                        <dt class="col-sm-3">Joined</dt>
+                        <dd class="col-sm-9">@Model.CreatedAt.ToString("d")</dd>
+
+                        <dt class="col-sm-3">Date of Birth</dt>
+                        <dd class="col-sm-9">@Model.DateOfBirth.ToString("d")</dd>
+
+                        <dt class="col-sm-3">Balance</dt>
+                        <dd class="col-sm-9">@Model.Balance.ToString("C")</dd>
+
+                        <dt class="col-sm-3">VIP</dt>
+                        <dd class="col-sm-9">@(Model.IsVip ? "Yes" : "No")</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment History Tab -->
+        <div class="tab-pane fade" id="payment-history" role="tabpanel" aria-labelledby="payment-history-tab">
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4>Payment History</h4>
+                </div>
+                <div class="card-body" id="payment-history-container">
+                    <div class="text-muted">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game History Tab -->
+        <div class="tab-pane fade" id="game-history" role="tabpanel" aria-labelledby="game-history-tab">
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h4>Game History</h4>
+                </div>
+                <div class="card-body">
+                    <p>Game history will be displayed here.</p>
+                    <!-- TODO: Implement game history view component or partial view -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const paymentTab = document.getElementById('payment-history-tab');
+        const container = document.getElementById('payment-history-container');
+        let loaded = false;
+
+        if (paymentTab) {
+            paymentTab.addEventListener('shown.bs.tab', async function (e) {
+                if (loaded) return;
+                try {
+                    const resp = await fetch('/Profile/PaymentHistory');
+                    if (!resp.ok) throw new Error('Network error');
+                    const html = await resp.text();
+                    container.innerHTML = html;
+                    loaded = true;
+                } catch (err) {
+                    container.innerHTML = '<div class="text-danger">Failed to load payment history.</div>';
+                }
+            });
+        }
+    })();
+</script>
+

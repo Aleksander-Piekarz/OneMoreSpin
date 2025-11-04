@@ -5,6 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using OneMoreSpin.DAL.EF;
 using OneMoreSpin.Model.DataModels;
 using OneMoreSpin.Services.Email;
+using OneMoreSpin.Services.ConcreteServices;
+using OneMoreSpin.Services.Interfaces;
+using AutoMapper;
+using OneMoreSpin.Services.Configuration.AutoMapperProfiles;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,8 +27,6 @@ builder
     .AddUserManager<UserManager<User>>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddTransient(typeof(ILogger), typeof(Logger<Program>));
-builder.Services.AddControllersWithViews();
-
 builder.Services.Configure<EmailSenderOptions>(options =>
 {
     options.FromName = Environment.GetEnvironmentVariable("EMAIL_FROMNAME") ?? "OneMoreSpin";
@@ -32,6 +34,10 @@ builder.Services.Configure<EmailSenderOptions>(options =>
 });
 
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
+
+builder.Services.AddAutoMapper(typeof(MainProfile));
+builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 
 var app = builder.Build();
