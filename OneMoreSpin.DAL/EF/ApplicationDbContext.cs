@@ -65,5 +65,9 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int>
             .WithMany(u => u.Users)
             .HasForeignKey(l => l.LobbyId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.DateOfBirth)
+            .HasColumnType("date");
     }
 }
