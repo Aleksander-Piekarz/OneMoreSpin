@@ -6,8 +6,8 @@ public class User : IdentityUser<int>
 {
     public string Name { get; set; } = null!;
     public string Surname { get; set; } = null!;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime DateOfBirth { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateOnly DateOfBirth { get; set; }
     public decimal Balance { get; set; }
     public bool IsVip { get; set; }
     public bool IsActive { get; set; }

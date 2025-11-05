@@ -19,7 +19,8 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
-        optionsBuilder.UseLazyLoadingProxies();
+        //configuration commands
+        optionsBuilder.UseLazyLoadingProxies(); //enable lazy loading proxies
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

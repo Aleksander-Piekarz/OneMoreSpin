@@ -10,9 +10,10 @@
     <ProjectReference Include="..\OneMoreSpin.ViewModels\OneMoreSpin.ViewModels.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.19" />
     <PackageReference Include="MailKit" Version="4.14.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.19" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.2" />
   </ItemGroup>
 </Project>
