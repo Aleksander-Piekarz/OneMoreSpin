@@ -65,7 +65,7 @@ public class AuthController : ControllerBase
             Email = dto.Email,
             Name = dto.Name,
             Surname = dto.Surname,
-            DateOfBirth = dto.DateOfBirth.ToDateTime(TimeOnly.MinValue),
+            DateOfBirth = dto.DateOfBirth,
             IsActive = true
         };
 
