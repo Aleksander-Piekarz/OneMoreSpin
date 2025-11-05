@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "./api";
+import { api } from "../services/api";
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -133,8 +133,9 @@ const RegisterPage: React.FC = () => {
       });
       alert("Registration successful. Please log in.");
       navigate("/");
-    } catch (err: any) {
-      alert(`Registration failed: ${err.message}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error occurred";
+      alert(`Registration failed: ${message}`);
     }
   };
 

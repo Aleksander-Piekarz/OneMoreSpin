@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "./api";
+import { api } from "../services/api";
 
 export type AuthMode = "login" | "register";
 
@@ -26,8 +26,9 @@ const AuthModal: React.FC<Props> = ({ mode = "login", onClose }) => {
       localStorage.setItem("user", JSON.stringify(res.user));
       onClose();
       navigate("/home");
-    } catch (err: any) {
-      setError(err.message || "Login failed");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Login failed";
+      setError(message);
     } finally {
       setBusy(false);
     }

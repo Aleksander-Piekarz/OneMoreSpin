@@ -14,7 +14,7 @@ public class Program
     public static void Main(string[] args)
     {
         DotNetEnv.Env.Load();
-        var builder = WebApplication.CreateBuilder();
+        var builder = WebApplication.CreateBuilder(args);
 
         // --- Database (PostgreSQL) ---
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -75,13 +75,50 @@ public class Program
         builder.Services.AddCors(opt =>
         {
             opt.AddPolicy("SpaDev", p => p
-                .WithOrigins("http://localhost:5173", "http://localhost:3000")
+                .WithOrigins("http://localhost:5173", "http://localhost:3000", "http://localhost:3002")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials());
         });
 
         var app = builder.Build();
+
+        // --- Ensure database is up-to-date (apply migrations automatically) ---
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            db.Database.Migrate();
+        }
+
+        // --- Dev seeding: create a default test user if not exists ---
+        if (app.Environment.IsDevelopment())
+        {
+            Task.Run(async () =>
+            {
+                using var scope = app.Services.CreateScope();
+                var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+                var email = "test@test.com";
+                var user = await users.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    var u = new User
+                    {
+                        UserName = email,
+                        Email = email,
+                        Name = "Test",
+                        Surname = "User",
+                        DateOfBirth = DateOnly.Parse("1990-01-01"),
+                        IsActive = true,
+                        EmailConfirmed = true
+                    };
+                    var res = await users.CreateAsync(u, "Test123!");
+                    if (!res.Succeeded)
+                    {
+                        Console.WriteLine("[Seed] Failed to create test user: " + string.Join(", ", res.Errors.Select(e => e.Description)));
+                    }
+                }
+            }).GetAwaiter().GetResult();
+        }
 
         if (app.Environment.IsDevelopment())
         {
@@ -90,9 +127,9 @@ public class Program
         }
 
         if (!app.Environment.IsDevelopment())
-            {
-                app.UseHttpsRedirection();
-            }
+        {
+            app.UseHttpsRedirection();
+        }
         app.UseCors("SpaDev");
         app.UseAuthentication();
         app.UseAuthorization();

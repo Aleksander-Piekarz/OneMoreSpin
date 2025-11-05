@@ -1,5 +1,15 @@
 export const API_BASE = import.meta.env.VITE_API_BASE as string;
 
+// Interfejs zgodny z tym co backend zwraca w /login
+interface User {
+  id: number;
+  email: string;
+  name: string;
+  surname: string;
+  isVip: boolean;
+  balance: number;
+}
+
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem("jwt");
   const headers: Record<string, string> = {
@@ -30,13 +40,13 @@ export const api = {
     },
 
     login(payload: { email: string; password: string }) {
-      return request<{ token: string; user: any }>("/auth/login", {
+      return request<{ token: string; user: User }>("/auth/login", {
         method: "POST",
         body: JSON.stringify(payload),
       });
     },
     me() {
-      return request("/auth/me");
+      return request<User>("/auth/me");
     }
   }
 };

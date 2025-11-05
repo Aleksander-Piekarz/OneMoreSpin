@@ -29,6 +29,13 @@ public class SmtpEmailSender : IEmailSender
         var pass = Environment.GetEnvironmentVariable("SMTP_PASS");
         var useStartTls = bool.Parse(Environment.GetEnvironmentVariable("SMTP_USESTARTTLS") ?? "true");
 
+        // In development or when SMTP credentials are not set, skip sending instead of throwing
+        if (string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))
+        {
+            Console.WriteLine("[Email] SMTP_USER/PASS not set. Skipping actual email send. Subject: " + subject);
+            return;
+        }
+
         using var client = new SmtpClient();
         await client.ConnectAsync(host, port, useStartTls ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto);
         await client.AuthenticateAsync(user, pass);

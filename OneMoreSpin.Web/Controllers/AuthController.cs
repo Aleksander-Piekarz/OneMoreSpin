@@ -7,6 +7,7 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace OneMoreSpin.Web.Controllers;
@@ -65,7 +66,7 @@ public class AuthController : ControllerBase
             Email = dto.Email,
             Name = dto.Name,
             Surname = dto.Surname,
-            DateOfBirth = dto.DateOfBirth.ToDateTime(TimeOnly.MinValue),
+            DateOfBirth = dto.DateOfBirth,
             IsActive = true
         };
 
@@ -120,6 +121,22 @@ public class AuthController : ControllerBase
             token,
             user = new { user.Id, user.Email, user.Name, user.Surname, user.IsVip, user.Balance }
         });
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<IActionResult> Me()
+    {
+        // Try to read user id from JWT 'sub' claim
+        var sub = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value
+                  ?? User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrWhiteSpace(sub)) return Unauthorized();
+
+        if (!int.TryParse(sub, out var id)) return Unauthorized();
+        var user = await _userManager.FindByIdAsync(id.ToString());
+        if (user == null) return Unauthorized();
+
+        return Ok(new { user.Id, user.Email, user.Name, user.Surname, user.IsVip, user.Balance });
     }
 }
 
