@@ -1,57 +1,103 @@
-using DotNetEnv;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OneMoreSpin.DAL.EF;
 using OneMoreSpin.Model.DataModels;
+using System.Text;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using OneMoreSpin.Services.Email;
+namespace OneMoreSpin.Web;
 
-
-var builder = WebApplication.CreateBuilder(args);
-Env.Load();
-// Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
-
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-builder
-    .Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddRoles<Role>()
-    .AddRoleManager<RoleManager<Role>>()
-    .AddUserManager<UserManager<User>>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddTransient(typeof(ILogger), typeof(Logger<Program>));
-builder.Services.AddControllersWithViews();
-
-builder.Services.Configure<EmailSenderOptions>(options =>
+public class Program
 {
-    options.FromName = Environment.GetEnvironmentVariable("EMAIL_FROMNAME") ?? "OneMoreSpin";
-    options.FromAddress = Environment.GetEnvironmentVariable("EMAIL_FROMADDRESS") ?? "no-reply@onemorespin.app";
-});
+    public static void Main(string[] args)
+    {
+        DotNetEnv.Env.Load();
+        var builder = WebApplication.CreateBuilder();
 
-builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
+        // --- Database (PostgreSQL) ---
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        {
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+            options.UseLazyLoadingProxies();
+        });
 
+        // --- Identity ---
+        builder.Services.AddIdentity<User, Role>(opt =>
+        {
+            opt.User.RequireUniqueEmail = true;
+            opt.SignIn.RequireConfirmedEmail = true;
+            opt.Password.RequiredLength = 6;
+            opt.Password.RequireDigit = true;
+            opt.Password.RequireLowercase = true;
+            opt.Password.RequireUppercase = false;
+            opt.Password.RequireNonAlphanumeric = false;
+        })
+        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddDefaultTokenProviders();
+      
+        // --- JWT ---
+        var jwtKey = builder.Configuration["Jwt:Key"] ?? "super_secret_dev_key_change_this";
+        var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "onemorespin.local";
 
-var app = builder.Build();
+        builder.Services
+            .AddAuthentication(o =>
+            {
+                o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(o =>
+            {
+                o.RequireHttpsMetadata = false; // DEV; w PROD -> true
+                o.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtIssuer,
+                    ValidAudience = jwtIssuer,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+                    ClockSkew = TimeSpan.FromMinutes(1)
+                };
+            });
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseMigrationsEndPoint();
+        // --- Email Sender ---
+        builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection("EmailSender"));
+        builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
+
+        // --- MVC / Swagger / CORS ---
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+
+        builder.Services.AddCors(opt =>
+        {
+            opt.AddPolicy("SpaDev", p => p
+                .WithOrigins("http://localhost:5173", "http://localhost:3000")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials());
+        });
+
+        var app = builder.Build();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+
+        if (!app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
+        app.UseCors("SpaDev");
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.MapControllers();
+
+        app.Run();
+    }
 }
-else
-{
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcorehsts.
-    app.UseHsts();
-}
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
-app.MapRazorPages();
-app.Run();

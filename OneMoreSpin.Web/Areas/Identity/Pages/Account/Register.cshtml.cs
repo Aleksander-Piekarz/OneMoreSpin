@@ -116,9 +116,9 @@ namespace OneMoreSpin.Web.Areas.Identity.Pages.Account
             public string Surname { get; set; }
 
             [Required]
-            [DataType(DataType.DateTime)]
+            [DataType(DataType.Date)]
             [Display(Name = "Date of Birth")]
-            public DateTime DateOfBirth { get; set; }
+            public DateOnly DateOfBirth { get; set; }
 
 
         }

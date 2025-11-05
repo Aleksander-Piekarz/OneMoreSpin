@@ -25,7 +25,14 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                       
                     </ul>
+                    <environment include="Development">
+                        <form asp-area="" asp-controller="Home" asp-action="DeleteAllUsers" method="post" class="d-flex me-2" onsubmit="return confirm('Na pewno usunąć WSZYSTKICH użytkowników?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-danger">Usuń wszystkich użytkowników</button>
+                        </form>
+                    </environment>
                     <partial name="_LoginPartial" />
                 </div>
             </div>
