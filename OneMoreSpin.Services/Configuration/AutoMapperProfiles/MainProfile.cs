@@ -9,6 +9,10 @@ public class MainProfile : Profile
     public MainProfile()
     {
         CreateMap<User, UserProfileVm>();
-        CreateMap<Payment, PaymentHistoryItemVm>();
+        CreateMap<Payment, PaymentHistoryItemVm>()
+            .ForMember(d => d.TransactionType, o => o.MapFrom(s => s.TransactionType.ToString()));
+        CreateMap<UserScore, GameHistoryItemVm>()
+            .ForMember(d => d.GameName, o => o.MapFrom(s => s.Game.Name))
+            .ForMember(d => d.PlayedAt, o => o.MapFrom(s => System.DateTime.Now));
     }
 }

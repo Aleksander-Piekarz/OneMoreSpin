@@ -38,6 +38,7 @@ builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 builder.Services.AddAutoMapper(typeof(MainProfile));
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IGameService, GameService>();
 
 
 var app = builder.Build();

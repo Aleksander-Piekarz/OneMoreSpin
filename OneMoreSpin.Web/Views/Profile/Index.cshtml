@@ -73,9 +73,8 @@
                 <div class="card-header">
                     <h4>Game History</h4>
                 </div>
-                <div class="card-body">
-                    <p>Game history will be displayed here.</p>
-                    <!-- TODO: Implement game history view component or partial view -->
+                <div class="card-body" id="game-history-container">
+                    <div class="text-muted">Loading...</div>
                 </div>
             </div>
         </div>
@@ -99,6 +98,27 @@
                     loaded = true;
                 } catch (err) {
                     container.innerHTML = '<div class="text-danger">Failed to load payment history.</div>';
+                }
+            });
+        }
+    })();
+
+    (function() {
+        const gameTab = document.getElementById('game-history-tab');
+        const gameContainer = document.getElementById('game-history-container');
+        let loaded = false;
+
+        if (gameTab) {
+            gameTab.addEventListener('shown.bs.tab', async function (e) {
+                if (loaded) return;
+                try {
+                    const resp = await fetch('/Profile/GameHistory');
+                    if (!resp.ok) throw new Error('Network error');
+                    const html = await resp.text();
+                    gameContainer.innerHTML = html;
+                    loaded = true;
+                } catch (err) {
+                    gameContainer.innerHTML = '<div class="text-danger">Failed to load game history.</div>';
                 }
             });
         }

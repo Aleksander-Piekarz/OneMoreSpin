@@ -53,5 +53,18 @@ namespace OneMoreSpin.Web.Controllers
             var paymentHistory = await _paymentService.GetPaymentHistoryAsync(userId);
             return PartialView("_PaymentHistory", paymentHistory);
         }
+
+        // Loads game history partial view for the Game History tab
+        public async Task<IActionResult> GameHistory()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var gameHistory = await HttpContext.RequestServices.GetRequiredService<IGameService>().GetGameHistoryAsync(userId);
+            return PartialView("_GameHistory", gameHistory);
+        }
     }
 }
