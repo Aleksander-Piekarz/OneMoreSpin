@@ -57,6 +57,14 @@ function UserProfile() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [passwordSuccess, setPasswordSuccess] = useState('');
+    const [passwordLoading, setPasswordLoading] = useState(false);
+
     // Fetch real user data
     useEffect(() => {
         const token = localStorage.getItem('jwt');
@@ -197,6 +205,48 @@ function UserProfile() {
         }, 100); 
     };
 
+    const handlePasswordChange = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setPasswordError('');
+        setPasswordSuccess('');
+
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
+            setPasswordError('Wszystkie pola są wymagane');
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            setPasswordError('Nowe hasło musi mieć co najmniej 6 znaków');
+            return;
+        }
+
+        if (newPassword !== confirmNewPassword) {
+            setPasswordError('Nowe hasła nie są zgodne');
+            return;
+        }
+
+        setPasswordLoading(true);
+        try {
+            const result = await api.auth.changePassword({
+                currentPassword,
+                newPassword,
+            });
+            setPasswordSuccess(result.message || 'Hasło zostało zmienione');
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmNewPassword('');
+            setTimeout(() => {
+                setShowPasswordModal(false);
+                setPasswordSuccess('');
+            }, 2000);
+        } catch (e) {
+            const msg = e instanceof Error ? e.message : 'Nie udało się zmienić hasła';
+            setPasswordError(msg);
+        } finally {
+            setPasswordLoading(false);
+        }
+    };
+
 
     if (loading) {
         return (
@@ -219,7 +269,7 @@ function UserProfile() {
     }
 
     return (
-        <div className="relative min-h-screen p-4 bg-zinc-950 text-zinc-200 sm:p-6 lg:p-8">
+        <div className="relative min-h-screen p-4 bg-gradient-to-br from-purple-600 to-indigo-700 text-zinc-200 sm:p-6 lg:p-8">
             
 
             <div className="absolute z-10 top-4 left-4 sm:top-6 sm:left-8">
@@ -345,7 +395,7 @@ function UserProfile() {
                     <div className={`${bentoCardClass} lg:col-span-1`}>
                         <CardHeader icon={<SecurityIcon />} title="Bezpieczeństwo" />
                         <div className="space-y-3">
-                             <button className="w-full px-4 py-3 font-medium transition-colors rounded-lg bg-zinc-800 text-zinc-100 hover:bg-zinc-700">
+                             <button onClick={() => setShowPasswordModal(true)} className="w-full px-4 py-3 font-medium transition-colors rounded-lg bg-zinc-800 text-zinc-100 hover:bg-zinc-700">
                                 Zmień hasło
                             </button>
                             <button onClick={() => { localStorage.removeItem('jwt'); localStorage.removeItem('user'); navigate('/'); }} className="w-full px-4 py-3 font-medium text-red-300 transition-colors border rounded-lg bg-red-900/50 hover:bg-red-900/80 hover:text-red-200 border-red-500/20">
@@ -357,6 +407,94 @@ function UserProfile() {
                 </div>
 
             </div>
+
+            {showPasswordModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setShowPasswordModal(false)}>
+                    <div className="w-full max-w-md p-6 border rounded-2xl bg-zinc-900 border-zinc-800 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="mb-6 text-2xl font-bold text-white">Zmiana hasła</h2>
+                        
+                        <form onSubmit={handlePasswordChange} className="space-y-4">
+                            <div>
+                                <label htmlFor="currentPassword" className="block mb-2 text-sm font-medium text-zinc-300">
+                                    Aktualne hasło
+                                </label>
+                                <input
+                                    type="password"
+                                    id="currentPassword"
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                    className="w-full px-4 py-3 text-white border rounded-lg bg-zinc-800 border-zinc-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                    placeholder="Wpisz aktualne hasło"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="newPassword" className="block mb-2 text-sm font-medium text-zinc-300">
+                                    Nowe hasło
+                                </label>
+                                <input
+                                    type="password"
+                                    id="newPassword"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    className="w-full px-4 py-3 text-white border rounded-lg bg-zinc-800 border-zinc-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                    placeholder="Wpisz nowe hasło (min. 6 znaków)"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="confirmNewPassword" className="block mb-2 text-sm font-medium text-zinc-300">
+                                    Potwierdź nowe hasło
+                                </label>
+                                <input
+                                    type="password"
+                                    id="confirmNewPassword"
+                                    value={confirmNewPassword}
+                                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                    className="w-full px-4 py-3 text-white border rounded-lg bg-zinc-800 border-zinc-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                    placeholder="Potwierdź nowe hasło"
+                                />
+                            </div>
+
+                            {passwordError && (
+                                <div className="p-3 text-sm text-red-200 border rounded-lg bg-red-950/40 border-red-800/40">
+                                    {passwordError}
+                                </div>
+                            )}
+
+                            {passwordSuccess && (
+                                <div className="p-3 text-sm text-green-200 border rounded-lg bg-green-950/40 border-green-800/40">
+                                    {passwordSuccess}
+                                </div>
+                            )}
+
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowPasswordModal(false);
+                                        setPasswordError('');
+                                        setPasswordSuccess('');
+                                        setCurrentPassword('');
+                                        setNewPassword('');
+                                        setConfirmNewPassword('');
+                                    }}
+                                    className="flex-1 px-4 py-3 font-medium transition-colors border rounded-lg text-zinc-300 bg-zinc-800 border-zinc-700 hover:bg-zinc-700"
+                                >
+                                    Anuluj
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={passwordLoading}
+                                    className="flex-1 px-4 py-3 font-bold text-white transition-colors bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {passwordLoading ? 'Zmieniam...' : 'Zmień hasło'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

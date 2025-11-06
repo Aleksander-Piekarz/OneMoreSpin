@@ -67,8 +67,20 @@ public class Program
         builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection("EmailSender"));
         builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 
+        // --- Business Services ---
+        builder.Services.AddScoped<OneMoreSpin.Services.Interfaces.IProfileService, OneMoreSpin.Services.ConcreteServices.ProfileService>();
+        builder.Services.AddScoped<OneMoreSpin.Services.Interfaces.IPaymentService, OneMoreSpin.Services.ConcreteServices.PaymentService>();
+        builder.Services.AddScoped<OneMoreSpin.Services.Interfaces.IGameService, OneMoreSpin.Services.ConcreteServices.GameService>();
+
+        // --- AutoMapper ---
+        builder.Services.AddAutoMapper(typeof(Program).Assembly, typeof(OneMoreSpin.Services.ConcreteServices.ProfileService).Assembly);
+
         // --- MVC / Swagger / CORS ---
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+            });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 

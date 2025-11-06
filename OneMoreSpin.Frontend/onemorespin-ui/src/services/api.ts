@@ -45,6 +45,12 @@ export const api = {
     },
     me() {
       return request<User>("/auth/me");
+    },
+    changePassword(payload: { currentPassword: string; newPassword: string }) {
+      return request<{ message: string }>("/auth/change-password", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
     }
   }
 };

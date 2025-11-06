@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using OneMoreSpin.Services.Interfaces;
 
 
 namespace OneMoreSpin.Web.Controllers;
@@ -19,12 +20,14 @@ public class AuthController : ControllerBase
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
     private readonly IEmailSender _emailSender;
+    private readonly IProfileService _profileService;
 
-    public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, IEmailSender emailSender)
+    public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, IEmailSender emailSender, IProfileService profileService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _emailSender = emailSender;
+        _profileService = profileService;
     }
 
     private string GenerateJwt(User user, IConfiguration cfg)
@@ -132,13 +135,34 @@ public class AuthController : ControllerBase
                   ?? User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrWhiteSpace(sub)) return Unauthorized();
 
+        // Use ProfileService to get user data (proper layered architecture)
+        var userProfile = await _profileService.GetUserProfileAsync(sub);
+        if (userProfile == null) return NotFound();
+
+        // Return ViewModel from service
+        return Ok(userProfile);
+    }
+
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+    {
+        var sub = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value
+                  ?? User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrWhiteSpace(sub)) return Unauthorized();
+
         if (!int.TryParse(sub, out var id)) return Unauthorized();
         var user = await _userManager.FindByIdAsync(id.ToString());
         if (user == null) return Unauthorized();
 
-        return Ok(new { user.Id, user.Email, user.Name, user.Surname, user.IsVip, user.Balance });
+        var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+        if (!result.Succeeded)
+            return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
+
+        return Ok(new { message = "Password changed successfully." });
     }
 }
 
 public record RegisterDto(string Email, string Password, string Name, string Surname, DateOnly DateOfBirth);
 public record LoginDto(string Email, string Password);
+public record ChangePasswordDto(string CurrentPassword, string NewPassword);
