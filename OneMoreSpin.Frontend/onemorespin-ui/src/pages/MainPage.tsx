@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthModal, { type AuthMode } from "./AuthModal";
+import video1 from "../assets/vids/background-video-1.mp4";
+import video2 from "../assets/vids/background-video-2.mp4";
+import video3 from "../assets/vids/background-video-3.mp4";
+import video4 from "../assets/vids/background-video-4.mp4";
 
 const MainPage: React.FC = () => {
   const navigate = useNavigate();
@@ -9,6 +13,7 @@ const MainPage: React.FC = () => {
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [activeVideo, setActiveVideo] = useState(0);
   const [isVideoReady, setIsVideoReady] = useState(false);
+  const [flash, setFlash] = useState<string>("");
 
   const video1Ref = useRef<HTMLVideoElement>(null);
   const video2Ref = useRef<HTMLVideoElement>(null);
@@ -24,6 +29,16 @@ const MainPage: React.FC = () => {
       navigate("/home");
     }
   }, [navigate]);
+
+  useEffect(() => {
+    const msg = localStorage.getItem("flash");
+    if (msg) {
+      setFlash(msg);
+      localStorage.removeItem("flash");
+      const t = setTimeout(() => setFlash(""), 4000);
+      return () => clearTimeout(t);
+    }
+  }, []);
 
   const openAuth = (mode: AuthMode) => {
     setAuthMode(mode);
@@ -121,7 +136,7 @@ const MainPage: React.FC = () => {
           playsInline
           preload="auto"
         >
-          <source src="/res/background-video-1.mp4" type="video/mp4" />
+          <source src={video1} type="video/mp4" />
         </video>
         <video
           ref={video2Ref}
@@ -130,7 +145,7 @@ const MainPage: React.FC = () => {
           playsInline
           preload="auto"
         >
-          <source src="/res/background-video-2.mp4" type="video/mp4" />
+          <source src={video2} type="video/mp4" />
         </video>
         <video
           ref={video3Ref}
@@ -139,7 +154,7 @@ const MainPage: React.FC = () => {
           playsInline
           preload="auto"
         >
-          <source src="/res/background-video-3.mp4" type="video/mp4" />
+          <source src={video3} type="video/mp4" />
         </video>
         <video
           ref={video4Ref}
@@ -148,7 +163,7 @@ const MainPage: React.FC = () => {
           playsInline
           preload="auto"
         >
-          <source src="/res/background-video-4.mp4" type="video/mp4" />
+          <source src={video4} type="video/mp4" />
         </video>
         <div className="video-overlay"></div>
         <div className={`black-overlay ${isVideoReady ? "fade-out" : ""}`}></div>
@@ -177,6 +192,12 @@ const MainPage: React.FC = () => {
 
       {showAuth && (
         <AuthModal mode={authMode} onClose={() => setShowAuth(false)} />
+      )}
+
+      {flash && (
+        <div className="toast-container">
+          <div className="toast success">{flash}</div>
+        </div>
       )}
     </div>
   );

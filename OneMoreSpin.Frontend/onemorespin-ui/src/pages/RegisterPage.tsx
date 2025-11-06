@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "./api";
+import { api } from "../api";
+import video1 from "../assets/vids/background-video-1.mp4";
+import video2 from "../assets/vids/background-video-2.mp4";
+import video3 from "../assets/vids/background-video-3.mp4";
+import video4 from "../assets/vids/background-video-4.mp4";
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,6 +19,7 @@ const RegisterPage: React.FC = () => {
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [agreeAge, setAgreeAge] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [successMsg, setSuccessMsg] = useState<string>("");
 
   const [activeVideo, setActiveVideo] = useState(0);
   const video1Ref = useRef<HTMLVideoElement>(null);
@@ -131,10 +136,9 @@ const RegisterPage: React.FC = () => {
         surname,
         dateOfBirth: birthDate, // ISO zrobimy w api.ts
       });
-      alert("Registration successful. Please log in.");
-      navigate("/");
+  setSuccessMsg("Rejestracja zakończona pomyślnie. Sprawdź swoją skrzynkę pocztową i potwierdź adres e‑mail, aby się zalogować.");
     } catch (err: any) {
-      alert(`Registration failed: ${err.message}`);
+      setErrors({ form: err?.message || "Registration failed" });
     }
   };
 
@@ -152,7 +156,7 @@ const RegisterPage: React.FC = () => {
           playsInline
           preload="auto"
         >
-          <source src="/res/background-video-1.mp4" type="video/mp4" />
+          <source src={video1} type="video/mp4" />
         </video>
         <video
           ref={video2Ref}
@@ -161,7 +165,7 @@ const RegisterPage: React.FC = () => {
           playsInline
           preload="auto"
         >
-          <source src="/res/background-video-2.mp4" type="video/mp4" />
+          <source src={video2} type="video/mp4" />
         </video>
         <video
           ref={video3Ref}
@@ -170,7 +174,7 @@ const RegisterPage: React.FC = () => {
           playsInline
           preload="auto"
         >
-          <source src="/res/background-video-3.mp4" type="video/mp4" />
+          <source src={video3} type="video/mp4" />
         </video>
         <video
           ref={video4Ref}
@@ -179,7 +183,7 @@ const RegisterPage: React.FC = () => {
           playsInline
           preload="auto"
         >
-          <source src="/res/background-video-4.mp4" type="video/mp4" />
+          <source src={video4} type="video/mp4" />
         </video>
         <div className="video-overlay"></div>
       </div>
@@ -190,13 +194,6 @@ const RegisterPage: React.FC = () => {
 
       <div className="register-container">
         <div className="register-box">
-          <div className="register-decorations">
-            <div className="decoration-corner top-left"></div>
-            <div className="decoration-corner top-right"></div>
-            <div className="decoration-corner bottom-left"></div>
-            <div className="decoration-corner bottom-right"></div>
-          </div>
-
           <h2 className="register-title">CREATE ACCOUNT</h2>
 
           <form onSubmit={handleSubmit} noValidate>
@@ -325,6 +322,12 @@ const RegisterPage: React.FC = () => {
               {errors.agreeAge && <small className="error">{errors.agreeAge}</small>}
             </div>
 
+            {errors.form && <small className="error" style={{marginBottom: 8}}>{errors.form}</small>}
+            
+            {successMsg && (
+              <div className="success" style={{marginTop: 16, marginBottom: 8}}>{successMsg}</div>
+            )}
+            
             <button type="submit" className="submit-btn">
               CREATE ACCOUNT
             </button>

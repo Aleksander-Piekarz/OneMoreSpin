@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "./api";
+import { api } from "../api";
 
 export type AuthMode = "login" | "register";
 
@@ -27,7 +27,16 @@ const AuthModal: React.FC<Props> = ({ mode = "login", onClose }) => {
       onClose();
       navigate("/home");
     } catch (err: any) {
-      setError(err.message || "Login failed");
+      const raw = err?.message || "Login failed";
+      let msg = raw;
+      if (/Invalid credentials/i.test(raw)) {
+        msg = "Nieprawidłowy e-mail lub hasło";
+      } else if (/confirm your e-mail|Please confirm/i.test(raw)) {
+        msg = "Potwierdź adres e-mail przed zalogowaniem";
+      } else if (/not found|user not found/i.test(raw)) {
+        msg = "Użytkownik nie istnieje";
+      }
+      setError(msg);
     } finally {
       setBusy(false);
     }

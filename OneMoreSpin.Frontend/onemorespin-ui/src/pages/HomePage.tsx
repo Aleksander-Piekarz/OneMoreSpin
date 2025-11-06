@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import slotMachineIcon from "./assets/slot-machine.png";
-import rouletteIcon from "./assets/roulette.png";
-import blackjackIcon from "./assets/black-jack.png";
-import cardsIcon from "./assets/cards.png";
+import slotMachineIcon from "../assets/img/slot-machine.png";
+import rouletteIcon from "../assets/img/roulette.png";
+import blackjackIcon from "../assets/img/black-jack.png";
+import cardsIcon from "../assets/img/cards.png";
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -67,7 +67,7 @@ const HomePage: React.FC = () => {
       </div>
 
       <header className="home-header">
-        <button className="user-icon-btn" onClick={() => console.log("Profile")}>
+        <button className="user-icon-btn" onClick={() => navigate('/profile')}> 
           <div className="icon-wrapper">
             <i className="fas fa-user"></i>
             <div className="icon-glow"></div>

@@ -10,7 +10,20 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
 
   const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
   const text = await res.text();
-  if (!res.ok) throw new Error(text || res.statusText);
+  if (!res.ok) {
+    let message = res.statusText;
+    try {
+      const obj = JSON.parse(text);
+      if (obj) {
+        if (typeof obj.error === 'string') message = obj.error;
+        else if (Array.isArray(obj.errors)) message = obj.errors.join(', ');
+        else if (typeof obj.message === 'string') message = obj.message;
+      }
+    } catch {
+      if (text) message = text;
+    }
+    throw new Error(message || res.statusText);
+  }
   try { return JSON.parse(text) as T; } catch { return {} as T; }
 }
 
@@ -36,7 +49,23 @@ export const api = {
       });
     },
     me() {
-      return request("/auth/me");
+      return request("/users/me");
+    }
+  },
+  
+  users: {
+    changePassword(payload: { currentPassword: string; newPassword: string }) {
+      return request<{ message: string }>("/users/change-password", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    },
+    
+    deleteAccount(payload: { password: string }) {
+      return request<{ message: string }>("/users/delete-account", {
+        method: "DELETE",
+        body: JSON.stringify(payload),
+      });
     }
   }
 };

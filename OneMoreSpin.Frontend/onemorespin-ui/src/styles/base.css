@@ -109,3 +109,32 @@ small.error,
   cursor: not-allowed;
   transform: none;
 }
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  background: rgba(10, 14, 39, 0.95);
+  border: 2px solid rgba(34, 197, 94, 0.5);
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  backdrop-filter: blur(12px) saturate(160%);
+  min-width: 260px;
+}
+
+.toast.success {
+  border-color: rgba(34, 197, 94, 0.6);
+}
+
+.toast.error {
+  border-color: rgba(239, 68, 68, 0.6);
+}
