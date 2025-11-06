@@ -14,7 +14,7 @@ public class Program
     public static void Main(string[] args)
     {
         DotNetEnv.Env.Load();
-        var builder = WebApplication.CreateBuilder();
+        var builder = WebApplication.CreateBuilder(args);
 
         // --- Database (PostgreSQL) ---
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -67,21 +67,70 @@ public class Program
         builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection("EmailSender"));
         builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 
+        // --- Business Services ---
+        builder.Services.AddScoped<OneMoreSpin.Services.Interfaces.IProfileService, OneMoreSpin.Services.ConcreteServices.ProfileService>();
+        builder.Services.AddScoped<OneMoreSpin.Services.Interfaces.IPaymentService, OneMoreSpin.Services.ConcreteServices.PaymentService>();
+        builder.Services.AddScoped<OneMoreSpin.Services.Interfaces.IGameService, OneMoreSpin.Services.ConcreteServices.GameService>();
+
+        // --- AutoMapper ---
+        builder.Services.AddAutoMapper(typeof(Program).Assembly, typeof(OneMoreSpin.Services.ConcreteServices.ProfileService).Assembly);
+
         // --- MVC / Swagger / CORS ---
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+            });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddCors(opt =>
         {
             opt.AddPolicy("SpaDev", p => p
-                .WithOrigins("http://localhost:5173", "http://localhost:3000")
+                .WithOrigins("http://localhost:5173", "http://localhost:3000", "http://localhost:3002")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials());
         });
 
         var app = builder.Build();
+
+        // --- Ensure database is up-to-date (apply migrations automatically) ---
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            db.Database.Migrate();
+        }
+
+        // --- Dev seeding: create a default test user if not exists ---
+        if (app.Environment.IsDevelopment())
+        {
+            Task.Run(async () =>
+            {
+                using var scope = app.Services.CreateScope();
+                var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+                var email = "test@test.com";
+                var user = await users.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    var u = new User
+                    {
+                        UserName = email,
+                        Email = email,
+                        Name = "Test",
+                        Surname = "User",
+                        DateOfBirth = DateOnly.Parse("1990-01-01"),
+                        IsActive = true,
+                        EmailConfirmed = true
+                    };
+                    var res = await users.CreateAsync(u, "Test123!");
+                    if (!res.Succeeded)
+                    {
+                        Console.WriteLine("[Seed] Failed to create test user: " + string.Join(", ", res.Errors.Select(e => e.Description)));
+                    }
+                }
+            }).GetAwaiter().GetResult();
+        }
 
         if (app.Environment.IsDevelopment())
         {
@@ -90,9 +139,9 @@ public class Program
         }
 
         if (!app.Environment.IsDevelopment())
-            {
-                app.UseHttpsRedirection();
-            }
+        {
+            app.UseHttpsRedirection();
+        }
         app.UseCors("SpaDev");
         app.UseAuthentication();
         app.UseAuthorization();

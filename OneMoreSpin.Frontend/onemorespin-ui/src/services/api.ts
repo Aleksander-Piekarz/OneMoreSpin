@@ -1,5 +1,14 @@
 export const API_BASE = import.meta.env.VITE_API_BASE as string;
 
+interface User {
+  id: number;
+  email: string;
+  name: string;
+  surname: string;
+  isVip: boolean;
+  balance: number;
+}
+
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem("jwt");
   const headers: Record<string, string> = {
@@ -23,20 +32,25 @@ export const api = {
         method: "POST",
         body: JSON.stringify({
           ...payload,
-          // input type="date" w React zwraca "YYYY-MM-DD" — taki format akceptuje backend
           dateOfBirth: payload.dateOfBirth
         }),
       });
     },
 
     login(payload: { email: string; password: string }) {
-      return request<{ token: string; user: any }>("/auth/login", {
+      return request<{ token: string; user: User }>("/auth/login", {
         method: "POST",
         body: JSON.stringify(payload),
       });
     },
     me() {
-      return request("/auth/me");
+      return request<User>("/auth/me");
+    },
+    changePassword(payload: { currentPassword: string; newPassword: string }) {
+      return request<{ message: string }>("/auth/change-password", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
     }
   }
 };
