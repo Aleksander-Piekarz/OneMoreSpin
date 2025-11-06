@@ -8,11 +8,15 @@ const MainPage: React.FC = () => {
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [activeVideo, setActiveVideo] = useState(0);
+  const [isVideoReady, setIsVideoReady] = useState(false);
 
   const video1Ref = useRef<HTMLVideoElement>(null);
   const video2Ref = useRef<HTMLVideoElement>(null);
   const video3Ref = useRef<HTMLVideoElement>(null);
   const video4Ref = useRef<HTMLVideoElement>(null);
+
+  const videoSequence = useRef<number[]>([]);
+  const currentSequenceIndex = useRef(0);
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
@@ -38,42 +42,43 @@ const MainPage: React.FC = () => {
 
     if (!vid1 || !vid2 || !vid3 || !vid4) return;
 
-    let vid1Triggered = false;
-    let vid2Triggered = false;
-    let vid3Triggered = false;
-    let vid4Triggered = false;
+    const videos = [vid1, vid2, vid3, vid4];
+
+    const shuffleArray = (array: number[]) => {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    };
+
+    videoSequence.current = shuffleArray([0, 1, 2, 3]);
+    currentSequenceIndex.current = 0;
+
+    const videoTriggerFlags = [false, false, false, false];
 
     const handleTimeUpdate = (e: Event) => {
       const video = e.target as HTMLVideoElement;
+      const videoIndex = videos.indexOf(video);
       const timeLeft = video.duration - video.currentTime;
 
       if (timeLeft <= 1.0) {
-        if (video === vid1 && !vid1Triggered) {
-          vid1Triggered = true;
-          vid2.currentTime = 0;
-          vid2.play();
-          setActiveVideo(1);
-        } else if (video === vid2 && !vid2Triggered) {
-          vid2Triggered = true;
-          vid3.currentTime = 0;
-          vid3.play();
-          setActiveVideo(2);
-        } else if (video === vid3 && !vid3Triggered) {
-          vid3Triggered = true;
-          vid4.currentTime = 0;
-          vid4.play();
-          setActiveVideo(3);
-        } else if (video === vid4 && !vid4Triggered) {
-          vid4Triggered = true;
-          vid1.currentTime = 0;
-          vid1.play();
-          setActiveVideo(0);
+        if (!videoTriggerFlags[videoIndex]) {
+          videoTriggerFlags[videoIndex] = true;
+          
+          currentSequenceIndex.current = (currentSequenceIndex.current + 1) % videoSequence.current.length;
+          const nextVideoIndex = videoSequence.current[currentSequenceIndex.current];
+          const nextVideo = videos[nextVideoIndex];
+
+          nextVideo.currentTime = 0;
+          nextVideo.play();
+          setActiveVideo(nextVideoIndex);
         }
       } else {
-        if (video === vid1 && timeLeft > 2.0) vid1Triggered = false;
-        else if (video === vid2 && timeLeft > 2.0) vid2Triggered = false;
-        else if (video === vid3 && timeLeft > 2.0) vid3Triggered = false;
-        else if (video === vid4 && timeLeft > 2.0) vid4Triggered = false;
+        if (timeLeft > 2.0) {
+          videoTriggerFlags[videoIndex] = false;
+        }
       }
     };
 
@@ -85,7 +90,14 @@ const MainPage: React.FC = () => {
     vid4.addEventListener("timeupdate", handleTimeUpdate);
 
     const handleCanPlay = () => {
-      vid1.play();
+      const firstVideoIndex = videoSequence.current[0];
+      videos[firstVideoIndex].play();
+      setActiveVideo(firstVideoIndex);
+      
+      setTimeout(() => {
+        setIsVideoReady(true);
+      }, 100);
+      
       vid1.removeEventListener("canplay", handleCanPlay);
     };
     vid1.addEventListener("canplay", handleCanPlay);
@@ -139,6 +151,7 @@ const MainPage: React.FC = () => {
           <source src="/res/background-video-4.mp4" type="video/mp4" />
         </video>
         <div className="video-overlay"></div>
+        <div className={`black-overlay ${isVideoReady ? "fade-out" : ""}`}></div>
       </div>
 
       <header className="top-bar">

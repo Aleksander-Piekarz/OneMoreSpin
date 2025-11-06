@@ -1,0 +1,148 @@
+.register-page {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.back-to-home-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.back-to-home-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateX(-5px);
+}
+
+.register-container {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 550px;
+  padding: 20px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.register-box {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px 50px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.register-title {
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  font-size: 38px;
+  font-weight: 900;
+  color: #000000;
+  text-align: center;
+  margin: 0 0 25px 0;
+  letter-spacing: 3px;
+}
+
+.register-decorations {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.decoration-corner {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-color: #000000;
+  border-style: solid;
+}
+
+.decoration-corner.top-left {
+  top: 20px;
+  left: 20px;
+  border-width: 3px 0 0 3px;
+}
+
+.decoration-corner.top-right {
+  top: 20px;
+  right: 20px;
+  border-width: 3px 3px 0 0;
+}
+
+.decoration-corner.bottom-left {
+  bottom: 20px;
+  left: 20px;
+  border-width: 0 0 3px 3px;
+}
+
+.decoration-corner.bottom-right {
+  bottom: 20px;
+  right: 20px;
+  border-width: 0 3px 3px 0;
+}
+
+.register-box .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 0;
+}
+
+.register-box .checkbox-group {
+  margin-bottom: 12px;
+}
+
+.register-box .checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.register-box .checkbox-wrapper input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #000000;
+}
+
+.register-box .checkbox-wrapper label {
+  margin: 0;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .register-box {
+    padding: 30px 25px;
+  }
+  
+  .register-box .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .register-title {
+    font-size: 28px;
+  }
+
+  .decoration-corner {
+    width: 50px;
+    height: 50px;
+  }
+}
