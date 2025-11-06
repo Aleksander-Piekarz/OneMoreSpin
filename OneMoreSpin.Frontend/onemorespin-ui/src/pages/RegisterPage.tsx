@@ -1,28 +1,31 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-
-  const [name, setName] = useState("");
-  const [surname, setSurname] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [email, setEmail] = useState("");
-  const [confirmEmail, setConfirmEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [agreeTerms, setAgreeTerms] = useState(false);
-  const [agreeAge, setAgreeAge] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
   const [activeVideo, setActiveVideo] = useState(0);
+
   const video1Ref = useRef<HTMLVideoElement>(null);
   const video2Ref = useRef<HTMLVideoElement>(null);
   const video3Ref = useRef<HTMLVideoElement>(null);
   const video4Ref = useRef<HTMLVideoElement>(null);
 
-  const emailRegex = /[^\s@]+@[^\s@]+\.[^\s@]+/;
+  const [formData, setFormData] = useState({
+    name: "",
+    surname: "",
+    email: "",
+    confirmEmail: "",
+    dateOfBirth: "",
+    password: "",
+    confirmPassword: "",
+    confirmAge: false,
+    acceptTerms: false,
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     const vid1 = video1Ref.current;
@@ -71,7 +74,10 @@ const RegisterPage: React.FC = () => {
       }
     };
 
-    vid1.load(); vid2.load(); vid3.load(); vid4.load();
+    vid1.load();
+    vid2.load();
+    vid3.load();
+    vid4.load();
 
     vid1.addEventListener("timeupdate", handleTimeUpdate);
     vid2.addEventListener("timeupdate", handleTimeUpdate);
@@ -93,62 +99,104 @@ const RegisterPage: React.FC = () => {
     };
   }, []);
 
-  const validate = () => {
-    const e: Record<string, string> = {};
-
-    if (name.trim().length < 2) e.name = "Name must be at least 2 characters";
-    if (surname.trim().length < 2) e.surname = "Surname must be at least 2 characters";
-
-    if (!birthDate) e.birthDate = "Birth date is required";
-    else {
-      const birthYear = new Date(birthDate).getFullYear();
-      const currentYear = new Date().getFullYear();
-      if (currentYear - birthYear < 18) e.birthDate = "You must be at least 18 years old";
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-
-    if (!emailRegex.test(email)) e.email = "Please enter a valid email";
-    if (email !== confirmEmail) e.confirmEmail = "Emails do not match";
-
-    if (password.length < 6) e.password = "Password must be at least 6 characters";
-    if (password !== confirmPassword) e.confirmPassword = "Passwords do not match";
-
-    if (!agreeTerms) e.agreeTerms = "You must accept the terms of use";
-    if (!agreeAge) e.agreeAge = "You must confirm you are 18 years old";
-
-    setErrors(e);
-    return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = async (ev: React.FormEvent) => {
-    ev.preventDefault();
+  const validate = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!formData.surname.trim()) newErrors.surname = "Surname is required";
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = "Email is invalid";
+    }
+    if (!formData.confirmEmail.trim()) {
+      newErrors.confirmEmail = "Confirm email is required";
+    } else if (formData.confirmEmail !== formData.email) {
+      newErrors.confirmEmail = "Emails do not match";
+    }
+    if (!formData.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required";
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    if (!formData.confirmAge) {
+      newErrors.confirmAge = "You must confirm you are at least 18 years old";
+    }
+    if (!formData.acceptTerms) {
+      newErrors.acceptTerms = "You must accept the Terms & Privacy Policy";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!validate()) return;
 
+    setBusy(true);
     try {
       await api.auth.register({
-        email,
-        password,
-        name,
-        surname,
-        dateOfBirth: birthDate, // ISO zrobimy w api.ts
+        name: formData.name,
+        surname: formData.surname,
+        email: formData.email,
+        dateOfBirth: formData.dateOfBirth,
+        password: formData.password,
       });
-      alert("Registration successful. Please log in.");
-      navigate("/");
+      setSuccess(true);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error occurred";
-      alert(`Registration failed: ${message}`);
+      const message = err instanceof Error ? err.message : "Registration failed";
+      setErrors({ general: message });
+    } finally {
+      setBusy(false);
     }
   };
 
-  const handleBackToHome = () => {
-    navigate("/");
-  };
+  if (success) {
+    return (
+      <div className="relative flex items-center justify-center min-h-screen p-4 bg-gradient-to-br from-purple-600 to-indigo-700">
+        <div className="w-full max-w-md p-8 text-center bg-white shadow-2xl rounded-2xl">
+          <div className="mb-4 text-6xl">✅</div>
+          <h2 className="mb-4 text-3xl font-black text-gray-900 font-shoulders">
+            Check Your Email!
+          </h2>
+          <p className="mb-6 text-gray-600">
+            We've sent a confirmation link to <strong>{formData.email}</strong>. Please
+            check your inbox and click the link to verify your account.
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="rounded-lg bg-black px-8 py-3 font-semibold text-white transition-all hover:bg-gray-800 active:scale-[0.98]"
+          >
+            Back to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="register-page">
-      <div className="video-background">
+    <div className="relative w-full min-h-screen overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none -z-10">
         <video
           ref={video1Ref}
-          className={`background-video ${activeVideo === 0 ? "active" : ""}`}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ${
+            activeVideo === 0 ? "opacity-100" : "opacity-0"
+          }`}
+          style={{ filter: "brightness(0.4)" }}
           muted
           playsInline
           preload="auto"
@@ -157,7 +205,10 @@ const RegisterPage: React.FC = () => {
         </video>
         <video
           ref={video2Ref}
-          className={`background-video ${activeVideo === 1 ? "active" : ""}`}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ${
+            activeVideo === 1 ? "opacity-100" : "opacity-0"
+          }`}
+          style={{ filter: "brightness(0.4)" }}
           muted
           playsInline
           preload="auto"
@@ -166,7 +217,10 @@ const RegisterPage: React.FC = () => {
         </video>
         <video
           ref={video3Ref}
-          className={`background-video ${activeVideo === 2 ? "active" : ""}`}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ${
+            activeVideo === 2 ? "opacity-100" : "opacity-0"
+          }`}
+          style={{ filter: "brightness(0.4)" }}
           muted
           playsInline
           preload="auto"
@@ -175,163 +229,256 @@ const RegisterPage: React.FC = () => {
         </video>
         <video
           ref={video4Ref}
-          className={`background-video ${activeVideo === 3 ? "active" : ""}`}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ${
+            activeVideo === 3 ? "opacity-100" : "opacity-0"
+          }`}
+          style={{ filter: "brightness(0.4)" }}
           muted
           playsInline
           preload="auto"
         >
           <source src="/res/background-video-4.mp4" type="video/mp4" />
         </video>
-        <div className="video-overlay"></div>
+        <div className="absolute inset-0 bg-black/60"></div>
       </div>
 
-      <button className="back-to-home-btn" onClick={handleBackToHome}>
-        ← Back to Home
-      </button>
+      <header className="absolute top-0 left-0 right-0 z-50 p-4 md:p-6">
+        <button
+          onClick={() => navigate("/")}
+          className="px-6 py-2 text-sm font-semibold text-white transition-all border-2 border-white rounded-full hover:bg-white/10 hover:scale-105"
+        >
+          ← Back
+        </button>
+      </header>
 
-      <div className="register-container">
-        <div className="register-box">
-          <div className="register-decorations">
-            <div className="decoration-corner top-left"></div>
-            <div className="decoration-corner top-right"></div>
-            <div className="decoration-corner bottom-left"></div>
-            <div className="decoration-corner bottom-right"></div>
+      <main className="relative z-10 flex items-center justify-center min-h-screen px-4 py-20">
+        <div className="w-full max-w-2xl bg-white shadow-2xl rounded-2xl">
+          <div className="p-6 border-b border-gray-100 md:p-8">
+            <h1 className="text-3xl font-black text-gray-900 font-shoulders md:text-4xl">
+              CREATE ACCOUNT
+            </h1>
+            <p className="mt-2 text-gray-600">Join the best online casino today</p>
           </div>
 
-          <h2 className="register-title">CREATE ACCOUNT</h2>
+          <form onSubmit={handleSubmit} className="p-6 space-y-6 md:p-8">
+            {errors.general && (
+              <div className="p-4 text-sm text-red-600 rounded-lg bg-red-50">
+                {errors.general}
+              </div>
+            )}
 
-          <form onSubmit={handleSubmit} noValidate>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="name">Name</label>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label htmlFor="name" className="block text-sm font-semibold text-gray-700">
+                  First Name *
+                </label>
                 <input
+                  type="text"
                   id="name"
-                  type="text"
-                  className={`form-input ${errors.name ? "invalid" : ""}`}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="John"
-                  required
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className={`w-full rounded-lg border-2 px-4 py-2.5 transition-colors focus:outline-none focus:ring-2 ${
+                    errors.name
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
+                      : "border-gray-200 focus:border-gray-900 focus:ring-gray-900/10"
+                  }`}
                 />
-                {errors.name && <small className="error">{errors.name}</small>}
+                {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="surname">Surname</label>
+              <div className="space-y-2">
+                <label htmlFor="surname" className="block text-sm font-semibold text-gray-700">
+                  Last Name *
+                </label>
                 <input
+                  type="text"
                   id="surname"
-                  type="text"
-                  className={`form-input ${errors.surname ? "invalid" : ""}`}
-                  value={surname}
-                  onChange={(e) => setSurname(e.target.value)}
-                  placeholder="Doe"
-                  required
+                  name="surname"
+                  value={formData.surname}
+                  onChange={handleChange}
+                  className={`w-full rounded-lg border-2 px-4 py-2.5 transition-colors focus:outline-none focus:ring-2 ${
+                    errors.surname
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
+                      : "border-gray-200 focus:border-gray-900 focus:ring-gray-900/10"
+                  }`}
                 />
-                {errors.surname && <small className="error">{errors.surname}</small>}
+                {errors.surname && <p className="text-sm text-red-600">{errors.surname}</p>}
               </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="birthDate">Birth Date</label>
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+                Email *
+              </label>
               <input
-                id="birthDate"
-                type="date"
-                className={`form-input ${errors.birthDate ? "invalid" : ""}`}
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                required
-              />
-              {errors.birthDate && <small className="error">{errors.birthDate}</small>}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
+                type="email"
                 id="email"
-                type="email"
-                className={`form-input ${errors.email ? "invalid" : ""}`}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 placeholder="you@example.com"
-                required
+                className={`w-full rounded-lg border-2 px-4 py-2.5 transition-colors focus:outline-none focus:ring-2 ${
+                  errors.email
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
+                    : "border-gray-200 focus:border-gray-900 focus:ring-gray-900/10"
+                }`}
               />
-              {errors.email && <small className="error">{errors.email}</small>}
+              {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
             </div>
 
-            <div className="form-group">
-              <label htmlFor="confirmEmail">Repeat Email</label>
+            <div className="space-y-2">
+              <label htmlFor="confirmEmail" className="block text-sm font-semibold text-gray-700">
+                Confirm Email *
+              </label>
               <input
+                type="email"
                 id="confirmEmail"
-                type="email"
-                className={`form-input ${errors.confirmEmail ? "invalid" : ""}`}
-                value={confirmEmail}
-                onChange={(e) => setConfirmEmail(e.target.value)}
+                name="confirmEmail"
+                value={formData.confirmEmail}
+                onChange={handleChange}
                 placeholder="you@example.com"
-                required
+                className={`w-full rounded-lg border-2 px-4 py-2.5 transition-colors focus:outline-none focus:ring-2 ${
+                  errors.confirmEmail
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
+                    : "border-gray-200 focus:border-gray-900 focus:ring-gray-900/10"
+                }`}
               />
-              {errors.confirmEmail && <small className="error">{errors.confirmEmail}</small>}
+              {errors.confirmEmail && (
+                <p className="text-sm text-red-600">{errors.confirmEmail}</p>
+              )}
             </div>
 
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
+            <div className="space-y-2">
+              <label htmlFor="dateOfBirth" className="block text-sm font-semibold text-gray-700">
+                Date of Birth *
+              </label>
               <input
-                id="password"
-                type="password"
-                className={`form-input ${errors.password ? "invalid" : ""}`}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Create a strong password"
-                required
+                type="date"
+                id="dateOfBirth"
+                name="dateOfBirth"
+                value={formData.dateOfBirth}
+                onChange={handleChange}
+                className={`w-full rounded-lg border-2 px-4 py-2.5 transition-colors focus:outline-none focus:ring-2 ${
+                  errors.dateOfBirth
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
+                    : "border-gray-200 focus:border-gray-900 focus:ring-gray-900/10"
+                }`}
               />
-              {errors.password && <small className="error">{errors.password}</small>}
+              {errors.dateOfBirth && (
+                <p className="text-sm text-red-600">{errors.dateOfBirth}</p>
+              )}
             </div>
 
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Repeat Password</label>
-              <input
-                id="confirmPassword"
-                type="password"
-                className={`form-input ${errors.confirmPassword ? "invalid" : ""}`}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Repeat password"
-                required
-              />
-              {errors.confirmPassword && <small className="error">{errors.confirmPassword}</small>}
-            </div>
-
-            <div className="checkbox-group">
-              <div className="checkbox-wrapper">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                  Password *
+                </label>
                 <input
-                  id="agreeTerms"
-                  type="checkbox"
-                  checked={agreeTerms}
-                  onChange={(e) => setAgreeTerms(e.target.checked)}
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  className={`w-full rounded-lg border-2 px-4 py-2.5 transition-colors focus:outline-none focus:ring-2 ${
+                    errors.password
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
+                      : "border-gray-200 focus:border-gray-900 focus:ring-gray-900/10"
+                  }`}
                 />
-                <label htmlFor="agreeTerms">I agree to the Terms of Use</label>
+                {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
               </div>
-              {errors.agreeTerms && <small className="error">{errors.agreeTerms}</small>}
-            </div>
 
-            <div className="checkbox-group">
-              <div className="checkbox-wrapper">
+              <div className="space-y-2">
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-sm font-semibold text-gray-700"
+                >
+                  Confirm Password *
+                </label>
                 <input
-                  id="agreeAge"
-                  type="checkbox"
-                  checked={agreeAge}
-                  onChange={(e) => setAgreeAge(e.target.checked)}
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  className={`w-full rounded-lg border-2 px-4 py-2.5 transition-colors focus:outline-none focus:ring-2 ${
+                    errors.confirmPassword
+                      ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
+                      : "border-gray-200 focus:border-gray-900 focus:ring-gray-900/10"
+                  }`}
                 />
-                <label htmlFor="agreeAge">I confirm I am 18 years old</label>
+                {errors.confirmPassword && (
+                  <p className="text-sm text-red-600">{errors.confirmPassword}</p>
+                )}
               </div>
-              {errors.agreeAge && <small className="error">{errors.agreeAge}</small>}
             </div>
 
-            <button type="submit" className="submit-btn">
-              CREATE ACCOUNT
+            {/* Agreements */}
+            <div className="space-y-3">
+              <label className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  name="confirmAge"
+                  checked={formData.confirmAge}
+                  onChange={handleChange}
+                  className={`mt-1 h-5 w-5 rounded border-2 ${
+                    errors.confirmAge ? "border-red-300" : "border-gray-300"
+                  } text-black focus:ring-2 focus:ring-gray-900/10 focus:outline-none`}
+                />
+                <span className="text-sm text-gray-700">
+                  I confirm that I am at least 18 years old
+                </span>
+              </label>
+              {errors.confirmAge && (
+                <p className="text-sm text-red-600">{errors.confirmAge}</p>
+              )}
+
+              <label className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  name="acceptTerms"
+                  checked={formData.acceptTerms}
+                  onChange={handleChange}
+                  className={`mt-1 h-5 w-5 rounded border-2 ${
+                    errors.acceptTerms ? "border-red-300" : "border-gray-300"
+                  } text-black focus:ring-2 focus:ring-gray-900/10 focus:outline-none`}
+                />
+                <span className="text-sm text-gray-700">
+                  I accept the <span className="font-semibold">Terms</span> and
+                  {" "}
+                  <span className="font-semibold">Privacy Policy</span>
+                </span>
+              </label>
+              {errors.acceptTerms && (
+                <p className="text-sm text-red-600">{errors.acceptTerms}</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full rounded-lg bg-black py-3 text-lg font-semibold text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]"
+            >
+              {busy ? "Creating Account..." : "CREATE ACCOUNT"}
             </button>
+
+            <p className="text-sm text-center text-gray-600">
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick={() => navigate("/")}
+                className="font-semibold text-black hover:underline"
+              >
+                Log in
+              </button>
+            </p>
           </form>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

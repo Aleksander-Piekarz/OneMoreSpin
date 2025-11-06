@@ -32,8 +32,11 @@ services:
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=onemorespin_db;Username=OneMoreDev;Password=Admin;Include Error Detail=true
       Jwt__Key: VerySecretKeyForJwtTokenGeneration12345
       Jwt__Issuer: onemorespin.local
-      SMTP_USER: ""
-      SMTP_PASS: ""
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USESTARTTLS: ${SMTP_USESTARTTLS:-true}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
     ports:
       - "5046:5046"
     depends_on:
@@ -42,7 +45,6 @@ services:
     networks:
       - onemorespin-network
 
-  # Opcjonalnie - pgAdmin do zarządzania bazą danych przez przeglądarkę
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: onemorespin-pgadmin

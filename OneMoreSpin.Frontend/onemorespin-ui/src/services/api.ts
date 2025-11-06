@@ -1,6 +1,5 @@
 export const API_BASE = import.meta.env.VITE_API_BASE as string;
 
-// Interfejs zgodny z tym co backend zwraca w /login
 interface User {
   id: number;
   email: string;
@@ -33,7 +32,6 @@ export const api = {
         method: "POST",
         body: JSON.stringify({
           ...payload,
-          // input type="date" w React zwraca "YYYY-MM-DD" — taki format akceptuje backend
           dateOfBirth: payload.dateOfBirth
         }),
       });

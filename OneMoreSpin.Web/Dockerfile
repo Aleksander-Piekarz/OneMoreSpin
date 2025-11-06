@@ -14,13 +14,10 @@ COPY OneMoreSpin.Web/OneMoreSpin.Web.csproj OneMoreSpin.Web/
 
 RUN dotnet restore OneMoreSpin.Web/OneMoreSpin.Web.csproj
 
-# copy the rest of the source
 COPY . .
 
-# publish
 RUN dotnet publish OneMoreSpin.Web/OneMoreSpin.Web.csproj -c Release -o /app/publish /p:UseAppHost=false
 
-# 2) Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS final
 WORKDIR /app
 

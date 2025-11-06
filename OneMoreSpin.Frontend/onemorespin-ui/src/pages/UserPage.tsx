@@ -1,4 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../services/api';
 
 const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-zinc-500"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A1.875 1.875 0 0 1 18 22.5H6a1.875 1.875 0 0 1-1.499-2.382Z" /></svg>;
 const WalletIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-zinc-500"><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 0 1-2.25 2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 1 3 12m18 0v-2.25a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 0-6 0H5.25A2.25 2.25 0 0 0 3 9.75v2.25m18 0A2.25 2.25 0 0 1 18.75 14.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 1 3 12m18 0v-2.25" /></svg>;
@@ -7,12 +9,13 @@ const SettingsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" v
 const SecurityIcon = () => <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-zinc-500"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" /></svg>;
 
 
-const userData = {
-    username: "Gracz123",
-    email: "cos@cos.pl",
-    status: "Aktywne",
-    vip: "Złoty",
-    balance: "2,137.00 PLN"
+type MeUser = {
+    id: number;
+    email: string;
+    name: string;
+    surname: string;
+    isVip: boolean;
+    balance: number;
 };
 const transactionData = [
     { id: 1, date: "20.10.2025, 14:30", type: "Wpłata", amount: "+100.00 PLN", balance: "1,250.00 PLN" },
@@ -40,7 +43,7 @@ interface CardHeaderProps {
 
 const CardHeader = ({ icon, title }: CardHeaderProps) => (
     <div className="flex items-center gap-3 mb-5">
-        <div className="bg-zinc-800 p-2 rounded-lg">
+        <div className="p-2 rounded-lg bg-zinc-800">
             {icon}
         </div>
         <h2 className="text-xl font-semibold text-white">{title}</h2>
@@ -49,9 +52,52 @@ const CardHeader = ({ icon, title }: CardHeaderProps) => (
 
 
 function UserProfile() {
+    const navigate = useNavigate();
+    const [me, setMe] = useState<MeUser | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Fetch real user data
+    useEffect(() => {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            navigate('/');
+            return;
+        }
+        (async () => {
+            try {
+                const user = await api.auth.me();
+                setMe(user);
+            } catch (e) {
+                const msg = e instanceof Error ? e.message : 'Failed to load profile';
+                setError(msg);
+            } finally {
+                setLoading(false);
+            }
+        })();
+    }, [navigate]);
+
+    const displayName = useMemo(() => {
+        if (!me) return '';
+        const full = `${me.name ?? ''} ${me.surname ?? ''}`.trim();
+        if (full) return full;
+        return me.email?.split('@')[0] ?? 'User';
+    }, [me]);
+
+    const balanceText = useMemo(() => {
+        if (!me) return '—';
+        try {
+            return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(me.balance);
+        } catch {
+            return `${me.balance.toFixed(2)} PLN`;
+        }
+    }, [me]);
+
+    const vipText = me?.isVip ? 'VIP' : 'Standard';
+    const statusText = 'Aktywne'; 
     const [activeTab, setActiveTab] = useState('transakcje');
     const [teleportLeft, setTeleportLeft] = useState(37.5); 
-    const intervalRef = useRef<any>(null); 
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null); 
 
     const activeTabClass = "py-2 px-5 rounded-full font-semibold text-sm bg-zinc-700 text-white shadow-md";
     const inactiveTabClass = "py-2 px-5 rounded-full font-medium text-sm text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 transition-colors";
@@ -60,18 +106,18 @@ function UserProfile() {
         switch (activeTab) {
             case 'transakcje':
                 return (
-                    <table className="min-w-full text-left text-sm">
+                    <table className="min-w-full text-sm text-left">
                         <thead className="border-b border-zinc-800">
                             <tr>
-                                <th className="p-4 font-semibold text-zinc-500 uppercase tracking-wider">Data</th>
-                                <th className="p-4 font-semibold text-zinc-500 uppercase tracking-wider">Typ</th>
-                                <th className="p-4 font-semibold text-zinc-500 uppercase tracking-wider">Kwota</th>
-                                <th className="p-4 font-semibold text-zinc-500 uppercase tracking-wider">Saldo po operacji</th>
+                                <th className="p-4 font-semibold tracking-wider uppercase text-zinc-500">Data</th>
+                                <th className="p-4 font-semibold tracking-wider uppercase text-zinc-500">Typ</th>
+                                <th className="p-4 font-semibold tracking-wider uppercase text-zinc-500">Kwota</th>
+                                <th className="p-4 font-semibold tracking-wider uppercase text-zinc-500">Saldo po operacji</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-800">
-                            {transactionData.map((tx) => (
-                                <tr key={tx.id} className="hover:bg-zinc-800/50 transition-colors">
+                    {transactionData.map((tx) => (
+                                <tr key={tx.id} className="transition-colors hover:bg-zinc-800/50">
                                     <td className="p-4 text-zinc-400">{tx.date}</td>
                                     <td className="p-4 font-medium text-zinc-200">{tx.type}</td>
                                     <td className={`p-4 font-medium ${tx.amount.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
@@ -85,19 +131,19 @@ function UserProfile() {
                 );
             case 'gry':
                  return (
-                    <table className="min-w-full text-left text-sm">
+                    <table className="min-w-full text-sm text-left">
                         <thead className="border-b border-zinc-800">
                             <tr>
-                                <th className="p-4 font-semibold text-zinc-500 uppercase tracking-wider">Data</th>
-                                <th className="p-4 font-semibold text-zinc-500 uppercase tracking-wider">Gra</th>
-                                <th className="p-4 font-semibold text-zinc-500 uppercase tracking-wider">Wynik</th>
-                                <th className="p-4 font-semibold text-zinc-500 uppercase tracking-wider">Stawka</th>
-                                <th className="p-4 font-semibold text-zinc-500 uppercase tracking-wider">Wygrana/Strata</th>
+                                <th className="p-4 font-semibold tracking-wider uppercase text-zinc-500">Data</th>
+                                <th className="p-4 font-semibold tracking-wider uppercase text-zinc-500">Gra</th>
+                                <th className="p-4 font-semibold tracking-wider uppercase text-zinc-500">Wynik</th>
+                                <th className="p-4 font-semibold tracking-wider uppercase text-zinc-500">Stawka</th>
+                                <th className="p-4 font-semibold tracking-wider uppercase text-zinc-500">Wygrana/Strata</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-800">
                             {gameData.map((game) => (
-                                <tr key={game.id} className="hover:bg-zinc-800/50 transition-colors">
+                                <tr key={game.id} className="transition-colors hover:bg-zinc-800/50">
                                     <td className="p-4 text-zinc-400">{game.date}</td>
                                     <td className="p-4 font-medium text-zinc-200">{game.game}</td>
                                     <td className="p-4 text-zinc-200">{game.result}</td>
@@ -110,17 +156,17 @@ function UserProfile() {
                 );
             case 'logowania':
                 return (
-                    <table className="min-w-full text-left text-sm">
+                    <table className="min-w-full text-sm text-left">
                         <thead className="border-b border-zinc-800">
                             <tr>
-                                <th className="p-4 font-semibold text-zinc-500 uppercase tracking-wider">Data</th>
-                                <th className="p-4 font-semibold text-zinc-500 uppercase tracking-wider">Status</th>
-                                <th className="p-4 font-semibold text-zinc-500 uppercase tracking-wider">Adres IP (Log)</th>
+                                <th className="p-4 font-semibold tracking-wider uppercase text-zinc-500">Data</th>
+                                <th className="p-4 font-semibold tracking-wider uppercase text-zinc-500">Status</th>
+                                <th className="p-4 font-semibold tracking-wider uppercase text-zinc-500">Adres IP (Log)</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-800">
                             {loginData.map((login) => (
-                                <tr key={login.id} className="hover:bg-zinc-800/50 transition-colors">
+                                <tr key={login.id} className="transition-colors hover:bg-zinc-800/50">
                                     <td className="p-4 text-zinc-400">{login.date}</td>
                                     <td className="p-4 font-medium text-green-400">{login.status}</td>
                                     <td className="p-4 text-zinc-500">{login.ip}</td>
@@ -152,20 +198,40 @@ function UserProfile() {
     };
 
 
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-zinc-200">
+                <div className="px-6 py-4 border shadow rounded-xl border-zinc-800 bg-zinc-900">Ładowanie profilu…</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-zinc-200">
+                <div className="px-6 py-5 space-y-3 text-red-200 border rounded-xl border-red-800/40 bg-red-950/40">
+                    <div className="font-semibold">Nie udało się pobrać profilu</div>
+                    <div className="text-sm opacity-90">{error}</div>
+                    <button onClick={() => navigate('/')} className="px-4 py-2 mt-2 text-sm text-white rounded-lg bg-zinc-800 hover:bg-zinc-700">Wróć</button>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="bg-zinc-950 text-zinc-200 min-h-screen relative p-4 sm:p-6 lg:p-8">
+        <div className="relative min-h-screen p-4 bg-zinc-950 text-zinc-200 sm:p-6 lg:p-8">
             
 
-            <div className="absolute top-4 left-4 sm:top-6 sm:left-8 z-10">
-                <button className="bg-zinc-800/50 backdrop-blur-md border border-zinc-700 text-white text-sm font-medium py-2 px-5 rounded-full hover:bg-zinc-700/70 transition-all">
+            <div className="absolute z-10 top-4 left-4 sm:top-6 sm:left-8">
+                <button onClick={() => navigate('/home')} className="px-5 py-2 text-sm font-medium text-white transition-all border rounded-full bg-zinc-800/50 backdrop-blur-md border-zinc-700 hover:bg-zinc-700/70">
                     ← Powrót do lobby
                 </button>
             </div>
 
             <div className="container mx-auto max-w-7xl">
 
-                <header className="mb-8 mt-16 sm:mt-8">
-                    <h1 className="text-3xl font-bold text-white tracking-tight">
+                <header className="mt-16 mb-8 sm:mt-8">
+                    <h1 className="text-3xl font-bold tracking-tight text-white">
                         Mój Profil
                     </h1>
                 </header>
@@ -175,21 +241,21 @@ function UserProfile() {
                     <div className={`${bentoCardClass} lg:col-span-2`}>
                         <CardHeader icon={<UserIcon />} title="Dane Gracza" />
                         <ul className="space-y-4">
-                            <li className="flex justify-between items-center">
-                                <span className="text-zinc-400 text-sm">Nazwa użytkownika:</span>
-                                <span className="font-medium text-zinc-100">{userData.username}</span>
+                            <li className="flex items-center justify-between">
+                                <span className="text-sm text-zinc-400">Nazwa użytkownika:</span>
+                                <span className="font-medium text-zinc-100">{displayName}</span>
                             </li>
-                            <li className="flex justify-between items-center">
-                                <span className="text-zinc-400 text-sm">Adres e-mail:</span>
-                                <span className="font-medium text-zinc-100">{userData.email}</span>
+                            <li className="flex items-center justify-between">
+                                <span className="text-sm text-zinc-400">Adres e-mail:</span>
+                                <span className="font-medium text-zinc-100">{me?.email}</span>
                             </li>
-                            <li className="flex justify-between items-center">
-                                <span className="text-zinc-400 text-sm">Status konta:</span>
-                                <span className="font-medium text-green-300 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full text-sm">{userData.status}</span>
+                            <li className="flex items-center justify-between">
+                                <span className="text-sm text-zinc-400">Status konta:</span>
+                                <span className="px-3 py-1 text-sm font-medium text-green-300 border rounded-full bg-green-500/10 border-green-500/20">{statusText}</span>
                             </li>
-                            <li className="flex justify-between items-center">
-                                <span className="text-zinc-400 text-sm">Status VIP:</span>
-                                <span className="font-medium text-zinc-100 bg-zinc-700 px-3 py-1 rounded-full text-sm">{userData.vip}</span>
+                            <li className="flex items-center justify-between">
+                                <span className="text-sm text-zinc-400">Status VIP:</span>
+                                <span className="px-3 py-1 text-sm font-medium rounded-full text-zinc-100 bg-zinc-700">{vipText}</span>
                             </li>
                         </ul>
                     </div>
@@ -198,11 +264,11 @@ function UserProfile() {
                         <CardHeader icon={<WalletIcon />} title="Mój Portfel" />
                         
                         <div className="my-2">
-                            <p className="text-sm text-zinc-400 uppercase tracking-wider">Aktualne Saldo</p>
-                            <p className="text-5xl font-bold text-white mt-1">{userData.balance}</p>
+                            <p className="text-sm tracking-wider uppercase text-zinc-400">Aktualne Saldo</p>
+                            <p className="mt-1 text-5xl font-bold text-white">{balanceText}</p>
                         </div>
                         
-                        <div className="text-sm text-zinc-400 mb-6 mt-4">
+                        <div className="mt-4 mb-6 text-sm text-zinc-400">
                             <p>+100 Monet za jutrzejsze logowanie!</p>
                         </div>
 
@@ -217,7 +283,7 @@ function UserProfile() {
                                 onMouseLeave={stopTeleporting}
                             >
                                 <button 
-                                    className="absolute w-1/4 bg-zinc-800 text-zinc-100 font-medium py-3 px-4 rounded-lg transition-all duration-100 ease-out"
+                                    className="absolute w-1/4 px-4 py-3 font-medium transition-all duration-100 ease-out rounded-lg bg-zinc-800 text-zinc-100"
                                     style={{ left: `${teleportLeft}%` }}
                                 >
                                     Wypłać
@@ -250,7 +316,7 @@ function UserProfile() {
                             </button>
                         </div>
 
-                        <div className="tab-content overflow-x-auto">
+                        <div className="overflow-x-auto tab-content">
                             {renderTabContent()}
                         </div>
                     </div>
@@ -259,16 +325,16 @@ function UserProfile() {
                         <CardHeader icon={<SettingsIcon />} title="Ustawienia" />
                         <div className="space-y-5">
                             <div>
-                                <label htmlFor="motyw" className="block text-sm font-medium text-zinc-300 mb-2">Motyw</label>
-                                <select id="motyw" name="motyw" className="w-full p-3 bg-zinc-800 border border-zinc-700 text-white rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/50">
+                                <label htmlFor="motyw" className="block mb-2 text-sm font-medium text-zinc-300">Motyw</label>
+                                <select id="motyw" name="motyw" className="w-full p-3 text-white border rounded-lg bg-zinc-800 border-zinc-700 focus:ring-2 focus:ring-white/50 focus:border-white/50">
                                     <option>Ciemny (Domyślny)</option>
                                     <option>Jasny (Już wkrótce)</option>
                                 </select>
                             </div>
                             
                             <div>
-                                <label htmlFor="jezyk" className="block text-sm font-medium text-zinc-300 mb-2">Język</label>
-                                <select id="jezyk" name="jezyk" className="w-full p-3 bg-zinc-800 border border-zinc-700 text-white rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/50">
+                                <label htmlFor="jezyk" className="block mb-2 text-sm font-medium text-zinc-300">Język</label>
+                                <select id="jezyk" name="jezyk" className="w-full p-3 text-white border rounded-lg bg-zinc-800 border-zinc-700 focus:ring-2 focus:ring-white/50 focus:border-white/50">
                                     <option value="pl">Polski</option>
                                     <option value="en">English</option>
                                 </select>
@@ -279,10 +345,10 @@ function UserProfile() {
                     <div className={`${bentoCardClass} lg:col-span-1`}>
                         <CardHeader icon={<SecurityIcon />} title="Bezpieczeństwo" />
                         <div className="space-y-3">
-                             <button className="w-full bg-zinc-800 text-zinc-100 font-medium py-3 px-4 rounded-lg hover:bg-zinc-700 transition-colors">
+                             <button className="w-full px-4 py-3 font-medium transition-colors rounded-lg bg-zinc-800 text-zinc-100 hover:bg-zinc-700">
                                 Zmień hasło
                             </button>
-                            <button className="w-full bg-red-900/50 text-red-300 font-medium py-3 px-4 rounded-lg hover:bg-red-900/80 hover:text-red-200 border border-red-500/20 transition-colors">
+                            <button onClick={() => { localStorage.removeItem('jwt'); localStorage.removeItem('user'); navigate('/'); }} className="w-full px-4 py-3 font-medium text-red-300 transition-colors border rounded-lg bg-red-900/50 hover:bg-red-900/80 hover:text-red-200 border-red-500/20">
                                 Wyloguj
                             </button>
                         </div>

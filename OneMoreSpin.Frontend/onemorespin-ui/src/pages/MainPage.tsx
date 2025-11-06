@@ -77,7 +77,10 @@ const MainPage: React.FC = () => {
       }
     };
 
-    vid1.load(); vid2.load(); vid3.load(); vid4.load();
+    vid1.load();
+    vid2.load();
+    vid3.load();
+    vid4.load();
 
     vid1.addEventListener("timeupdate", handleTimeUpdate);
     vid2.addEventListener("timeupdate", handleTimeUpdate);
@@ -100,11 +103,14 @@ const MainPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="main-page">
-      <div className="video-background">
+    <div className="relative w-full min-h-screen overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none -z-10">
         <video
           ref={video1Ref}
-          className={`background-video ${activeVideo === 0 ? "active" : ""}`}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ${
+            activeVideo === 0 ? "opacity-100" : "opacity-0"
+          }`}
+          style={{ filter: "brightness(0.5)" }}
           muted
           playsInline
           preload="auto"
@@ -113,7 +119,10 @@ const MainPage: React.FC = () => {
         </video>
         <video
           ref={video2Ref}
-          className={`background-video ${activeVideo === 1 ? "active" : ""}`}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ${
+            activeVideo === 1 ? "opacity-100" : "opacity-0"
+          }`}
+          style={{ filter: "brightness(0.5)" }}
           muted
           playsInline
           preload="auto"
@@ -122,7 +131,10 @@ const MainPage: React.FC = () => {
         </video>
         <video
           ref={video3Ref}
-          className={`background-video ${activeVideo === 2 ? "active" : ""}`}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ${
+            activeVideo === 2 ? "opacity-100" : "opacity-0"
+          }`}
+          style={{ filter: "brightness(0.5)" }}
           muted
           playsInline
           preload="auto"
@@ -131,35 +143,64 @@ const MainPage: React.FC = () => {
         </video>
         <video
           ref={video4Ref}
-          className={`background-video ${activeVideo === 3 ? "active" : ""}`}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1500ms] ${
+            activeVideo === 3 ? "opacity-100" : "opacity-0"
+          }`}
+          style={{ filter: "brightness(0.5)" }}
           muted
           playsInline
           preload="auto"
         >
           <source src="/res/background-video-4.mp4" type="video/mp4" />
         </video>
-        <div className="video-overlay"></div>
+        <div className="absolute inset-0 bg-black/60"></div>
       </div>
 
-      <header className="top-bar">
-        <button
-          className="top-login-btn"
-          onClick={() => openAuth("login")}
-        >
-          LOG IN
-        </button>
+      <header className="absolute top-0 left-0 right-0 z-50 p-4 md:p-6">
+        <div className="container flex items-center justify-between mx-auto">
+          <button
+            onClick={() => openAuth("login")}
+            className="px-10 py-2 text-lg font-semibold text-white transition-all border-2 border-white rounded-full hover:bg-white/10 hover:scale-105 active:scale-95"
+          >
+            LOG IN
+          </button>
+        </div>
       </header>
 
-      <main className="content">
-        <h1 className="title">ONE MORE SPIN</h1>
-        <p className="subtitle">BEST ONLINE CASINO</p>
+      <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20 text-center">
+        <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
+          <h1
+            className="text-5xl font-black text-white font-shoulders sm:text-7xl md:text-8xl lg:text-9xl animate-neon-pulse"
+            style={{
+              textShadow: `
+                0 0 10px rgba(255, 255, 255, 0.8),
+                0 0 20px rgba(255, 255, 255, 0.6),
+                0 0 30px rgba(255, 255, 255, 0.4)
+              `,
+            }}
+          >
+            ONE MORE SPIN
+          </h1>
+          
+          <p
+            className="text-xl font-bold text-white sm:text-2xl md:text-3xl"
+            style={{
+              textShadow: `
+                0 0 10px rgba(255, 255, 255, 0.7),
+                0 0 20px rgba(255, 255, 255, 0.5)
+              `,
+            }}
+          >
+            BEST ONLINE CASINO
+          </p>
 
-        <button
-          className="create-account-btn"
-          onClick={goToRegister}
-        >
-          CREATE ACCOUNT
-        </button>
+          <button
+            onClick={goToRegister}
+            className="px-8 py-3 mt-8 text-lg font-bold text-black transition-all bg-white rounded-full hover:scale-105 hover:bg-gray-100 active:scale-95 md:px-12 md:py-4 md:text-2xl"
+          >
+            CREATE ACCOUNT
+          </button>
+        </div>
       </main>
 
       {showAuth && (
