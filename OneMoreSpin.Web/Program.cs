@@ -7,6 +7,9 @@ using OneMoreSpin.Model.DataModels;
 using System.Text;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using OneMoreSpin.Services.Email;
+using OneMoreSpin.Services.Configuration.AutoMapperProfiles;
+using OneMoreSpin.Services.Interfaces;
+using OneMoreSpin.Services.ConcreteServices;
 namespace OneMoreSpin.Web;
 
 public class Program
@@ -71,6 +74,11 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        builder.Services.AddAutoMapper(typeof(MainProfile));
+        builder.Services.AddScoped<IProfileService, ProfileService>();
+        builder.Services.AddScoped<IPaymentService, PaymentService>();
+        builder.Services.AddScoped<IGameService, GameService>();
 
         builder.Services.AddCors(opt =>
         {

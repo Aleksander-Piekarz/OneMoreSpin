@@ -14,13 +14,22 @@ namespace OneMoreSpin.Web.Controllers
     {
         private readonly IProfileService _profileService;
         private readonly IPaymentService _paymentService;
+        private readonly IGameService _gameService;
         private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public ProfileController(IProfileService profileService, IPaymentService paymentService, UserManager<User> userManager)
+        public ProfileController(
+            IProfileService profileService,
+            IPaymentService paymentService,
+            IGameService gameService,
+            UserManager<User> userManager,
+            SignInManager<User> signInManager)
         {
             _profileService = profileService;
             _paymentService = paymentService;
+            _gameService = gameService;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         public async Task<IActionResult> Index()
@@ -63,8 +72,34 @@ namespace OneMoreSpin.Web.Controllers
                 return Unauthorized();
             }
 
-            var gameHistory = await HttpContext.RequestServices.GetRequiredService<IGameService>().GetGameHistoryAsync(userId);
+            var gameHistory = await _gameService.GetGameHistoryAsync(userId);
             return PartialView("_GameHistory", gameHistory);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAccount([FromForm] string password)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                return BadRequest("Password is required to delete the account.");
+            }
+
+            var result = await _profileService.DeleteAccountAsync(userId, password);
+            if (result)
+            {
+                await _signInManager.SignOutAsync();
+                return RedirectToAction("Index", "Home");
+            }
+            else
+            {
+                return BadRequest("Account deletion failed. Check your password and try again.");
+            }
         }
     }
 }

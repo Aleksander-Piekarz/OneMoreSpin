@@ -3,3 +3,5 @@ obj/
 .env
 .fake
 node_modules/
+.github/
+.authController.cs

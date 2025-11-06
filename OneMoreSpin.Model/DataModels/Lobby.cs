@@ -4,7 +4,7 @@ public class Lobby
 {
     public int Id { get; set; }
     public LobbyStatus Status { get; set; } = LobbyStatus.Waiting;
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public int MaxPlayers { get; set; }
 
     // Navigation properties

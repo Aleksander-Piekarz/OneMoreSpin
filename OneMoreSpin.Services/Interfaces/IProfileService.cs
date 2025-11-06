@@ -10,5 +10,6 @@ namespace OneMoreSpin.Services.Interfaces
     public interface IProfileService
     {
         Task<UserProfileVm?> GetUserProfileAsync(string userId);
+        Task<bool> DeleteAccountAsync(string userId, string password);
     }
 }
