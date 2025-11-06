@@ -65,6 +65,12 @@ function UserProfile() {
     const [passwordSuccess, setPasswordSuccess] = useState('');
     const [passwordLoading, setPasswordLoading] = useState(false);
 
+    // delete
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deletePassword, setDeletePassword] = useState('');
+    const [deleteError, setDeleteError] = useState('');
+    const [deleteLoading, setDeleteLoading] = useState(false);
+
     // Fetch real user data
     useEffect(() => {
         const token = localStorage.getItem('jwt');
@@ -247,6 +253,30 @@ function UserProfile() {
         }
     };
 
+    const handleDeleteAccount = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setDeleteError('');
+
+        if (!deletePassword) {
+            setDeleteError('Hasło jest wymagane');
+            return;
+        }
+
+        setDeleteLoading(true);
+        try {
+            await api.auth.deleteAccount({ password: deletePassword });
+            
+            localStorage.removeItem('jwt');
+            localStorage.removeItem('user');
+            navigate('/');
+        } catch (e) {
+            const msg = e instanceof Error ? e.message : 'Nie udało się usunąć konta';
+            setDeleteError(msg);
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
 
     if (loading) {
         return (
@@ -398,9 +428,13 @@ function UserProfile() {
                              <button onClick={() => setShowPasswordModal(true)} className="w-full px-4 py-3 font-medium transition-colors rounded-lg bg-zinc-800 text-zinc-100 hover:bg-zinc-700">
                                 Zmień hasło
                             </button>
-                            <button onClick={() => { localStorage.removeItem('jwt'); localStorage.removeItem('user'); navigate('/'); }} className="w-full px-4 py-3 font-medium text-red-300 transition-colors border rounded-lg bg-red-900/50 hover:bg-red-900/80 hover:text-red-200 border-red-500/20">
+                            <button onClick={() => { localStorage.removeItem('jwt'); localStorage.removeItem('user'); navigate('/'); }} className="w-full px-4 py-3 font-medium text-red-300 transition-colors border-4 rounded-lg hover:bg-red-900/80 hover:text-red-200 border-red-500/20">
                                 Wyloguj
                             </button>
+                            <button onClick={() => setShowDeleteModal(true)} className="w-full px-4 py-3 font-medium text-red-300 transition-colors border rounded-lg bg-red-900/50 hover:bg-red-900/80 hover:text-red-200 border-red-500/20">
+                                Usuń konto
+                            </button>
+                            
                         </div>
                     </div>
 
@@ -410,7 +444,7 @@ function UserProfile() {
 
             {showPasswordModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setShowPasswordModal(false)}>
-                    <div className="w-full max-w-md p-6 border rounded-2xl bg-zinc-900 border-zinc-800 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                    <div className="w-full max-w-md p-6 border shadow-2xl rounded-2xl bg-zinc-900 border-zinc-800" onClick={(e) => e.stopPropagation()}>
                         <h2 className="mb-6 text-2xl font-bold text-white">Zmiana hasła</h2>
                         
                         <form onSubmit={handlePasswordChange} className="space-y-4">
@@ -423,7 +457,7 @@ function UserProfile() {
                                     id="currentPassword"
                                     value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
-                                    className="w-full px-4 py-3 text-white border rounded-lg bg-zinc-800 border-zinc-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                    className="w-full px-4 py-3 text-white border rounded-lg outline-none bg-zinc-800 border-zinc-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                                     placeholder="Wpisz aktualne hasło"
                                 />
                             </div>
@@ -437,7 +471,7 @@ function UserProfile() {
                                     id="newPassword"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
-                                    className="w-full px-4 py-3 text-white border rounded-lg bg-zinc-800 border-zinc-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                    className="w-full px-4 py-3 text-white border rounded-lg outline-none bg-zinc-800 border-zinc-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                                     placeholder="Wpisz nowe hasło (min. 6 znaków)"
                                 />
                             </div>
@@ -451,7 +485,7 @@ function UserProfile() {
                                     id="confirmNewPassword"
                                     value={confirmNewPassword}
                                     onChange={(e) => setConfirmNewPassword(e.target.value)}
-                                    className="w-full px-4 py-3 text-white border rounded-lg bg-zinc-800 border-zinc-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                                    className="w-full px-4 py-3 text-white border rounded-lg outline-none bg-zinc-800 border-zinc-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                                     placeholder="Potwierdź nowe hasło"
                                 />
                             </div>
@@ -489,6 +523,64 @@ function UserProfile() {
                                     className="flex-1 px-4 py-3 font-bold text-white transition-colors bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {passwordLoading ? 'Zmieniam...' : 'Zmień hasło'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)}>
+                    <div className="w-full max-w-md p-6 border shadow-2xl rounded-2xl bg-zinc-900 border-zinc-800" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="mb-4 text-2xl font-bold text-white">Usuń konto</h2>
+                        
+                        <div className="p-4 mb-6 border rounded-lg bg-orange-950/40 border-orange-800/40">
+                            <p className="text-sm font-semibold text-orange-200">⚠️ Uwaga!</p>
+                            <p className="mt-2 text-sm text-orange-300">
+                                Ta operacja jest nieodwracalna. Wszystkie Twoje dane, historia gier i saldo zostaną permanentnie usunięte.
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleDeleteAccount} className="space-y-4">
+                            <div>
+                                <label htmlFor="deletePassword" className="block mb-2 text-sm font-medium text-zinc-300">
+                                    Potwierdź hasłem
+                                </label>
+                                <input
+                                    type="password"
+                                    id="deletePassword"
+                                    value={deletePassword}
+                                    onChange={(e) => setDeletePassword(e.target.value)}
+                                    className="w-full px-4 py-3 text-white border rounded-lg outline-none bg-zinc-800 border-zinc-700 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    placeholder="Wpisz swoje hasło"
+                                />
+                            </div>
+
+                            {deleteError && (
+                                <div className="p-3 text-sm text-red-200 border rounded-lg bg-red-950/40 border-red-800/40">
+                                    {deleteError}
+                                </div>
+                            )}
+
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowDeleteModal(false);
+                                        setDeleteError('');
+                                        setDeletePassword('');
+                                    }}
+                                    className="flex-1 px-4 py-3 font-medium transition-colors border rounded-lg text-zinc-300 bg-zinc-800 border-zinc-700 hover:bg-zinc-700"
+                                >
+                                    Anuluj
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={deleteLoading}
+                                    className="flex-1 px-4 py-3 font-bold text-white transition-colors bg-orange-600 rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {deleteLoading ? 'Usuwam...' : 'Usuń konto'}
                                 </button>
                             </div>
                         </form>

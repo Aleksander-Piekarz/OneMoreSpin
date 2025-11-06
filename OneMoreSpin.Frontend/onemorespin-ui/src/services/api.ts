@@ -51,6 +51,14 @@ export const api = {
         method: "POST",
         body: JSON.stringify(payload),
       });
+    },
+
+    deleteAccount(payload: { password: string }) {
+      // dodac odpowiedni endpoint
+      return request<{ message: string }>("/auth/delete-account", {
+        method: "DELETE",
+        body: JSON.stringify(payload),
+      });
     }
   }
 };
