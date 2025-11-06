@@ -5,17 +5,32 @@ import rouletteIcon from "./assets/roulette.png";
 import blackjackIcon from "./assets/black-jack.png";
 import cardsIcon from "./assets/cards.png";
 
+interface UserData {
+  email?: string;
+  name?: string;
+}
+
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<UserData | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hoveredTile, setHoveredTile] = useState<number | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
+    const userData = localStorage.getItem("user");
 
     if (!token) {
       navigate("/");
       return;
+    }
+
+    if (userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (err) {
+        console.error("Error parsing user data:", err);
+      }
     }
   }, [navigate]);
 
@@ -67,7 +82,7 @@ const HomePage: React.FC = () => {
       </div>
 
       <header className="home-header">
-        <button className="user-icon-btn" onClick={() => console.log("Profile")}>
+        <button className="user-icon-btn" onClick={() => navigate("/profile")}>
           <div className="icon-wrapper">
             <i className="fas fa-user"></i>
             <div className="icon-glow"></div>
