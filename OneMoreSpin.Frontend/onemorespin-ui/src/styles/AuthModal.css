@@ -1,0 +1,247 @@
+.modal-overlay,
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.auth-modal {
+  width: 92%;
+  max-width: 480px;
+  background: rgba(10, 14, 39, 0.95);
+  border: 2px solid rgba(102, 126, 234, 0.5);
+  border-radius: 24px;
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px) saturate(180%);
+  color: #ffffff;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.auth-modal-close {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  font-size: 24px;
+  color: #ffffff;
+  cursor: pointer;
+  z-index: 10;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.auth-modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1) rotate(90deg);
+}
+
+.auth-modal-title {
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  font-size: 32px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 2px;
+  margin: 0;
+  padding: 40px 30px 20px 30px;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+}
+
+.auth-form { 
+  padding: 20px 30px 40px 30px;
+}
+
+.auth-form .form-group {
+  margin-bottom: 20px;
+}
+
+.auth-form label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #a1a1aa;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.auth-form .form-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.auth-form .form-input:focus {
+  border-color: rgba(102, 126, 234, 0.6);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+}
+
+.auth-form .form-input::placeholder {
+  color: #6b7280;
+}
+
+.auth-form .error {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  color: #ef4444;
+  font-size: 14px;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.auth-form .submit-btn {
+  width: 100%;
+  padding: 16px;
+  margin-top: 24px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.4), rgba(118, 75, 162, 0.4));
+  color: #ffffff;
+  border: 2px solid rgba(102, 126, 234, 0.6);
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.auth-form .submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.5), rgba(118, 75, 162, 0.5));
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  transform: scale(1.02);
+}
+
+.auth-form .submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.auth-modal-info {
+  text-align: center;
+  margin: 20px 0;
+  font-size: 15px;
+  color: #d4d4d8;
+  line-height: 1.6;
+}
+
+.auth-modal .create-account-btn {
+  display: block;
+  width: calc(100% - 60px);
+  margin: 20px 30px 30px 30px;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.4), rgba(118, 75, 162, 0.4));
+  color: #ffffff;
+  border: 2px solid rgba(102, 126, 234, 0.6);
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.auth-modal .create-account-btn:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.5), rgba(118, 75, 162, 0.5));
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  transform: scale(1.02);
+}
+
+@media (max-width: 768px) {
+  .auth-modal {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .auth-modal-title {
+    font-size: 26px;
+    padding: 30px 25px 15px 25px;
+  }
+
+  .auth-form {
+    padding: 15px 20px 30px 20px;
+  }
+
+  .auth-modal-close {
+    top: 15px;
+    right: 15px;
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (max-height: 700px) {
+  .auth-modal {
+    max-height: 95vh;
+  }
+  
+  .auth-modal-title {
+    font-size: 24px;
+    padding: 30px 25px 15px 25px;
+  }
+  
+  .auth-form {
+    padding: 15px 25px 30px 25px;
+  }
+  
+  .form-group {
+    margin-bottom: 16px;
+  }
+  
+  .submit-btn {
+    padding: 14px;
+    font-size: 15px;
+  }
+}
