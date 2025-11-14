@@ -21,12 +21,11 @@ namespace OneMoreSpin.Services.ConcreteServices
                 .OrderByDescending(us => us.Id)
                 .ToListAsync();
 
-            // We don't have a PlayedAt timestamp; using Created order by Id as proxy
             return items.Select(us => new GameHistoryItemVm
             {
                 GameName = us.Game.Name,
                 Score = us.Score,
-                PlayedAt = DateTime.Now // placeholder; consider adding timestamp to UserScore
+                PlayedAt = DateTime.Now // placeholder; dodaj do UserScore timestamp w przyszłości
             }).ToList();
         }
     }

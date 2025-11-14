@@ -96,6 +96,17 @@ public class UsersController : ControllerBase
         await _userManager.UpdateAsync(user);
         return Ok(new { balance = user.Balance });
     }
+
+        [HttpPost("dev/set-vip")]
+    public async Task<IActionResult> SetVip([FromBody] bool isVip, [FromServices] IWebHostEnvironment env)
+    {
+        if (!env.IsDevelopment()) return Forbid();
+        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var user = await _userManager.FindByIdAsync(id!);
+        user!.IsVip = isVip;
+        await _userManager.UpdateAsync(user);
+        return Ok(new { isVip = user.IsVip });
+    }
 }
 
 public record ChangePasswordDto(string CurrentPassword, string NewPassword);
