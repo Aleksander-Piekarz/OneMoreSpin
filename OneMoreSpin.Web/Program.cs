@@ -7,7 +7,13 @@ using OneMoreSpin.Model.DataModels;
 using System.Text;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using OneMoreSpin.Services.Email;
+using OneMoreSpin.Services.ConcreteServices;
+using OneMoreSpin.Services.Interfaces;
+using AutoMapper;
+using OneMoreSpin.Services.Configuration.AutoMapperProfiles;
+using Microsoft.OpenApi.Models;
 namespace OneMoreSpin.Web;
+
 
 public class Program
 {
@@ -70,8 +76,40 @@ public class Program
         // --- MVC / Swagger / CORS ---
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "OneMoreSpin API", Version = "v1" });
 
+    // JWT Bearer
+    var jwtScheme = new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer' [space] and then your JWT token.\n\nExample: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    };
+
+    options.AddSecurityDefinition("Bearer", jwtScheme);
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+            },
+            new string[] {}
+        }
+    });
+});
+        builder.Services.AddScoped<SlotService>();
+        builder.Services.AddScoped<GameService>();
+        builder.Services.AddAutoMapper(typeof(MainProfile));
+        builder.Services.AddScoped<IProfileService, ProfileService>();
+        builder.Services.AddScoped<IPaymentService, PaymentService>();
+        builder.Services.AddScoped<IGameService, GameService>();
         builder.Services.AddCors(opt =>
         {
             opt.AddPolicy("SpaDev", p => p
