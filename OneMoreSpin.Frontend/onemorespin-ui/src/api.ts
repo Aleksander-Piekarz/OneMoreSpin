@@ -67,5 +67,19 @@ export const api = {
         body: JSON.stringify(payload),
       });
     }
+  },
+
+  slots: {
+    spin(bet: number) {
+      return request<{
+        grid: string[][];
+        win: number;
+        balance: number;
+        isWin: boolean;
+      }>("/Slots/spin", {
+        method: "POST",
+        body: JSON.stringify({ bet }),
+      });
+    }
   }
 };
