@@ -15,17 +15,20 @@ public class ProfileController : ControllerBase
     private readonly IProfileService _profileService;
     private readonly IPaymentService _paymentService;
     private readonly IGameService _gameService;
+    private readonly IRewardService _rewardService;
     private readonly UserManager<User> _userManager;
 
     public ProfileController(
         IProfileService profileService,
         IPaymentService paymentService,
         IGameService gameService,
+        IRewardService rewardService,
         UserManager<User> userManager)
     {
         _profileService = profileService;
         _paymentService = paymentService;
         _gameService = gameService;
+        _rewardService = rewardService;
         _userManager = userManager;
     }
 
@@ -64,4 +67,22 @@ public class ProfileController : ControllerBase
         return Ok(games);
     }
 
+    [HttpPost("claim-daily-reward")]
+    public async Task<IActionResult> ClaimDailyReward()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized("Użytkownik nie jest zalogowany.");
+        }
+
+        var (success, message, amount) = await _rewardService.ClaimDailyRewardAsync(userId);
+
+        if (!success)
+        {
+            return BadRequest(new { Message = message });
+        }
+
+        return Ok(new { Message = message, Amount = amount });
     }
+}
