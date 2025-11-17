@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OneMoreSpin.DAL.EF;
+using OneMoreSpin.Model.DataModels;
 using OneMoreSpin.Services.Interfaces;
 using OneMoreSpin.ViewModels.VM;
 
@@ -27,6 +28,45 @@ namespace OneMoreSpin.Services.ConcreteServices
                 .ToListAsync();
 
             return Mapper.Map<List<PaymentHistoryItemVm>>(payments);
+        }
+
+        public async Task<User> CreateDepositAsync(string userId, decimal amount)
+        {
+            if (amount <= 0)
+            {
+                throw new ArgumentException("Kwota wpłaty musi być dodatnia.", nameof(amount));
+            }
+
+            
+            
+            
+            var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+            if (user == null)
+            {
+                
+                throw new KeyNotFoundException($"Nie znaleziono użytkownika o ID: {userId}");
+            }
+
+            
+            
+            user.Balance += amount;
+
+            
+            var payment = new Payment
+            {
+                Amount = amount,
+                CreatedAt = DateTime.UtcNow,
+                
+                TransactionType = TransactionType.Deposit, 
+                UserId = user.Id
+            };
+
+            await DbContext.Payments.AddAsync(payment);
+            await DbContext.SaveChangesAsync();
+
+            Logger.LogInformation($"Użytkownik {userId} pomyślnie wpłacił {amount}. Nowe saldo: {user.Balance}");
+
+            return user; 
         }
     }
 }

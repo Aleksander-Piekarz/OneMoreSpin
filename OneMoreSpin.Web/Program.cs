@@ -12,6 +12,7 @@ using OneMoreSpin.Services.Interfaces;
 using AutoMapper;
 using OneMoreSpin.Services.Configuration.AutoMapperProfiles;
 using Microsoft.OpenApi.Models;
+using Stripe;
 namespace OneMoreSpin.Web;
 
 
@@ -20,9 +21,9 @@ public class Program
     public static void Main(string[] args)
     {
         DotNetEnv.Env.Load();
-        var builder = WebApplication.CreateBuilder();
+        var builder = WebApplication.CreateBuilder(args);
+        StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
-        // --- Database (PostgreSQL) ---
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
