@@ -1,3 +1,8 @@
+using System;
+using System.Threading.Tasks;
+using OneMoreSpin.Model.DataModels;
+using OneMoreSpin.Services.Interfaces;
+
 namespace OneMoreSpin.Services.ConcreteServices
 {
     public class SlotResult
@@ -7,12 +12,18 @@ namespace OneMoreSpin.Services.ConcreteServices
         public bool IsWin => WinAmount > 0;
     }
 
-    public class SlotService
+    public class SlotService : ISlotService
     {
         private static readonly string[] Symbols = { "🍒", "🍋", "💎", "7️⃣", "🔔" };
         private readonly Random _rng = new();
+        private readonly IMissionService _missionService;
 
-        public SlotResult Spin(decimal bet)
+        public SlotService(IMissionService missionService)
+        {
+            _missionService = missionService;
+        }
+
+        public async Task<SlotResult> Spin(decimal bet, string userId)
         {
             var result = new SlotResult
             {
@@ -42,6 +53,10 @@ namespace OneMoreSpin.Services.ConcreteServices
                 win += bet * 7;
 
             result.WinAmount = win;
+
+            // Update mission progress
+            await _missionService.GetOrUpdateMissionProgressAsync(userId, MissionType.MakeSpins, 1);
+
             return result;
         }
     }

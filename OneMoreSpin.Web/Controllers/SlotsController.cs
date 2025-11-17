@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using OneMoreSpin.Model.DataModels;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
-using OneMoreSpin.Services.ConcreteServices;
+using OneMoreSpin.Services.Interfaces; // Zmieniono na interfejs
 
 namespace OneMoreSpin.Web.Controllers;
 
@@ -11,10 +11,10 @@ namespace OneMoreSpin.Web.Controllers;
 [Route("api/[controller]")]
 public class SlotsController : ControllerBase
 {
-    private readonly SlotService _slotService;
+    private readonly ISlotService _slotService; // Zmieniono na interfejs
     private readonly UserManager<User> _userManager;
 
-    public SlotsController(SlotService slotService, UserManager<User> userManager)
+    public SlotsController(ISlotService slotService, UserManager<User> userManager) // Zmieniono na interfejs
     {
         _slotService = slotService;
         _userManager = userManager;
@@ -37,7 +37,7 @@ public class SlotsController : ControllerBase
         user.Balance -= req.Bet;
 
         // wykonaj spin
-        var result = _slotService.Spin(req.Bet);
+        var result = await _slotService.Spin(req.Bet, userId); // Dodano await i userId
 
         // dodaj wygraną
         user.Balance += result.WinAmount;

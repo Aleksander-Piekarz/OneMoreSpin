@@ -34,7 +34,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                 {
                     GameName = us.Game.Name,
                     Score = us.Score,
-                    PlayedAt = us.DateOfGame, // placeholder; dodaj do UserScore timestamp w przyszłości
+                    PlayedAt = us.DateOfGame, 
                 })
                 .ToList();
         }
