@@ -15,9 +15,14 @@ namespace OneMoreSpin.Services.ConcreteServices
 
         public async Task<List<GameHistoryItemVm>> GetGameHistoryAsync(string userId)
         {
+    if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return new List<GameHistoryItemVm>();
+            }
+            
             var items = await DbContext.UserScores
                 .Include(us => us.Game)
-                .Where(us => us.UserId.ToString() == userId)
+                .Where(us => us.UserId == parsedUserId)
                 .OrderByDescending(us => us.Id)
                 .ToListAsync();
 

@@ -1,5 +1,12 @@
 export const API_BASE = import.meta.env.VITE_API_BASE as string;
 
+type PaymentHistoryItem = {
+    id: number;
+    amount: number;
+    createdAt: string;
+    transactionType: string;
+};
+
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem("jwt");
   const headers: Record<string, string> = {
@@ -36,7 +43,7 @@ export const api = {
         method: "POST",
         body: JSON.stringify({
           ...payload,
-          // input type="date" w React zwraca "YYYY-MM-DD" — taki format akceptuje backend
+          
           dateOfBirth: payload.dateOfBirth
         }),
       });
@@ -66,6 +73,18 @@ export const api = {
         method: "DELETE",
         body: JSON.stringify(payload),
       });
+    }
+  },
+payment: {
+    createCheckoutSession: (amount: number) => {
+      return request<{ url: string }>("/api/payment/create-checkout-session", {
+        method: "POST",
+        body: JSON.stringify({ amount }),
+      });
+    },
+
+    getHistory: () => {
+      return request<PaymentHistoryItem[]>("/api/payment/history");
     }
   },
 
