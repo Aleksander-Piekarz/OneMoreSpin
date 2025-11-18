@@ -3,3 +3,4 @@ obj/
 .env
 .fake
 node_modules/
+.github/
