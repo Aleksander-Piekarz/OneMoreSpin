@@ -13,6 +13,8 @@ namespace OneMoreSpin.Services.ConcreteServices
 {
     public class PaymentService : BaseService, IPaymentService
     {
+        private readonly IMissionService _missionService;
+
         public PaymentService(
             ApplicationDbContext dbContext,
             IMapper mapper,
@@ -83,6 +85,9 @@ namespace OneMoreSpin.Services.ConcreteServices
                 await transaction.CommitAsync();
 
                 Logger.LogInformation($"Użytkownik {userId} pomyślnie wpłacił {amount}. Nowe saldo: {user.Balance}");
+
+                // Aktualizacja misji
+                await _missionService.UpdateMakeDepositsProgressAsync(userId);
 
                 return user;
             }

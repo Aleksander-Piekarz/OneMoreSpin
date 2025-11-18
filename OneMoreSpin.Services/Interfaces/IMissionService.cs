@@ -12,6 +12,7 @@ namespace OneMoreSpin.Services.Interfaces
         Task UpdateWinInARowProgressAsync(string userId, bool isWin);
         Task UpdateAllGamesPlayedProgressAsync(string userId, int gameId);
         Task UpdateWinTotalAmountProgressAsync(string userId, decimal winAmount);
+        Task UpdateMakeDepositsProgressAsync(string userId);
         Task<bool> ClaimMissionRewardAsync(string userId, int missionId);
     }
 }

@@ -312,5 +312,54 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             await DbContext.SaveChangesAsync();
         }
+
+        public async Task UpdateMakeDepositsProgressAsync(string userId)
+        {
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return;
+            }
+
+            var mission = await DbContext.Missions.FirstOrDefaultAsync(m =>
+                m.MissionType == MissionType.DepositCount
+            );
+            if (mission == null)
+            {
+                return;
+            }
+
+            var userMission = await DbContext
+                .UserMissions.Include(um => um.Mission)
+                .FirstOrDefaultAsync(um => um.UserId == parsedUserId && um.MissionId == mission.Id);
+
+            if (userMission == null)
+            {
+                userMission = new UserMission
+                {
+                    UserId = parsedUserId,
+                    MissionId = mission.Id,
+                    Mission = mission,
+                    CurrentProgress = 0,
+                    IsCompleted = false,
+                    IsClaimed = false,
+                };
+                DbContext.UserMissions.Add(userMission);
+            }
+
+            if (userMission.IsCompleted)
+            {
+                return;
+            }
+
+            userMission.CurrentProgress += 1;
+
+            if (userMission.CurrentProgress >= userMission.Mission.RequiredAmount)
+            {
+                userMission.CurrentProgress = userMission.Mission.RequiredAmount;
+                userMission.IsCompleted = true;
+            }
+
+            await DbContext.SaveChangesAsync();
+        }
     }
 }
