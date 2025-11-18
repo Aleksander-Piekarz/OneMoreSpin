@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OneMoreSpin.DAL.EF;
@@ -11,9 +12,11 @@ using OneMoreSpin.DAL.EF;
 namespace OneMoreSpin.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251117192641_added_daily_streak")]
+    partial class added_daily_streak
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -202,36 +205,6 @@ namespace OneMoreSpin.DAL.Migrations
                     b.ToTable("Lobbies");
                 });
 
-            modelBuilder.Entity("OneMoreSpin.Model.DataModels.Mission", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("MissionType")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("RequiredAmount")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("RewardAmount")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Missions");
-                });
-
             modelBuilder.Entity("OneMoreSpin.Model.DataModels.Payment", b =>
                 {
                     b.Property<int>("Id")
@@ -392,53 +365,6 @@ namespace OneMoreSpin.DAL.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("OneMoreSpin.Model.DataModels.UserMission", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("CurrentProgress")
-                        .HasColumnType("numeric");
-
-                    b.Property<bool>("IsClaimed")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("MissionId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MissionId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserMissions");
-                });
-
-            modelBuilder.Entity("OneMoreSpin.Model.DataModels.UserPlayedGame", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("GameId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserId", "GameId");
-
-                    b.HasIndex("GameId");
-
-                    b.ToTable("UserPlayedGames");
-                });
-
             modelBuilder.Entity("OneMoreSpin.Model.DataModels.UserScore", b =>
                 {
                     b.Property<int>("Id")
@@ -456,12 +382,8 @@ namespace OneMoreSpin.DAL.Migrations
                     b.Property<decimal>("MoneyWon")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("Score")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("Stake")
-                        .HasColumnType("numeric");
+                    b.Property<int>("Outcome")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("Score")
                         .HasColumnType("numeric");
@@ -575,44 +497,6 @@ namespace OneMoreSpin.DAL.Migrations
                     b.Navigation("Lobby");
                 });
 
-            modelBuilder.Entity("OneMoreSpin.Model.DataModels.UserMission", b =>
-                {
-                    b.HasOne("OneMoreSpin.Model.DataModels.Mission", "Mission")
-                        .WithMany("UserMissions")
-                        .HasForeignKey("MissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OneMoreSpin.Model.DataModels.User", "User")
-                        .WithMany("UserMissions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Mission");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("OneMoreSpin.Model.DataModels.UserPlayedGame", b =>
-                {
-                    b.HasOne("OneMoreSpin.Model.DataModels.Game", "Game")
-                        .WithMany()
-                        .HasForeignKey("GameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OneMoreSpin.Model.DataModels.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Game");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("OneMoreSpin.Model.DataModels.UserScore", b =>
                 {
                     b.HasOne("OneMoreSpin.Model.DataModels.Game", "Game")
@@ -644,18 +528,11 @@ namespace OneMoreSpin.DAL.Migrations
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("OneMoreSpin.Model.DataModels.Mission", b =>
-                {
-                    b.Navigation("UserMissions");
-                });
-
             modelBuilder.Entity("OneMoreSpin.Model.DataModels.User", b =>
                 {
                     b.Navigation("ChatMessages");
 
                     b.Navigation("Payments");
-
-                    b.Navigation("UserMissions");
 
                     b.Navigation("UserScores");
                 });

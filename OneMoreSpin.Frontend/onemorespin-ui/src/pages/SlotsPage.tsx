@@ -3,11 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../api";
 import "../styles/SlotsPage.css";
 
-import cherryImg from "../assets/img/slots/cherries.png";
-import lemonImg from "../assets/img/slots/lemon.png";
 import diamondImg from "../assets/img/slots/diamond.png";
 import sevenImg from "../assets/img/slots/seven.png";
 import bellImg from "../assets/img/slots/bell.png";
+import AImg from "../assets/img/slots/A.png";
+import KImg from "../assets/img/slots/K.png";
+import QImg from "../assets/img/slots/Q.png";
+import JImg from "../assets/img/slots/J.png";
+
+import leverSound from "../assets/sounds/lever-pull.mp3";
+import winSound from "../assets/sounds/win.mp3";
+import loseSound from "../assets/sounds/lose.mp3";
 
 const SlotsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,11 +33,13 @@ const SlotsPage: React.FC = () => {
   const [winningLines, setWinningLines] = useState<number[][]>([]);
 
   const symbolMap: { [key: string]: string } = {
-    "🍒": cherryImg,
-    "🍋": lemonImg,
-    "💎": diamondImg,
-    "7️⃣": sevenImg,
-    "🔔": bellImg,
+    "J": JImg, 
+    "Q": QImg, 
+    "K": KImg, 
+    "A": AImg, 
+    "🔔": bellImg, 
+    "💎": diamondImg, 
+    "7️⃣": sevenImg
   };
 
   useEffect(() => {
@@ -69,27 +77,40 @@ const SlotsPage: React.FC = () => {
     }
   };
 
-  const detectWinningLines = (resultGrid: string[][]) => {
-    const lines: number[][] = [];
-    
-    for (let r = 0; r < 3; r++) {
-      if (resultGrid[r][0] === resultGrid[r][1] && resultGrid[r][1] === resultGrid[r][2]) {
-        lines.push([r, 0], [r, 1], [r, 2]);
+  // Definicja linii wypłat - musi być identyczna jak w backendzie
+  const paylines: number[][][] = [
+    [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4]], // Środkowa
+    [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]], // Górna
+    [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4]], // Dolna
+    [[0, 0], [1, 1], [2, 2], [1, 3], [0, 4]], // V odwrócone
+    [[2, 0], [1, 1], [0, 2], [1, 3], [2, 4]], // V normalne
+    [[1, 0], [0, 1], [0, 2], [0, 3], [1, 4]],
+    [[1, 0], [2, 1], [2, 2], [2, 3], [1, 4]],
+    [[0, 0], [0, 1], [1, 2], [2, 3], [2, 4]],
+    [[2, 0], [2, 1], [1, 2], [0, 3], [0, 4]],
+    [[0, 0], [1, 1], [1, 2], [1, 3], [2, 4]]
+  ];
+
+  const detectWinningLines = (winDetails: { paylineIndex: number, count: number }[]) => {
+    const winningCells = new Set<string>();
+
+    winDetails.forEach(detail => {
+      const line = paylines[detail.paylineIndex];
+      // Podświetl tylko zwycięskie symbole na linii
+      for (let i = 0; i < detail.count; i++) {
+        const [row, col] = line[i];
+        winningCells.add(`${row},${col}`);
       }
-    }
-    
-    if (resultGrid[0][0] === resultGrid[1][1] && resultGrid[1][1] === resultGrid[2][2]) {
-      lines.push([0, 0], [1, 1], [2, 2]);
-    }
-    if (resultGrid[0][2] === resultGrid[1][1] && resultGrid[1][1] === resultGrid[2][0]) {
-      lines.push([0, 2], [1, 1], [2, 0]);
-    }
-    
-    return lines;
+    });
+
+    return Array.from(winningCells).map(cell => cell.split(',').map(Number));
   };
 
   const handleSpin = async () => {
     if (isSpinning) return;
+
+    new Audio(leverSound).play();
+
     if (bet <= 0) {
       setError("Wpisz kwotę większą niż 0");
       setTimeout(() => setError(""), 3000);
@@ -127,8 +148,9 @@ const SlotsPage: React.FC = () => {
         setBalance(result.balance);
         setIsSpinning(false);
 
-        if (result.isWin) {
-          const lines = detectWinningLines(result.grid);
+        if (result.isWin && result.winDetails?.length > 0) {
+          new Audio(winSound).play();
+          const lines = detectWinningLines(result.winDetails);
           setWinningLines(lines);
           setWinAmount(result.win);
           
@@ -148,6 +170,8 @@ const SlotsPage: React.FC = () => {
             setWinningLines([]);
             setIsFadingOut(false);
           }, 6000);
+        } else {
+          new Audio(loseSound).play();
         }
       }, spinDuration);
 

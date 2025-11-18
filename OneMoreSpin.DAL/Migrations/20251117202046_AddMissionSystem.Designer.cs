@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OneMoreSpin.DAL.EF;
@@ -11,9 +12,11 @@ using OneMoreSpin.DAL.EF;
 namespace OneMoreSpin.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251117202046_AddMissionSystem")]
+    partial class AddMissionSystem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -424,21 +427,6 @@ namespace OneMoreSpin.DAL.Migrations
                     b.ToTable("UserMissions");
                 });
 
-            modelBuilder.Entity("OneMoreSpin.Model.DataModels.UserPlayedGame", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("GameId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserId", "GameId");
-
-                    b.HasIndex("GameId");
-
-                    b.ToTable("UserPlayedGames");
-                });
-
             modelBuilder.Entity("OneMoreSpin.Model.DataModels.UserScore", b =>
                 {
                     b.Property<int>("Id")
@@ -456,12 +444,8 @@ namespace OneMoreSpin.DAL.Migrations
                     b.Property<decimal>("MoneyWon")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("Score")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("Stake")
-                        .HasColumnType("numeric");
+                    b.Property<int>("Outcome")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("Score")
                         .HasColumnType("numeric");
@@ -590,25 +574,6 @@ namespace OneMoreSpin.DAL.Migrations
                         .IsRequired();
 
                     b.Navigation("Mission");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("OneMoreSpin.Model.DataModels.UserPlayedGame", b =>
-                {
-                    b.HasOne("OneMoreSpin.Model.DataModels.Game", "Game")
-                        .WithMany()
-                        .HasForeignKey("GameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("OneMoreSpin.Model.DataModels.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Game");
 
                     b.Navigation("User");
                 });

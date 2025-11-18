@@ -12,6 +12,12 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int>
     public DbSet<Lobby> Lobbies { get; set; }
     public DbSet<Payment> Payments { get; set; }
     public DbSet<UserScore> UserScores { get; set; }
+    
+    // --- NOWE ---
+    public DbSet<Mission> Missions { get; set; }
+    public DbSet<UserMission> UserMissions { get; set; }
+    public DbSet<UserPlayedGame> UserPlayedGames { get; set; }
+    // --- KONIEC NOWEGO ---
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }
@@ -19,8 +25,8 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
-        //configuration commands
-        optionsBuilder.UseLazyLoadingProxies(); //enable lazy loading proxies
+    
+        optionsBuilder.UseLazyLoadingProxies(); 
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -66,8 +72,35 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int>
             .HasForeignKey(l => l.LobbyId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<User>()
-            .Property(u => u.DateOfBirth)
-            .HasColumnType("date");
+        // --- NOWE ---
+        modelBuilder
+            .Entity<UserMission>()
+            .HasOne(um => um.User)
+            .WithMany(u => u.UserMissions)
+            .HasForeignKey(um => um.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder
+            .Entity<UserMission>()
+            .HasOne(um => um.Mission)
+            .WithMany(m => m.UserMissions)
+            .HasForeignKey(um => um.MissionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserPlayedGame>().HasKey(upg => new { upg.UserId, upg.GameId });
+
+        modelBuilder
+            .Entity<UserPlayedGame>()
+            .HasOne(upg => upg.User)
+            .WithMany()
+            .HasForeignKey(upg => upg.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder
+            .Entity<UserPlayedGame>()
+            .HasOne(upg => upg.Game)
+            .WithMany()
+            .HasForeignKey(upg => upg.GameId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

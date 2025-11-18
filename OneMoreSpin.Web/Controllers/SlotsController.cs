@@ -1,57 +1,53 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OneMoreSpin.Model.DataModels;
-using Microsoft.AspNetCore.Identity;
+using OneMoreSpin.Services.Interfaces; // Użyj ISlotService
+using System;
 using System.Security.Claims;
-using OneMoreSpin.Services.ConcreteServices;
+using OneMoreSpin.Services.Interfaces; // Zmieniono na interfejs
 
-namespace OneMoreSpin.Web.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class SlotsController : ControllerBase
+namespace OneMoreSpin.Web.Controllers
 {
-    private readonly SlotService _slotService;
-    private readonly UserManager<User> _userManager;
-
-    public SlotsController(SlotService slotService, UserManager<User> userManager)
-    {
-        _slotService = slotService;
-        _userManager = userManager;
-    }
-
     [Authorize]
-    [HttpPost("spin")]
-    public async Task<IActionResult> Spin([FromBody] SpinRequest req)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class SlotsController : ControllerBase
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
-
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user == null) return Unauthorized();
-
-        if (user.Balance < req.Bet)
-            return BadRequest(new { error = "Insufficient funds." });
-
-        // odejmij stawkę
-        user.Balance -= req.Bet;
-
-        // wykonaj spin
-        var result = _slotService.Spin(req.Bet);
-
-        // dodaj wygraną
-        user.Balance += result.WinAmount;
-
-        await _userManager.UpdateAsync(user);
-
-        return Ok(new
+        private readonly ISlotService _slotService;
+        public SlotsController(ISlotService slotService)
         {
-            grid = result.Grid,
-            win = result.WinAmount,
-            balance = user.Balance,
-            isWin = result.IsWin
-        });
+            _slotService = slotService;
+        }
+
+        // Klasa DTO (Data Transfer Object) dla żądania
+        public class SpinRequest
+        {
+            public decimal Bet { get; set; }
+        }
+
+        [HttpPost("spin")]
+        public async Task<IActionResult> Spin([FromBody] SpinRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _slotService.SpinAsync(userId, request.Bet);
+                return Ok(result); // Zwróć obiekt SpinResultVm
+            }
+            catch (InvalidOperationException e)
+            {
+                // Np. "Niewystarczające środki"
+                return BadRequest(new { message = e.Message });
+            }
+            catch (Exception e)
+            {
+                // Inne błędy
+                return StatusCode(500, new { message = $"Wystąpił błąd serwera: {e.Message}" });
+            }
+        }
     }
 }
-
-public record SpinRequest(decimal Bet);
