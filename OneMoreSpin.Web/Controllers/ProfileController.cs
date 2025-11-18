@@ -76,13 +76,13 @@ public class ProfileController : ControllerBase
             return Unauthorized("Użytkownik nie jest zalogowany.");
         }
 
-        var (success, message, amount) = await _rewardService.ClaimDailyRewardAsync(userId);
+        var result = await _rewardService.ClaimDailyRewardAsync(userId);
 
-        if (!success)
+        if (!result.Success)
         {
-            return BadRequest(new { Message = message });
+            return BadRequest(new { message = "Nie można jeszcze odebrać nagrody." });
         }
 
-        return Ok(new { Message = message, Amount = amount });
+        return Ok(new { Amount = result.Amount });
     }
 }

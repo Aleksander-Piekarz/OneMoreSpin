@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OneMoreSpin.DAL.EF;
@@ -11,9 +12,11 @@ using OneMoreSpin.DAL.EF;
 namespace OneMoreSpin.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251118203709_addedplayedgames")]
+    partial class addedplayedgames
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -456,12 +459,8 @@ namespace OneMoreSpin.DAL.Migrations
                     b.Property<decimal>("MoneyWon")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("Score")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<decimal>("Stake")
-                        .HasColumnType("numeric");
+                    b.Property<int>("Outcome")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("Score")
                         .HasColumnType("numeric");

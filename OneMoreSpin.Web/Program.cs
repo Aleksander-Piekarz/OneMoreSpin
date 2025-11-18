@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -80,7 +81,10 @@ public class Program
         builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 
         // --- MVC / Swagger / CORS ---
-        builder.Services.AddControllers();
+        builder.Services.AddControllers().AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        });
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
@@ -124,6 +128,9 @@ public class Program
         builder.Services.AddScoped<IPaymentService, PaymentService>();
         builder.Services.AddScoped<IGameService, GameService>();
         builder.Services.AddScoped<IRewardService, RewardService>();
+        builder.Services.AddScoped<IMissionService, MissionService>();
+        builder.Services.AddScoped<ISlotService, SlotService>();
+        builder.Services.AddHostedService<MissionResetService>();
         builder.Services.AddCors(opt =>
         {
             opt.AddPolicy(

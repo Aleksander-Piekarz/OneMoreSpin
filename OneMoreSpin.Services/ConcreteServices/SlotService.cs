@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -5,7 +7,6 @@ using OneMoreSpin.DAL.EF;
 using OneMoreSpin.Model.DataModels;
 using OneMoreSpin.Services.Interfaces;
 using OneMoreSpin.ViewModels.VM;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,7 +23,22 @@ namespace OneMoreSpin.Services.ConcreteServices
         // Nowe symbole
         private static readonly string[] Symbols = { "J", "Q", "K", "A", "🔔", "💎", "7️⃣" };
         private readonly Random _rng = new();
+        private readonly IMissionService _missionService;
 
+        public SlotService(
+            IMissionService missionService,
+            ApplicationDbContext dbContext,
+            IMapper mapper,
+            ILogger<SlotService> logger
+        )
+            : base(dbContext, mapper, logger)
+        {
+            _missionService = missionService;
+        }
+
+        public async Task<SlotResult> Spin(decimal bet, string userId)
+        {
+            var result = new SlotResult { Grid = new string[3][] };
         // Nowa tabela wypłat (mnożniki)
         private static readonly Dictionary<string, Dictionary<int, decimal>> PayoutTable = new()
         {
@@ -160,7 +176,19 @@ namespace OneMoreSpin.Services.ConcreteServices
                 paylineIndex++;
             }
 
-            return (totalWin, winDetails);
+            result.WinAmount = win;
+
+            // Update mission progress
+            await _missionService.UpdateMakeSpinsProgressAsync(userId);
+            await _missionService.UpdateWinInARowProgressAsync(userId, result.IsWin);
+            await _missionService.UpdateAllGamesPlayedProgressAsync(
+                userId,
+                DbContext.Games.FirstOrDefault(g => g.Name == "Slots")!.Id
+            );
+            await _missionService.UpdateWinTotalAmountProgressAsync( userId, result.WinAmount);
+
+          ////  return result;
+            return (totalWin, winDetails); 
         }
     }
 }

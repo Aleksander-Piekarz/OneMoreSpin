@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using OneMoreSpin.DAL.EF;
 using OneMoreSpin.Model.DataModels;
 using OneMoreSpin.Services.Interfaces;
+using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Services.ConcreteServices
 {
@@ -21,58 +22,53 @@ namespace OneMoreSpin.Services.ConcreteServices
         )
             : base(dbContext, mapper, logger) { }
 
-        public async Task<(bool Success, string Message, decimal Amount)> ClaimDailyRewardAsync(string userId)
+        public async Task<ClaimRewardResultVm> ClaimDailyRewardAsync(string userId)
         {
             if (!int.TryParse(userId, out int parsedUserId))
             {
-                return (false, "Nieprawidłowy format ID użytkownika.", 0);
+                return new ClaimRewardResultVm { Success = false };
             }
 
             var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == parsedUserId);
 
             if (user == null)
             {
-                return (false, "Użytkownik nie został znaleziony.", 0);
+                return new ClaimRewardResultVm { Success = false };
             }
 
             var currentTime = DateTime.UtcNow;
 
-            // Pierwsze odebranie nagrody przez użytkownika
-            if (!user.LastRewardClaimedDate.HasValue)
-            {
-                user.DailyStreak = 1;
-            }
-            else
+            if (user.LastRewardClaimedDate.HasValue)
             {
                 var timeSinceLastClaim = currentTime - user.LastRewardClaimedDate.Value;
 
                 if (timeSinceLastClaim.TotalHours < 24)
                 {
                     var timeRemaining = TimeSpan.FromHours(24) - timeSinceLastClaim;
-                    return (false, $"Następną nagrodę możesz odebrać za {timeRemaining.Hours}h {timeRemaining.Minutes}m.", 0);
+                    return new ClaimRewardResultVm
+                    {
+                        Success = false,
+                        NextClaimAvailableIn = timeRemaining,
+                    };
                 }
 
-                // Jeśli minęło więcej niż 48h, zresetuj serię
-                if (timeSinceLastClaim.TotalHours > 48)
-                {
-                    user.DailyStreak = 1;
-                }
-                else // Jeśli minęło 24-48h, kontynuuj serię
-                {
-                    user.DailyStreak++;
-                }
+                // Jeśli minęło 24-48h, kontynuuj serię. W przeciwnym razie (ponad 48h) seria jest resetowana do 1.
+                user.DailyStreak = (timeSinceLastClaim.TotalHours <= 48) ? user.DailyStreak + 1 : 1;
+            }
+            else
+            {
+                // Pierwsze odebranie nagrody w historii
+                user.DailyStreak = 1;
             }
 
-            // Zresetuj serię po osiągnięciu maksimum
+            // Jeśli seria przekroczy maksimum, zresetuj ją do 1 (zapętlenie)
             if (user.DailyStreak > MaxStreakDays)
             {
                 user.DailyStreak = 1;
             }
 
-            // Oblicz kwotę nagrody
             decimal rewardAmount = BaseRewardAmount + (BaseRewardAmount * (user.DailyStreak - 1));
 
-            // Zaktualizuj dane użytkownika
             user.Balance += rewardAmount;
             user.LastRewardClaimedDate = currentTime;
 
@@ -91,11 +87,12 @@ namespace OneMoreSpin.Services.ConcreteServices
                 $"Użytkownik {userId} odebrał nagrodę za {user.DailyStreak} dzień serii w wysokości {rewardAmount}. Nowe saldo: {user.Balance}"
             );
 
-            return (
-                true,
-                $"Przyznano nagrodę za {user.DailyStreak} dzień z rzędu w wysokości {rewardAmount}!",
-                rewardAmount
-            );
+            return new ClaimRewardResultVm
+            {
+                Success = true,
+                Amount = rewardAmount,
+                DailyStreak = user.DailyStreak,
+            };
         }
     }
 }
