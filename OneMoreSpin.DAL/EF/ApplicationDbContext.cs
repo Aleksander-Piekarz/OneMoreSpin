@@ -16,6 +16,7 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int>
     // --- NOWE ---
     public DbSet<Mission> Missions { get; set; }
     public DbSet<UserMission> UserMissions { get; set; }
+    public DbSet<UserPlayedGame> UserPlayedGames { get; set; }
     // --- KONIEC NOWEGO ---
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -84,6 +85,22 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int>
             .HasOne(um => um.Mission)
             .WithMany(m => m.UserMissions)
             .HasForeignKey(um => um.MissionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<UserPlayedGame>().HasKey(upg => new { upg.UserId, upg.GameId });
+
+        modelBuilder
+            .Entity<UserPlayedGame>()
+            .HasOne(upg => upg.User)
+            .WithMany()
+            .HasForeignKey(upg => upg.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder
+            .Entity<UserPlayedGame>()
+            .HasOne(upg => upg.Game)
+            .WithMany()
+            .HasForeignKey(upg => upg.GameId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

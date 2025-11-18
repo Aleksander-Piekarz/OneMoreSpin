@@ -1,7 +1,12 @@
 using System;
 using System.Threading.Tasks;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using OneMoreSpin.DAL.EF;
 using OneMoreSpin.Model.DataModels;
 using OneMoreSpin.Services.Interfaces;
+using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Services.ConcreteServices
 {
@@ -12,13 +17,19 @@ namespace OneMoreSpin.Services.ConcreteServices
         public bool IsWin => WinAmount > 0;
     }
 
-    public class SlotService : ISlotService
+    public class SlotService : BaseService, ISlotService
     {
         private static readonly string[] Symbols = { "🍒", "🍋", "💎", "7️⃣", "🔔" };
         private readonly Random _rng = new();
         private readonly IMissionService _missionService;
 
-        public SlotService(IMissionService missionService)
+        public SlotService(
+            IMissionService missionService,
+            ApplicationDbContext dbContext,
+            IMapper mapper,
+            ILogger<SlotService> logger
+        )
+            : base(dbContext, mapper, logger)
         {
             _missionService = missionService;
         }
@@ -57,6 +68,11 @@ namespace OneMoreSpin.Services.ConcreteServices
             // Update mission progress
             await _missionService.UpdateMakeSpinsProgressAsync(userId);
             await _missionService.UpdateWinInARowProgressAsync(userId, result.IsWin);
+            await _missionService.UpdateAllGamesPlayedProgressAsync(
+                userId,
+                DbContext.Games.FirstOrDefault(g => g.Name == "Slots")!.Id
+            );
+            await _missionService.UpdateWinTotalAmountProgressAsync( userId, result.WinAmount);
 
             return result;
         }

@@ -197,5 +197,120 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             return true;
         }
+
+        public async Task UpdateAllGamesPlayedProgressAsync(string userId, int gameId)
+        {
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return;
+            }
+
+            // 1. Sprawdź, czy użytkownik już zagrał w tę grę
+            var alreadyPlayed = await DbContext.UserPlayedGames.AnyAsync(upg =>
+                upg.UserId == parsedUserId && upg.GameId == gameId
+            );
+
+            if (alreadyPlayed)
+            {
+                return; // Użytkownik już grał w tę grę, nic nie rób
+            }
+
+            // 2. Zapisz, że użytkownik zagrał w tę grę
+            var newUserPlayedGame = new UserPlayedGame { UserId = parsedUserId, GameId = gameId };
+            DbContext.UserPlayedGames.Add(newUserPlayedGame);
+
+            // 3. Znajdź misję "PlayGames"
+            var mission = await DbContext.Missions.FirstOrDefaultAsync(m =>
+                m.MissionType == MissionType.PlayGames
+            );
+            if (mission == null)
+            {
+                return; // Misja nie istnieje
+            }
+
+            // 4. Znajdź lub utwórz UserMission dla tej misji
+            var userMission = await DbContext
+                .UserMissions.Include(um => um.Mission)
+                .FirstOrDefaultAsync(um => um.UserId == parsedUserId && um.MissionId == mission.Id);
+
+            if (userMission == null)
+            {
+                userMission = new UserMission
+                {
+                    UserId = parsedUserId,
+                    MissionId = mission.Id,
+                    Mission = mission,
+                    CurrentProgress = 0,
+                    IsCompleted = false,
+                    IsClaimed = false,
+                };
+                DbContext.UserMissions.Add(userMission);
+            }
+
+            if (userMission.IsCompleted)
+            {
+                return;
+            }
+
+            // 5. Zaktualizuj postęp
+            userMission.CurrentProgress++;
+
+            if (userMission.CurrentProgress >= userMission.Mission.RequiredAmount)
+            {
+                userMission.CurrentProgress = userMission.Mission.RequiredAmount;
+                userMission.IsCompleted = true;
+            }
+
+            await DbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateWinTotalAmountProgressAsync(string userId, decimal winAmount)
+        {
+            if (!int.TryParse(userId, out int parsedUserId) || winAmount <= 0)
+            {
+                return;
+            }
+
+            var mission = await DbContext.Missions.FirstOrDefaultAsync(m =>
+                m.MissionType == MissionType.WinTotalAmount
+            );
+            if (mission == null)
+            {
+                return;
+            }
+
+            var userMission = await DbContext
+                .UserMissions.Include(um => um.Mission)
+                .FirstOrDefaultAsync(um => um.UserId == parsedUserId && um.MissionId == mission.Id);
+
+            if (userMission == null)
+            {
+                userMission = new UserMission
+                {
+                    UserId = parsedUserId,
+                    MissionId = mission.Id,
+                    Mission = mission,
+                    CurrentProgress = 0,
+                    IsCompleted = false,
+                    IsClaimed = false,
+                };
+                DbContext.UserMissions.Add(userMission);
+            }
+
+            if (userMission.IsCompleted)
+            {
+                return;
+            }
+
+            userMission.CurrentProgress += winAmount;
+
+            if (userMission.CurrentProgress >= userMission.Mission.RequiredAmount)
+            {
+                userMission.CurrentProgress = userMission.Mission.RequiredAmount;
+                userMission.IsCompleted = true;
+            }
+
+            await DbContext.SaveChangesAsync();
+        }
     }
 }
