@@ -3,10 +3,9 @@ namespace OneMoreSpin.Model.DataModels;
 public class UserScore
 {
     public int Id { get; set; }
-    public int Outcome { get; set; }
     public DateTime DateOfGame { get; set; } = DateTime.Now;
     public decimal Stake { get; set; }
-    public decimal Score { get; set; }
+    public string Score { get; set; }
     public decimal MoneyWon { get; set; }
 
     //Navigation properties

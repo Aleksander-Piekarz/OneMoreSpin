@@ -1,10 +1,12 @@
 using System.Threading.Tasks;
 using OneMoreSpin.Services.ConcreteServices;
+using OneMoreSpin.ViewModels.VM; // Użyj VM z Kroku 1
+using System.Threading.Tasks;
 
 namespace OneMoreSpin.Services.Interfaces
 {
     public interface ISlotService
     {
-        Task<SlotResult> Spin(decimal bet, string userId);
+        Task<SpinResultVm> SpinAsync(string userId, decimal bet);
     }
 }

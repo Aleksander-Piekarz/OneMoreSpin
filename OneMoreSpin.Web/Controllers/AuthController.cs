@@ -40,11 +40,11 @@ public class AuthController : ControllerBase
 
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-            new Claim("name", user.Name ?? ""),
-            new Claim("surname", user.Surname ?? ""),
-        };
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()), 
+        new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
+        new Claim("name", user.Name ?? ""),
+        new Claim("surname", user.Surname ?? "")
+    };
 
         var jwt = new JwtSecurityToken(
             issuer: issuer,
