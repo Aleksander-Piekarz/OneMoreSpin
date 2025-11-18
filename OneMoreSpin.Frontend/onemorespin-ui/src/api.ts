@@ -1,5 +1,19 @@
 export const API_BASE = import.meta.env.VITE_API_BASE as string;
 
+type PaymentHistoryItem = {
+    id: number;
+    amount: number;
+    createdAt: string;
+    transactionType: string;
+};
+type GameHistoryItemVm = {
+    gameName: string;
+    outcome: string;
+    dateOfGame: string; // Zwróć uwagę, że DateTime z C# staje się stringiem w JSON
+    stake: number;
+    moneyWon: number;
+};
+
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem("jwt");
   const headers: Record<string, string> = {
@@ -36,7 +50,7 @@ export const api = {
         method: "POST",
         body: JSON.stringify({
           ...payload,
-          // input type="date" w React zwraca "YYYY-MM-DD" — taki format akceptuje backend
+          
           dateOfBirth: payload.dateOfBirth
         }),
       });
@@ -68,6 +82,30 @@ export const api = {
       });
     }
   },
+payment: {
+    createCheckoutSession: (amount: number) => {
+      return request<{ url: string }>("/payment/create-checkout-session", {
+        method: "POST",
+        body: JSON.stringify({ amount }),
+      });
+    },
+
+    getHistory: () => {
+      return request<PaymentHistoryItem[]>("/profile/payments"); // Poprawiona ścieżka
+    },
+
+    createWithdrawal: (amount: number) => {
+      return request<{ newBalance: number }>("/payment/withdraw", {
+          method: "POST",
+          body: JSON.stringify({ amount }),
+      });
+    }
+  },
+  game: {
+        getHistory: () => {
+            return request<GameHistoryItemVm[]>("/profile/games"); // Poprawiona ścieżka
+        }
+    },
 
   slots: {
     spin(bet: number) {
@@ -76,6 +114,7 @@ export const api = {
         win: number;
         balance: number;
         isWin: boolean;
+        winDetails: { paylineIndex: number, count: number }[];
       }>("/Slots/spin", {
         method: "POST",
         body: JSON.stringify({ bet }),

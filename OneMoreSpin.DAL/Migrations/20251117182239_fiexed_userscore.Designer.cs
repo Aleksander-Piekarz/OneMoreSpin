@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OneMoreSpin.DAL.EF;
@@ -11,9 +12,11 @@ using OneMoreSpin.DAL.EF;
 namespace OneMoreSpin.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251117182239_fiexed_userscore")]
+    partial class fiexed_userscore
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -282,9 +285,6 @@ namespace OneMoreSpin.DAL.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("DailyStreak")
-                        .HasColumnType("integer");
-
                     b.Property<DateOnly>("DateOfBirth")
                         .HasColumnType("date");
 
@@ -300,9 +300,6 @@ namespace OneMoreSpin.DAL.Migrations
 
                     b.Property<bool>("IsVip")
                         .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("LastRewardClaimedDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("LobbyId")
                         .HasColumnType("integer");
@@ -379,9 +376,11 @@ namespace OneMoreSpin.DAL.Migrations
                     b.Property<decimal>("MoneyWon")
                         .HasColumnType("numeric");
 
-                    b.Property<string>("Score")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Outcome")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Score")
+                        .HasColumnType("numeric");
 
                     b.Property<decimal>("Stake")
                         .HasColumnType("numeric");

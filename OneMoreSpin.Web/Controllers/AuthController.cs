@@ -34,7 +34,7 @@ public class AuthController : ControllerBase
 
         var claims = new[]
         {
-        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()), // user id
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()), 
         new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
         new Claim("name", user.Name ?? ""),
         new Claim("surname", user.Surname ?? "")
