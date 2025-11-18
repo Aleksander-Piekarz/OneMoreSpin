@@ -25,10 +25,7 @@ namespace OneMoreSpin.Services.ConcreteServices
 
         public async Task<SlotResult> Spin(decimal bet, string userId)
         {
-            var result = new SlotResult
-            {
-                Grid = new string[3][]
-            };
+            var result = new SlotResult { Grid = new string[3][] };
 
             // Wypełnij 3x3
             for (int r = 0; r < 3; r++)
@@ -42,7 +39,10 @@ namespace OneMoreSpin.Services.ConcreteServices
             decimal win = 0;
             for (int r = 0; r < 3; r++)
             {
-                if (result.Grid[r][0] == result.Grid[r][1] && result.Grid[r][1] == result.Grid[r][2])
+                if (
+                    result.Grid[r][0] == result.Grid[r][1]
+                    && result.Grid[r][1] == result.Grid[r][2]
+                )
                     win += bet * 5;
             }
 
@@ -55,7 +55,8 @@ namespace OneMoreSpin.Services.ConcreteServices
             result.WinAmount = win;
 
             // Update mission progress
-            await _missionService.GetOrUpdateMissionProgressAsync(userId, MissionType.MakeSpins, 1);
+            await _missionService.UpdateMakeSpinsProgressAsync(userId);
+            await _missionService.UpdateWinInARowProgressAsync(userId, result.IsWin);
 
             return result;
         }

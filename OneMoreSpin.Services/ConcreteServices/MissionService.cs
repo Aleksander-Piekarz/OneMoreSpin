@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using OneMoreSpin.DAL.EF;
 using OneMoreSpin.Model.DataModels;
 using OneMoreSpin.Services.Interfaces;
+using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Services.ConcreteServices
 {
@@ -20,141 +21,170 @@ namespace OneMoreSpin.Services.ConcreteServices
         )
             : base(dbContext, mapper, logger) { }
 
-        public async Task<IEnumerable<UserMission>> GetOrUpdateMissionProgressAsync(
-            string userId,
-            MissionType? missionType = null,
-            decimal? valueToAdd = null
-        )
+        public async Task<IEnumerable<UserMissionVm>> GetUserMissionsAsync(string userId)
         {
             if (!int.TryParse(userId, out int parsedUserId))
             {
-                return new List<UserMission>();
+                return new List<UserMissionVm>();
             }
 
-            // If update parameters are provided, update the progress first.
-            if (missionType.HasValue && valueToAdd.HasValue)
-            {
-                var missionsToUpdate = await DbContext
-                    .Missions.Where(m => m.MissionType == missionType.Value)
-                    .ToListAsync();
-
-                foreach (var mission in missionsToUpdate)
-                {
-                    var userMission = await DbContext.UserMissions.FirstOrDefaultAsync(um =>
-                        um.UserId == parsedUserId && um.MissionId == mission.Id
-                    );
-
-                    if (userMission == null)
-                    {
-                        userMission = new UserMission
-                        {
-                            UserId = parsedUserId,
-                            MissionId = mission.Id,
-                            CurrentProgress = 0,
-                            IsCompleted = false,
-                            IsClaimed = false,
-                        };
-                        DbContext.UserMissions.Add(userMission);
-                    }
-
-                    if (userMission.IsCompleted)
-                    {
-                        continue;
-                    }
-
-                    userMission.CurrentProgress += valueToAdd.Value;
-
-                    if (userMission.CurrentProgress >= mission.RequiredAmount)
-                    {
-                        userMission.CurrentProgress = mission.RequiredAmount;
-                        userMission.IsCompleted = true;
-                    }
-                }
-
-                await DbContext.SaveChangesAsync();
-            }
-
-            // Always return the full, up-to-date list of all missions for the user.
+            // 1. Pobierz wszystkie możliwe misje
             var allMissions = await DbContext.Missions.ToListAsync();
+
+            // 2. Pobierz misje, które użytkownik już rozpoczął
             var userMissions = await DbContext
                 .UserMissions.Where(um => um.UserId == parsedUserId)
-                .Include(um => um.Mission)
+                .Include(um => um.Mission) // Dołącz dane z tabeli Mission
                 .ToListAsync();
 
-            var userMissionsDict = userMissions.ToDictionary(um => um.MissionId);
-            var result = new List<UserMission>();
+            // 3. Użyj AutoMappera do zmapowania rozpoczętych misji na ViewModel
+            var result = Mapper.Map<List<UserMissionVm>>(userMissions);
 
-            foreach (var mission in allMissions)
-            {
-                if (userMissionsDict.TryGetValue(mission.Id, out var userMission))
-                {
-                    result.Add(userMission);
-                }
-                else
-                {
-                    // If user has no progress on this mission, create a new transient entry to show it.
-                    result.Add(
-                        new UserMission
-                        {
-                            UserId = parsedUserId,
-                            MissionId = mission.Id,
-                            Mission = mission,
-                            CurrentProgress = 0,
-                            IsCompleted = false,
-                            IsClaimed = false,
-                        }
-                    );
-                }
-            }
+            // 4. Znajdź misje, których użytkownik jeszcze nie zaczął
+            var startedMissionIds = userMissions.Select(um => um.MissionId).ToHashSet();
+            var unstartedMissions = allMissions.Where(m => !startedMissionIds.Contains(m.Id));
+
+            // Zamiast pętli, użyj mapowania na całej kolekcji
+            result.AddRange(Mapper.Map<IEnumerable<UserMissionVm>>(unstartedMissions));
 
             return result;
         }
 
-        public async Task<(bool Success, string Message)> ClaimMissionRewardAsync(
-            string userId,
-            int missionId
-        )
+        public async Task UpdateMakeSpinsProgressAsync(string userId)
         {
             if (!int.TryParse(userId, out int parsedUserId))
             {
-                return (false, "Nieprawidłowy format ID użytkownika.");
+                return;
+            }
+
+            var mission = await DbContext.Missions.FirstOrDefaultAsync(m =>
+                m.MissionType == MissionType.MakeSpins
+            );
+            if (mission == null)
+            {
+                return;
             }
 
             var userMission = await DbContext
-                .UserMissions.Include(um => um.Mission) // We need Mission details for the reward amount
-                .FirstOrDefaultAsync(um => um.UserId == parsedUserId && um.MissionId == missionId);
+                .UserMissions.Include(um => um.Mission)
+                .FirstOrDefaultAsync(um => um.UserId == parsedUserId && um.MissionId == mission.Id);
 
             if (userMission == null)
             {
-                return (false, "Nie znaleziono postępu dla tej misji.");
+                userMission = new UserMission
+                {
+                    UserId = parsedUserId,
+                    MissionId = mission.Id,
+                    Mission = mission,
+                    CurrentProgress = 0,
+                    IsCompleted = false,
+                    IsClaimed = false,
+                };
+                DbContext.UserMissions.Add(userMission);
             }
 
-            if (!userMission.IsCompleted)
+            if (userMission.IsCompleted)
             {
-                return (false, "Misja nie została jeszcze ukończona.");
+                return;
             }
 
-            if (userMission.IsClaimed)
+            userMission.CurrentProgress += 1;
+
+            if (userMission.CurrentProgress >= userMission.Mission.RequiredAmount)
             {
-                return (false, "Nagroda za tę misję została już odebrana.");
+                userMission.CurrentProgress = userMission.Mission.RequiredAmount;
+                userMission.IsCompleted = true;
+            }
+
+            await DbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateWinInARowProgressAsync(string userId, bool isWin)
+        {
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return;
+            }
+
+            var mission = await DbContext.Missions.FirstOrDefaultAsync(m =>
+                m.MissionType == MissionType.WinInARow
+            );
+            if (mission == null)
+            {
+                return;
+            }
+
+            var userMission = await DbContext
+                .UserMissions.Include(um => um.Mission)
+                .FirstOrDefaultAsync(um => um.UserId == parsedUserId && um.MissionId == mission.Id);
+
+            if (userMission == null)
+            {
+                userMission = new UserMission
+                {
+                    UserId = parsedUserId,
+                    MissionId = mission.Id,
+                    Mission = mission,
+                    CurrentProgress = 0,
+                    IsCompleted = false,
+                    IsClaimed = false,
+                };
+                DbContext.UserMissions.Add(userMission);
+            }
+
+            if (userMission.IsCompleted)
+            {
+                return;
+            }
+
+            if (isWin)
+            {
+                userMission.CurrentProgress++;
+            }
+            else
+            {
+                userMission.CurrentProgress = 0;
+            }
+
+            if (userMission.CurrentProgress >= userMission.Mission.RequiredAmount)
+            {
+                userMission.CurrentProgress = userMission.Mission.RequiredAmount;
+                userMission.IsCompleted = true;
+            }
+
+            await DbContext.SaveChangesAsync();
+        }
+
+        public async Task<bool> ClaimMissionRewardAsync(string userId, int missionId)
+        {
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return false;
+            }
+
+            var userMission = await DbContext
+                .UserMissions.Include(um => um.Mission)
+                .FirstOrDefaultAsync(um => um.UserId == parsedUserId && um.MissionId == missionId);
+
+            if (userMission == null || !userMission.IsCompleted || userMission.IsClaimed)
+            {
+                return false;
             }
 
             var user = await DbContext.Users.FindAsync(parsedUserId);
             if (user == null)
             {
-                return (false, "Nie znaleziono użytkownika.");
+                return false;
             }
 
-            var rewardAmount = userMission.Mission.RewardAmount;
-
-            user.Balance += rewardAmount;
+            user.Balance += userMission.Mission.RewardAmount;
             userMission.IsClaimed = true;
 
             var payment = new Payment
             {
-                Amount = rewardAmount,
+                Amount = userMission.Mission.RewardAmount,
                 CreatedAt = DateTime.UtcNow,
-                TransactionType = TransactionType.Bonus, // Assuming 'Bonus' is for mission rewards
+                TransactionType = TransactionType.Bonus,
                 UserId = parsedUserId,
             };
 
@@ -162,10 +192,10 @@ namespace OneMoreSpin.Services.ConcreteServices
             await DbContext.SaveChangesAsync();
 
             Logger.LogInformation(
-                $"Użytkownik {userId} odebrał nagrodę {rewardAmount} za misję '{userMission.Mission.Name}'."
+                $"Użytkownik {userId} odebrał nagrodę {userMission.Mission.RewardAmount} za misję '{userMission.Mission.Name}'."
             );
 
-            return (true, $"Odebrano nagrodę w wysokości {rewardAmount}!");
+            return true;
         }
     }
 }

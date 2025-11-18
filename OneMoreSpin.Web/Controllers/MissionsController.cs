@@ -27,7 +27,7 @@ namespace OneMoreSpin.Web.Controllers
                 return Unauthorized();
             }
 
-            var missions = await _missionService.GetOrUpdateMissionProgressAsync(userId);
+            var missions = await _missionService.GetUserMissionsAsync(userId);
             return Ok(missions);
         }
 
@@ -40,14 +40,14 @@ namespace OneMoreSpin.Web.Controllers
                 return Unauthorized();
             }
 
-            var (success, message) = await _missionService.ClaimMissionRewardAsync(userId, missionId);
+            var success = await _missionService.ClaimMissionRewardAsync(userId, missionId);
 
             if (!success)
             {
-                return BadRequest(new { message });
+                return BadRequest(new { message = "Nie udało się odebrać nagrody." });
             }
 
-            return Ok(new { message });
+            return Ok(new { message = "Nagroda została odebrana!" });
         }
     }
 }
