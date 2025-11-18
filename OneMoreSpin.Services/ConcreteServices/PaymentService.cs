@@ -48,35 +48,107 @@ namespace OneMoreSpin.Services.ConcreteServices
                 throw new ArgumentException("Nieprawidłowy format ID użytkownika dla depozytu.", nameof(userId));
             }
 
-            
-            
-            
-           var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == parsedUserId); 
-            if (user == null)
+            // --- Początek transakcji ---
+            await using var transaction = await DbContext.Database.BeginTransactionAsync();
+
+            try
             {
-                throw new KeyNotFoundException($"Nie znaleziono użytkownika o ID: {parsedUserId}");
+                // Blokada wiersza użytkownika w celu uniknięcia race conditions
+                var user = await DbContext.Users
+                    .Where(u => u.Id == parsedUserId)
+                    .FirstOrDefaultAsync();
+
+                if (user == null)
+                {
+                    throw new KeyNotFoundException($"Nie znaleziono użytkownika o ID: {parsedUserId}");
+                }
+
+                // Aktualizacja salda
+                user.Balance += amount;
+                DbContext.Users.Update(user); // Jawne oznaczenie encji jako zmodyfikowanej
+
+                // Utworzenie rekordu płatności
+                var payment = new Payment
+                {
+                    Amount = amount,
+                    CreatedAt = DateTime.UtcNow,
+                    TransactionType = TransactionType.Deposit,
+                    UserId = user.Id
+                };
+
+                await DbContext.Payments.AddAsync(payment);
+                await DbContext.SaveChangesAsync();
+
+                // Zatwierdzenie transakcji
+                await transaction.CommitAsync();
+
+                Logger.LogInformation($"Użytkownik {userId} pomyślnie wpłacił {amount}. Nowe saldo: {user.Balance}");
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                // Wycofanie transakcji w przypadku błędu
+                await transaction.RollbackAsync();
+                Logger.LogError(ex, $"Błąd podczas tworzenia depozytu dla użytkownika {userId}. Transakcja wycofana.");
+                throw; // Rzuć wyjątek dalej, aby kontroler mógł go obsłużyć
+            }
+        }
+
+        public async Task<User> CreateWithdrawalAsync(string userId, decimal amount)
+        {
+            if (amount <= 0)
+            {
+                throw new ArgumentException("Kwota wypłaty musi być dodatnia.", nameof(amount));
+            }
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                throw new ArgumentException("Nieprawidłowy format ID użytkownika dla wypłaty.", nameof(userId));
             }
 
-            
-            
-            user.Balance += amount;
+            await using var transaction = await DbContext.Database.BeginTransactionAsync();
 
-            
-            var payment = new Payment
+            try
             {
-                Amount = amount,
-                CreatedAt = DateTime.UtcNow,
-                
-                TransactionType = TransactionType.Deposit, 
-                UserId = user.Id
-            };
+                var user = await DbContext.Users
+                    .FirstOrDefaultAsync(u => u.Id == parsedUserId);
 
-            await DbContext.Payments.AddAsync(payment);
-            await DbContext.SaveChangesAsync();
+                if (user == null)
+                {
+                    throw new KeyNotFoundException($"Nie znaleziono użytkownika o ID: {parsedUserId}");
+                }
 
-            Logger.LogInformation($"Użytkownik {userId} pomyślnie wpłacił {amount}. Nowe saldo: {user.Balance}");
+                if (user.Balance < amount)
+                {
+                    throw new InvalidOperationException("Niewystarczające środki na koncie.");
+                }
 
-            return user; 
+                user.Balance -= amount;
+                DbContext.Users.Update(user);
+
+                var payment = new Payment
+                {
+                    Amount = -amount, // Ujemna kwota dla wypłaty
+                    CreatedAt = DateTime.UtcNow,
+                    TransactionType = TransactionType.Withdrawal,
+                    UserId = user.Id
+                };
+
+                await DbContext.Payments.AddAsync(payment);
+                await DbContext.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                Logger.LogInformation($"Użytkownik {userId} pomyślnie wypłacił {amount}. Nowe saldo: {user.Balance}");
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                Logger.LogError(ex, $"Błąd podczas tworzenia wypłaty dla użytkownika {userId}. Transakcja wycofana.");
+                throw;
+            }
         }
     }
 }

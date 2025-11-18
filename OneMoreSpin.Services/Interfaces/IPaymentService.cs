@@ -10,5 +10,7 @@ namespace OneMoreSpin.Services.Interfaces
         Task<List<PaymentHistoryItemVm>> GetPaymentHistoryAsync(string userId);
 
         Task<User> CreateDepositAsync(string userId, decimal amount);
+
+        Task<User> CreateWithdrawalAsync(string userId, decimal amount);
     }
 }

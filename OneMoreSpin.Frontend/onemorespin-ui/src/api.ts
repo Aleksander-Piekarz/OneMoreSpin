@@ -6,6 +6,13 @@ type PaymentHistoryItem = {
     createdAt: string;
     transactionType: string;
 };
+type GameHistoryItemVm = {
+    gameName: string;
+    outcome: string;
+    dateOfGame: string; // Zwróć uwagę, że DateTime z C# staje się stringiem w JSON
+    stake: number;
+    moneyWon: number;
+};
 
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem("jwt");
@@ -77,16 +84,28 @@ export const api = {
   },
 payment: {
     createCheckoutSession: (amount: number) => {
-      return request<{ url: string }>("/api/payment/create-checkout-session", {
+      return request<{ url: string }>("/payment/create-checkout-session", {
         method: "POST",
         body: JSON.stringify({ amount }),
       });
     },
 
     getHistory: () => {
-      return request<PaymentHistoryItem[]>("/api/payment/history");
+      return request<PaymentHistoryItem[]>("/profile/payments"); // Poprawiona ścieżka
+    },
+
+    createWithdrawal: (amount: number) => {
+      return request<{ newBalance: number }>("/payment/withdraw", {
+          method: "POST",
+          body: JSON.stringify({ amount }),
+      });
     }
   },
+  game: {
+        getHistory: () => {
+            return request<GameHistoryItemVm[]>("/profile/games"); // Poprawiona ścieżka
+        }
+    },
 
   slots: {
     spin(bet: number) {
@@ -95,6 +114,7 @@ payment: {
         win: number;
         balance: number;
         isWin: boolean;
+        winDetails: { paylineIndex: number, count: number }[];
       }>("/Slots/spin", {
         method: "POST",
         body: JSON.stringify({ bet }),

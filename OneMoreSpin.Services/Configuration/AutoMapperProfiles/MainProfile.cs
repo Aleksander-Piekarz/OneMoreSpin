@@ -13,6 +13,8 @@ public class MainProfile : Profile
             .ForMember(d => d.TransactionType, o => o.MapFrom(s => s.TransactionType.ToString()));
         CreateMap<UserScore, GameHistoryItemVm>()
             .ForMember(d => d.GameName, o => o.MapFrom(s => s.Game.Name))
-            .ForMember(d => d.PlayedAt, o => o.MapFrom(s => System.DateTime.Now));
+            .ForMember(d => d.Outcome, o => o.MapFrom(s => s.Score))
+            .ForMember(d => d.Stake, o => o.MapFrom(s => s.Stake))
+            .ForMember(d => d.MoneyWon, o => o.MapFrom(s => s.MoneyWon));
     }
 }

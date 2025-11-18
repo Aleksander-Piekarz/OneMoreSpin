@@ -20,9 +20,11 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        DotNetEnv.Env.Load();
-        var builder = WebApplication.CreateBuilder(args);
-        StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
+        DotNetEnv.Env.Load(); // Ładowanie zmiennych
+        var builder = WebApplication.CreateBuilder(args); // Budowanie konfiguracji
+        builder.Configuration.AddEnvironmentVariables(); // Dodanie zmiennych środowiskowych do konfiguracji
+        StripeConfiguration.ApiKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY") 
+            ?? builder.Configuration["Stripe:SecretKey"]; // Użycie konfiguracji Stripe
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -115,8 +117,8 @@ public class Program
                 }
             );
         });
-        builder.Services.AddScoped<SlotService>();
-        builder.Services.AddScoped<GameService>();
+        builder.Services.AddScoped<ISlotService, SlotService>();
+        builder.Services.AddScoped<IGameService, GameService>();
         builder.Services.AddAutoMapper(typeof(MainProfile));
         builder.Services.AddScoped<IProfileService, ProfileService>();
         builder.Services.AddScoped<IPaymentService, PaymentService>();

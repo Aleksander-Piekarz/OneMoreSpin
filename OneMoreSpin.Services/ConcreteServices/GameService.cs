@@ -11,10 +11,10 @@ namespace OneMoreSpin.Services.ConcreteServices
     {
         public GameService(
             ApplicationDbContext dbContext,
-            IMapper mapper,
+            IMapper _mapper,
             ILogger<GameService> logger
         )
-            : base(dbContext, mapper, logger) { }
+            : base(dbContext, _mapper, logger) { }
 
         public async Task<List<GameHistoryItemVm>> GetGameHistoryAsync(string userId)
         {
@@ -29,14 +29,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                 .OrderByDescending(us => us.Id)
                 .ToListAsync();
 
-            return items
-                .Select(us => new GameHistoryItemVm
-                {
-                    GameName = us.Game.Name,
-                    Score = us.Score,
-                    PlayedAt = us.DateOfGame,
-                })
-                .ToList();
+           return Mapper.Map<List<GameHistoryItemVm>>(items);
         }
     }
 }

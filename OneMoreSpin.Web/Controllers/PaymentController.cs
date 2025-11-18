@@ -30,6 +30,11 @@ namespace OneMoreSpin.Web.Controllers
             public decimal Amount { get; set; }
         }
 
+        public class CreateWithdrawalRequest
+        {
+            public decimal Amount { get; set; }
+        }
+
         public PaymentController(
             IPaymentService paymentService,
             ILogger<PaymentController> logger,
@@ -39,7 +44,7 @@ namespace OneMoreSpin.Web.Controllers
             _logger = logger;
 
             
-            _webhookSecret = config["Stripe:WebhookSecret"]; 
+            _webhookSecret = Environment.GetEnvironmentVariable("STRIPE_WEBHOOK_SECRET") ?? config["Stripe:WebhookSecret"];
         }
 
         
@@ -73,8 +78,8 @@ namespace OneMoreSpin.Web.Controllers
                 },
                 Mode = "payment",
                 ClientReferenceId = userId, 
-                SuccessUrl = "http://localhost:5173/user-page?payment=success",
-                CancelUrl = "http://localhost:5173/user-page?payment=cancel",
+                SuccessUrl = "http://localhost:5173/profile?payment=success",
+                CancelUrl = "http://localhost:5173/profile?payment=cancel",
             };
 
             try
@@ -89,6 +94,43 @@ namespace OneMoreSpin.Web.Controllers
                 return BadRequest(new { message = e.Message });
             }
         }
+
+        [HttpPost("withdraw")]
+        public async Task<IActionResult> CreateWithdrawal([FromBody] CreateWithdrawalRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            if (request.Amount <= 0)
+            {
+                return BadRequest(new { message = "Kwota wypłaty musi być dodatnia." });
+            }
+
+            try
+            {
+                var updatedUser = await _paymentService.CreateWithdrawalAsync(userId, request.Amount);
+                return Ok(new { newBalance = updatedUser.Balance });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, $"Nieudana próba wypłaty przez użytkownika {userId} - niewystarczające środki.");
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogError(ex, $"Nieudana próba wypłaty - nie znaleziono użytkownika {userId}.");
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, $"Błąd podczas przetwarzania wypłaty dla użytkownika {userId}.");
+                return StatusCode(500, new { message = "Wystąpił wewnętrzny błąd serwera." });
+            }
+        }
+
         [HttpGet("history")]
         public async Task<IActionResult> GetPaymentHistory()
         {
