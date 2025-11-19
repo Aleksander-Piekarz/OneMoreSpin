@@ -14,6 +14,21 @@ type GameHistoryItemVm = {
     moneyWon: number;
 };
 
+export type ClaimDailyRewardResponse = {
+    success: boolean;
+    amount: number;
+    dailyStreak: number;
+};
+
+export type DailyRewardStatusResponse = {
+    canClaim: boolean;
+    currentStreak: number;
+    nextRewardStreak: number;
+    nextRewardAmount: number;
+    lastClaimedDate?: string;
+    timeUntilNextClaim?: number; // sekundy
+};
+
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem("jwt");
   const headers: Record<string, string> = {
@@ -106,6 +121,18 @@ payment: {
             return request<GameHistoryItemVm[]>("/profile/games"); // Poprawiona ścieżka
         }
     },
+
+  reward: {
+    claimDaily: () => {
+      return request<ClaimDailyRewardResponse>("/profile/claim-daily-reward", {
+        method: "POST",
+      });
+    },
+    
+    getStatus: () => {
+      return request<DailyRewardStatusResponse>("/profile/daily-reward-status");
+    }
+  },
 
   slots: {
     spin(bet: number) {

@@ -76,29 +76,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                         "Missions have either already been reset this week or there are no missions to reset."
                     );
                 }
-
-                // 2. Reset Daily Login Rewards
-                _logger.LogInformation("Resetting daily login rewards for all users.");
-                try
-                {
-                    var allUsers = dbContext.Users.ToList();
-                    if (allUsers.Any())
-                    {
-                        foreach (var user in allUsers)
-                        {
-                            user.LastRewardClaimedDate = null;
-                            user.DailyStreak = 0;
-                        }
-                        _logger.LogInformation("Queued daily reward reset for {Count} users.", allUsers.Count);
-                        changesMade = true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "An error occurred while queueing daily reward resets.");
-                }
-
-                // 3. Save all changes
+                // Save all changes
                 if (changesMade)
                 {
                     try
