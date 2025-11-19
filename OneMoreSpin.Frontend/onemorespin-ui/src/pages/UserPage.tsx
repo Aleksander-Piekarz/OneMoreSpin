@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api';
 import '../styles/UserPage.css';
 
+// Ikony
 const UserIcon = () => <span className="userpage-card-header-icon">👤</span>;
 const WalletIcon = () => <span className="userpage-card-header-icon">💰</span>;
 const HistoryIcon = () => <span className="userpage-card-header-icon">📜</span>;
 const SecurityIcon = () => <span className="userpage-card-header-icon">🔒</span>;
 
+// Typy
 type MeUser = {
     id: number;
     email: string;
@@ -17,30 +19,25 @@ type MeUser = {
     balance: number;
 };
 
-const transactionData = [
-    { id: 1, date: "20.10.2025, 14:30", type: "Wpłata", amount: "+100.00 PLN", balance: "1,250.00 PLN" },
-    { id: 2, date: "19.10.2025, 20:15", type: "Wygrana (Ruletka)", amount: "+50.00 PLN", balance: "1,150.00 PLN" },
-    { id: 3, date: "19.10.2025, 20:14", type: "Stawka (Ruletka)", amount: "-10.00 PLN", balance: "1,100.00 PLN" },
-    { id: 4, date: "18.10.2025, 12:00", type: "Bonus (Logowanie)", amount: "+10.00 PLN", balance: "1,110.00 PLN" },
-];
+type PaymentHistoryItem = {
+    id: number;
+    amount: number;
+    createdAt: string;
+    transactionType: string;
+};
 
-const gameData = [
-    { id: 1, date: "19.10.2025, 20:15", game: "Ruletka", result: "Trafiono numer 5", stake: "10.00 PLN", win: "+50.00 PLN" },
-    { id: 2, date: "19.10.2025, 18:30", game: "Blackjack", result: "Przegrana", stake: "25.00 PLN", win: "0.00 PLN" },
-    { id: 3, date: "18.10.2025, 21:00", game: "Slot Machine", result: "Jackpot", stake: "5.00 PLN", win: "+500.00 PLN" },
-];
-
-const loginData = [
-    { id: 1, date: "20.10.2025, 14:29", status: "Udane", ip: "123.45.67.89 (Ukryte)" },
-    { id: 2, date: "19.10.2025, 18:28", status: "Udane", ip: "123.45.67.89 (Ukryte)" },
-    { id: 3, date: "18.10.2025, 11:59", status: "Udane", ip: "123.45.67.89 (Ukryte)" },
-];
+type GameHistoryItemVm = {
+    gameName: string;
+    outcome: string;
+    dateOfGame: string;
+    stake: number;
+    moneyWon: number;
+};
 
 interface CardHeaderProps {
     icon: React.ReactNode;
     title: string;
 }
-
 const CardHeader = ({ icon, title }: CardHeaderProps) => (
     <div className="userpage-card-header">
         {icon}
@@ -50,10 +47,12 @@ const CardHeader = ({ icon, title }: CardHeaderProps) => (
 
 function UserProfile() {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams(); 
+    
     const [me, setMe] = useState<MeUser | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<'transakcje' | 'gry' | 'logowania'>('transakcje');
+    const [activeTab, setActiveTab] = useState<'transakcje' | 'gry'>('transakcje');
     const [toast, setToast] = useState<string>("");
 
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -62,11 +61,31 @@ function UserProfile() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [passwordSuccess, setPasswordSuccess] = useState('');
-    
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deletePassword, setDeletePassword] = useState('');
     const [deleteError, setDeleteError] = useState('');
+
+    const [showDepositModal, setShowDepositModal] = useState(false);
+    const [depositAmount, setDepositAmount] = useState(100);
+    const [depositError, setDepositError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
+    const [withdrawalAmount, setWithdrawalAmount] = useState(50);
+    const [withdrawalError, setWithdrawalError] = useState('');
+    const [isWithdrawing, setIsWithdrawing] = useState(false);
+
+    const [transactions, setTransactions] = useState<PaymentHistoryItem[]>([]);
+    const [historyLoading, setHistoryLoading] = useState(true);
+    const [historyError, setHistoryError] = useState<string | null>(null);
+
+    const [games, setGames] = useState<GameHistoryItemVm[]>([]);
+    const [gameHistoryLoading, setGameHistoryLoading] = useState(true);
+    const [gameHistoryError, setGameHistoryError] = useState<string | null>(null);
     
+    // --- EFEKTY ---
+
+    // 1. Pobieranie danych użytkownika
     useEffect(() => {
         const token = localStorage.getItem('jwt');
         if (!token) {
@@ -84,12 +103,66 @@ function UserProfile() {
             }
         })();
     }, [navigate]);
+
+    // 2. Obsługa powrotu ze Stripe
+    useEffect(() => {
+        const paymentStatus = searchParams.get('payment');
+
+        const handleStatus = async (status: string) => {
+            if (status === 'success') {
+                setToast('Płatność udana! Odświeżanie salda...');
+                try {
+                    const user = await api.auth.me();
+                    setMe(user as MeUser);
+                    setToast('Saldo zaktualizowane!');
+                } catch (e) {
+                    setToast('Płatność udana, ale nie udało się odświeżyć salda.');
+                } finally {
+                    setTimeout(() => setToast(""), 10000);
+                }
+            } else if (status === 'cancel') {
+                setToast('Płatność została anulowana.');
+                setTimeout(() => setToast(""), 10000);
+            }
+
+            const newSearchParams = new URLSearchParams(searchParams);
+            newSearchParams.delete('payment');
+            setSearchParams(newSearchParams, { replace: true });
+        };
+
+        if (paymentStatus) {
+            handleStatus(paymentStatus);
+        }
+        
+    }, [searchParams, setSearchParams]);
+
+    // 3. Pobieranie danych do zakładek
+    useEffect(() => {
+        if (activeTab === 'transakcje') {
+            setHistoryLoading(true);
+            setHistoryError(null);
+            api.payment.getHistory()
+                .then(data => setTransactions(data))
+                .catch(err => setHistoryError(err instanceof Error ? err.message : 'Nie udało się pobrać historii transakcji'))
+                .finally(() => setHistoryLoading(false));
+        }
+        
+        if (activeTab === 'gry') {
+            setGameHistoryLoading(true);
+            setGameHistoryError(null);
+            api.game.getHistory()
+                .then(data => setGames(data))
+                .catch(err => setGameHistoryError(err instanceof Error ? err.message : 'Nie udało się pobrać historii gier'))
+                .finally(() => setGameHistoryLoading(false));
+        }
+    }, [activeTab]);
+
     const displayName = useMemo(() => {
         if (!me) return '';
         const full = `${me.name ?? ''} ${me.surname ?? ''}`.trim();
-        if (full) return full;
-        return me.email?.split('@')[0] ?? 'User';
+        return (full || me.email?.split('@')[0]) ?? 'User';
     }, [me]);
+
     const balanceText = useMemo(() => {
         if (!me) return '—';
         try {
@@ -98,6 +171,7 @@ function UserProfile() {
             return `${me.balance.toFixed(2)} PLN`;
         }
     }, [me]);
+
     const vipText = me?.isVip ? 'VIP' : 'Standard';
     const statusText = 'Aktywne';
     
@@ -105,9 +179,11 @@ function UserProfile() {
         return <div className="userpage-container"><div>Nie udało się pobrać profilu: {error}</div></div>;
     }
     
+    // *** POPRAWKA: Wyświetlaj ekran ładowania, dopóki dane nie są gotowe ***
     if (loading || !me) {
-        return null;
+        return <div className="userpage-container"><div>Ładowanie...</div></div>;
     }
+
     return (
         <div className="userpage-container">
             <div className="animated-bg">
@@ -137,7 +213,7 @@ function UserProfile() {
                             </li>
                             <li className="userpage-list-item">
                                 <span className="userpage-label">Adres e-mail:</span>
-                                <span className="userpage-value">{me?.email}</span>
+                                <span className="userpage-value">{me.email}</span>
                             </li>
                             <li className="userpage-list-item">
                                 <span className="userpage-label">Status konta:</span>
@@ -155,8 +231,8 @@ function UserProfile() {
                         <div className="userpage-balance-label">Aktualne Saldo</div>
                         <div className="userpage-balance">{balanceText}</div>
                         <div className="userpage-balance-info">+100 Monet za jutrzejsze logowanie!</div>
-                        <button className="userpage-btn">WPŁAĆ</button>
-                        <button className="userpage-btn">WYPŁAĆ</button>
+                        <button className="userpage-btn" onClick={() => setShowDepositModal(true)}>WPŁAĆ</button>
+                        <button className="userpage-btn" onClick={() => setShowWithdrawalModal(true)}>WYPŁAĆ</button>
                     </div>
                     
                     <div className="userpage-card" style={{gridColumn: '1 / -1'}}>
@@ -174,12 +250,6 @@ function UserProfile() {
                             >
                                 GRY
                             </button>
-                            <button 
-                                className={`userpage-tab${activeTab==='logowania'?' active':''}`} 
-                                onClick={()=>setActiveTab('logowania')}
-                            >
-                                LOGOWANIA
-                            </button>
                         </div>
                         <div>
                             {activeTab==='transakcje' && (
@@ -189,18 +259,26 @@ function UserProfile() {
                                             <th>Data</th>
                                             <th>Typ</th>
                                             <th>Kwota</th>
-                                            <th>Saldo</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {transactionData.map(tx=>(
-                                            <tr key={tx.id}>
-                                                <td>{tx.date}</td>
-                                                <td>{tx.type}</td>
-                                                <td>{tx.amount}</td>
-                                                <td>{tx.balance}</td>
-                                            </tr>
-                                        ))}
+                                        {historyLoading ? (
+                                            <tr><td colSpan={3} style={{ textAlign: 'center' }}>Ładowanie...</td></tr>
+                                        ) : historyError ? (
+                                            <tr><td colSpan={3} style={{ textAlign: 'center', color: 'red' }}>{historyError}</td></tr>
+                                        ) : transactions.length === 0 ? (
+                                            <tr><td colSpan={3} style={{ textAlign: 'center' }}>Brak historii transakcji.</td></tr>
+                                        ) : (
+                                            transactions.map(tx => (
+                                                <tr key={tx.id}>
+                                                    <td>{new Date(tx.createdAt).toLocaleString('pl-PL')}</td>
+                                                    <td>{tx.transactionType}</td>
+                                                    <td style={{ color: tx.amount > 0 ? '#4caf50' : '#f44336' }}>
+                                                        {tx.amount > 0 ? '+' : ''}{tx.amount.toFixed(2)} PLN
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             )}
@@ -216,35 +294,25 @@ function UserProfile() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {gameData.map(game=>(
-                                            <tr key={game.id}>
-                                                <td>{game.date}</td>
-                                                <td>{game.game}</td>
-                                                <td>{game.result}</td>
-                                                <td>{game.stake}</td>
-                                                <td>{game.win}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            )}
-                            {activeTab==='logowania' && (
-                                <table className="userpage-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Data</th>
-                                            <th>Status</th>
-                                            <th>Adres IP</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {loginData.map(login=>(
-                                            <tr key={login.id}>
-                                                <td>{login.date}</td>
-                                                <td>{login.status}</td>
-                                                <td>{login.ip}</td>
-                                            </tr>
-                                        ))}
+                                        {gameHistoryLoading ? (
+                                            <tr><td colSpan={5} style={{ textAlign: 'center' }}>Ładowanie...</td></tr>
+                                        ) : gameHistoryError ? (
+                                            <tr><td colSpan={5} style={{ textAlign: 'center', color: 'red' }}>{gameHistoryError}</td></tr>
+                                        ) : games.length === 0 ? (
+                                            <tr><td colSpan={5} style={{ textAlign: 'center' }}>Brak historii gier.</td></tr>
+                                        ) : (
+                                            games.map((game, index) => (
+                                                <tr key={index}>
+                                                    <td>{new Date(game.dateOfGame).toLocaleString('pl-PL')}</td>
+                                                    <td>{game.gameName}</td>
+                                                    <td>{game.outcome}</td>
+                                                    <td>{game.stake.toFixed(2)} PLN</td>
+                                                    <td style={{ color: game.moneyWon > 0 ? '#4caf50' : 'inherit' }}>
+                                                        {game.moneyWon.toFixed(2)} PLN
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             )}
@@ -261,6 +329,136 @@ function UserProfile() {
                 </div>
             </div>
             
+            {showDepositModal && (
+                <div className="modal-overlay" onClick={() => !isSubmitting && setShowDepositModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="modal-title">Wpłać środki</h2>
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            setDepositError('');
+                            if (depositAmount < 5) {
+                                setDepositError('Minimalna kwota wpłaty to 5.00 PLN');
+                                return;
+                            }
+                            setIsSubmitting(true);
+                            try {
+                                const response = await api.payment.createCheckoutSession(depositAmount);
+                                if (response.url) {
+                                    window.location.href = response.url;
+                                } else {
+                                    setDepositError('Nie udało się rozpocząć płatności. Spróbuj ponownie.');
+                                }
+                            } catch (err) {
+                                setDepositError(err instanceof Error ? err.message : 'Wystąpił błąd serwera');
+                                setIsSubmitting(false);
+                            }
+                        }}>
+                            <div className="modal-form-group">
+                                <label htmlFor="depositAmount">Kwota wpłaty (PLN)</label>
+                                <input
+                                    type="number"
+                                    id="depositAmount"
+                                    value={depositAmount}
+                                    onChange={(e) => setDepositAmount(Number(e.target.value))}
+                                    placeholder="Wpisz kwotę"
+                                    min="5"
+                                    step="1"
+                                    disabled={isSubmitting}
+                                />
+                            </div>
+                            
+                            {depositError && (
+                                <div className="modal-error">{depositError}</div>
+                            )}
+                            
+                            <div className="modal-buttons">
+                                <button
+                                    type="button"
+                                    className="modal-btn-cancel"
+                                    onClick={() => setShowDepositModal(false)}
+                                    disabled={isSubmitting}
+                                >
+                                    Anuluj
+                                </button>
+                                <button type="submit" className="modal-btn-submit" disabled={isSubmitting}>
+                                    {isSubmitting ? 'Przetwarzanie...' : 'Przejdź do płatności'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showWithdrawalModal && (
+                <div className="modal-overlay" onClick={() => !isWithdrawing && setShowWithdrawalModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="modal-title">Wypłać środki</h2>
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            setWithdrawalError('');
+                            if (withdrawalAmount <= 0) {
+                                setWithdrawalError('Kwota wypłaty musi być większa od zera.');
+                                return;
+                            }
+                            if (me && withdrawalAmount > me.balance) {
+                                setWithdrawalError('Nie masz wystarczających środków na koncie.');
+                                return;
+                            }
+                            setIsWithdrawing(true);
+                            try {
+                                const response = await api.payment.createWithdrawal(withdrawalAmount);
+                                setMe(prev => prev ? { ...prev, balance: response.newBalance } : null);
+                                setToast(`Wypłacono ${withdrawalAmount.toFixed(2)} PLN. Saldo zaktualizowane!`);
+                                // Odśwież historię transakcji
+                                api.payment.getHistory().then(setTransactions);
+                                setTimeout(() => {
+                                    setShowWithdrawalModal(false);
+                                    setIsWithdrawing(false);
+                                    setWithdrawalAmount(50);
+                                    setToast('');
+                                }, 3000);
+                            } catch (err) {
+                                setWithdrawalError(err instanceof Error ? err.message : 'Wystąpił błąd serwera');
+                                setIsWithdrawing(false);
+                            }
+                        }}>
+                            <div className="modal-form-group">
+                                <label htmlFor="withdrawalAmount">Kwota wypłaty (PLN)</label>
+                                <input
+                                    type="number"
+                                    id="withdrawalAmount"
+                                    value={withdrawalAmount}
+                                    onChange={(e) => setWithdrawalAmount(Number(e.target.value))}
+                                    placeholder="Wpisz kwotę"
+                                    min="1"
+                                    step="1"
+                                    max={me?.balance ?? 0}
+                                    disabled={isWithdrawing}
+                                />
+                            </div>
+                            
+                            {withdrawalError && (
+                                <div className="modal-error">{withdrawalError}</div>
+                            )}
+                            
+                            <div className="modal-buttons">
+                                <button
+                                    type="button"
+                                    className="modal-btn-cancel"
+                                    onClick={() => setShowWithdrawalModal(false)}
+                                    disabled={isWithdrawing}
+                                >
+                                    Anuluj
+                                </button>
+                                <button type="submit" className="modal-btn-submit" disabled={isWithdrawing}>
+                                    {isWithdrawing ? 'Przetwarzanie...' : 'Wypłać'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+            
             {showPasswordModal && (
                 <div className="modal-overlay" onClick={() => setShowPasswordModal(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -269,33 +467,22 @@ function UserProfile() {
                             e.preventDefault();
                             setPasswordError('');
                             setPasswordSuccess('');
-                            
                             if (!currentPassword || !newPassword || !confirmPassword) {
-                                setPasswordError('Wszystkie pola są wymagane');
-                                return;
+                                setPasswordError('Wszystkie pola są wymagane'); return;
                             }
                             if (newPassword.length < 6) {
-                                setPasswordError('Nowe hasło musi mieć co najmniej 6 znaków');
-                                return;
+                                setPasswordError('Nowe hasło musi mieć co najmniej 6 znaków'); return;
                             }
                             if (newPassword !== confirmPassword) {
-                                setPasswordError('Nowe hasła nie są zgodne');
-                                return;
+                                setPasswordError('Nowe hasła nie są zgodne'); return;
                             }
-                            
                             try {
-                                await api.users.changePassword({
-                                    currentPassword,
-                                    newPassword
-                                });
+                                await api.users.changePassword({ currentPassword, newPassword });
                                 setPasswordSuccess('Hasło zostało zmienione pomyślnie');
                                 setTimeout(() => {
                                     setShowPasswordModal(false);
-                                    setCurrentPassword('');
-                                    setNewPassword('');
-                                    setConfirmPassword('');
-                                    setPasswordError('');
-                                    setPasswordSuccess('');
+                                    setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
+                                    setPasswordError(''); setPasswordSuccess('');
                                     setToast('Hasło zostało zmienione');
                                     setTimeout(() => setToast(""), 4000);
                                 }, 2000);
@@ -306,9 +493,7 @@ function UserProfile() {
                             <div className="modal-form-group">
                                 <label htmlFor="currentPassword">Aktualne hasło</label>
                                 <input
-                                    type="password"
-                                    id="currentPassword"
-                                    value={currentPassword}
+                                    type="password" id="currentPassword" value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
                                     placeholder="Wpisz aktualne hasło"
                                 />
@@ -316,9 +501,7 @@ function UserProfile() {
                             <div className="modal-form-group">
                                 <label htmlFor="newPassword">Nowe hasło</label>
                                 <input
-                                    type="password"
-                                    id="newPassword"
-                                    value={newPassword}
+                                    type="password" id="newPassword" value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     placeholder="Wpisz nowe hasło (min. 6 znaków)"
                                 />
@@ -326,32 +509,19 @@ function UserProfile() {
                             <div className="modal-form-group">
                                 <label htmlFor="confirmPassword">Potwierdź nowe hasło</label>
                                 <input
-                                    type="password"
-                                    id="confirmPassword"
-                                    value={confirmPassword}
+                                    type="password" id="confirmPassword" value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     placeholder="Potwierdź nowe hasło"
                                 />
                             </div>
-                            
-                            {passwordError && (
-                                <div className="modal-error">{passwordError}</div>
-                            )}
-                            {passwordSuccess && (
-                                <div className="modal-success">{passwordSuccess}</div>
-                            )}
-                            
+                            {passwordError && (<div className="modal-error">{passwordError}</div>)}
+                            {passwordSuccess && (<div className="modal-success">{passwordSuccess}</div>)}
                             <div className="modal-buttons">
-                                <button
-                                    type="button"
-                                    className="modal-btn-cancel"
+                                <button type="button" className="modal-btn-cancel"
                                     onClick={() => {
                                         setShowPasswordModal(false);
-                                        setCurrentPassword('');
-                                        setNewPassword('');
-                                        setConfirmPassword('');
-                                        setPasswordError('');
-                                        setPasswordSuccess('');
+                                        setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
+                                        setPasswordError(''); setPasswordSuccess('');
                                     }}
                                 >
                                     Anuluj
@@ -376,12 +546,9 @@ function UserProfile() {
                         <form onSubmit={async (e) => {
                             e.preventDefault();
                             setDeleteError('');
-                            
                             if (!deletePassword) {
-                                setDeleteError('Wpisz hasło aby potwierdzić');
-                                return;
+                                setDeleteError('Wpisz hasło aby potwierdzić'); return;
                             }
-                            
                             try {
                                 await api.users.deleteAccount({ password: deletePassword });
                                 localStorage.setItem('flash', 'Konto zostało pomyślnie usunięte');
@@ -406,26 +573,17 @@ function UserProfile() {
                                     Czy na pewno chcesz usunąć swoje konto?
                                 </p>
                             </div>
-                            
                             <div className="modal-form-group">
                                 <label htmlFor="deletePassword">Wpisz swoje hasło aby potwierdzić</label>
                                 <input
-                                    type="password"
-                                    id="deletePassword"
-                                    value={deletePassword}
+                                    type="password" id="deletePassword" value={deletePassword}
                                     onChange={(e) => setDeletePassword(e.target.value)}
                                     placeholder="Twoje hasło"
                                 />
                             </div>
-                            
-                            {deleteError && (
-                                <div className="modal-error">{deleteError}</div>
-                            )}
-                            
+                            {deleteError && (<div className="modal-error">{deleteError}</div>)}
                             <div className="modal-buttons">
-                                <button
-                                    type="button"
-                                    className="modal-btn-cancel"
+                                <button type="button" className="modal-btn-cancel"
                                     onClick={() => {
                                         setShowDeleteModal(false);
                                         setDeletePassword('');
@@ -434,10 +592,7 @@ function UserProfile() {
                                 >
                                     Nie, zachowaj konto
                                 </button>
-                                <button
-                                    type="submit"
-                                    className="modal-btn-delete"
-                                >
+                                <button type="submit" className="modal-btn-delete">
                                     Tak, usuń konto
                                 </button>
                             </div>
@@ -445,6 +600,7 @@ function UserProfile() {
                     </div>
                 </div>
             )}
+
             {toast && (
                 <div className="toast-container">
                     <div className="toast success">{toast}</div>

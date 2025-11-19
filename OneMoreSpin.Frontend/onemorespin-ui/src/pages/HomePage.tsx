@@ -31,28 +31,32 @@ const HomePage: React.FC = () => {
       title: "SLOTS", 
       iconImage: slotMachineIcon,
       gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      particles: ["💎", "🍒", "⭐", "7️⃣", "💰", "🎰"]
+      particles: ["💎", "🍒", "⭐", "7️⃣", "💰", "🎰"],
+      onClick: () => navigate("/slots")
     },
     { 
       id: 2, 
       title: "RULETKA", 
       iconImage: rouletteIcon,
       gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-      particles: ["🔴", "⚫", "💰", "🎲", "💵", "🎯"]
+      particles: ["🔴", "⚫", "💰", "🎲", "💵", "🎯"],
+      onClick: () => console.log("Ruletka")
     },
     { 
       id: 3, 
       title: "BLACKJACK", 
       iconImage: blackjackIcon,
       gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-      particles: ["♠️", "♥️", "♦️", "♣️", "🃏", "🎴"]
+      particles: ["♠️", "♥️", "♦️", "♣️", "🃏", "🎴"],
+      onClick: () => console.log("Blackjack")
     },
     { 
       id: 4, 
       title: "POKER", 
       iconImage: cardsIcon,
       gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-      particles: ["🃏", "💵", "🏆", "♦️", "♠️", "💎"]
+      particles: ["🃏", "💵", "🏆", "♦️", "♠️", "💎"],
+      onClick: () => console.log("Poker")
     },
   ];
 
@@ -115,6 +119,7 @@ const HomePage: React.FC = () => {
               }}
               onMouseEnter={() => setHoveredTile(tile.id)}
               onMouseLeave={() => setHoveredTile(null)}
+              onClick={tile.onClick}
             >
               {hoveredTile === tile.id && (
                 <div className="particles-container">
