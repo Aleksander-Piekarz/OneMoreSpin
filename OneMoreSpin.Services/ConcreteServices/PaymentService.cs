@@ -16,11 +16,14 @@ namespace OneMoreSpin.Services.ConcreteServices
         private readonly IMissionService _missionService;
 
         public PaymentService(
+            IMissionService missionService,
             ApplicationDbContext dbContext,
             IMapper mapper,
             ILogger<PaymentService> logger
         )
-            : base(dbContext, mapper, logger) { }
+            : base(dbContext, mapper, logger) {
+            _missionService = missionService;
+        }
 
         public async Task<List<PaymentHistoryItemVm>> GetPaymentHistoryAsync(string userId)
         {
@@ -42,34 +45,24 @@ namespace OneMoreSpin.Services.ConcreteServices
         public async Task<User> CreateDepositAsync(string userId, decimal amount)
         {
             if (amount <= 0)
-            {
                 throw new ArgumentException("Kwota wpłaty musi być dodatnia.", nameof(amount));
-            }
             if (!int.TryParse(userId, out int parsedUserId))
-            {
                 throw new ArgumentException("Nieprawidłowy format ID użytkownika dla depozytu.", nameof(userId));
-            }
 
-            // --- Początek transakcji ---
+            User user;
             await using var transaction = await DbContext.Database.BeginTransactionAsync();
-
             try
             {
-                // Blokada wiersza użytkownika w celu uniknięcia race conditions
-                var user = await DbContext.Users
+                user = await DbContext.Users
                     .Where(u => u.Id == parsedUserId)
                     .FirstOrDefaultAsync();
 
                 if (user == null)
-                {
                     throw new KeyNotFoundException($"Nie znaleziono użytkownika o ID: {parsedUserId}");
-                }
 
-                // Aktualizacja salda
                 user.Balance += amount;
-                DbContext.Users.Update(user); // Jawne oznaczenie encji jako zmodyfikowanej
+                DbContext.Users.Update(user);
 
-                // Utworzenie rekordu płatności
                 var payment = new Payment
                 {
                     Amount = amount,
@@ -80,24 +73,21 @@ namespace OneMoreSpin.Services.ConcreteServices
 
                 await DbContext.Payments.AddAsync(payment);
                 await DbContext.SaveChangesAsync();
-
-                // Zatwierdzenie transakcji
                 await transaction.CommitAsync();
 
                 Logger.LogInformation($"Użytkownik {userId} pomyślnie wpłacił {amount}. Nowe saldo: {user.Balance}");
-
-                // Aktualizacja misji
-                await _missionService.UpdateMakeDepositsProgressAsync(userId);
-
-                return user;
             }
             catch (Exception ex)
             {
-                // Wycofanie transakcji w przypadku błędu
                 await transaction.RollbackAsync();
                 Logger.LogError(ex, $"Błąd podczas tworzenia depozytu dla użytkownika {userId}. Transakcja wycofana.");
-                throw; // Rzuć wyjątek dalej, aby kontroler mógł go obsłużyć
+                throw;
             }
+
+            // Call external service after transaction is complete
+            await _missionService.UpdateMakeDepositsProgressAsync(userId);
+
+            return user;
         }
 
         public async Task<User> CreateWithdrawalAsync(string userId, decimal amount)
@@ -145,7 +135,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                 await transaction.CommitAsync();
 
                 Logger.LogInformation($"Użytkownik {userId} pomyślnie wypłacił {amount}. Nowe saldo: {user.Balance}");
-
+                
                 return user;
             }
             catch (Exception ex)
