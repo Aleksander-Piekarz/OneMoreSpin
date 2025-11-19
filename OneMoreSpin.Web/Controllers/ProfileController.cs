@@ -73,16 +73,51 @@ public class ProfileController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
         {
-            return Unauthorized("Użytkownik nie jest zalogowany.");
+            return Unauthorized(new { message = "Użytkownik nie jest zalogowany." });
         }
 
         var result = await _rewardService.ClaimDailyRewardAsync(userId);
 
         if (!result.Success)
         {
-            return BadRequest(new { message = "Nie można jeszcze odebrać nagrody." });
+            // Zwróć informacje o tym, kiedy będzie dostępna następna nagroda
+            var response = new
+            {
+                message = "Nie można jeszcze odebrać nagrody.",
+                dailyStreak = result.DailyStreak,
+                nextClaimAvailableIn = result.NextClaimAvailableIn?.TotalSeconds
+            };
+            return BadRequest(response);
         }
 
-        return Ok(new { Amount = result.Amount });
+        // Zwróć pełne informacje o odebranej nagrodzie
+        return Ok(new
+        {
+            success = true,
+            amount = result.Amount,
+            dailyStreak = result.DailyStreak
+        });
+    }
+
+    [HttpGet("daily-reward-status")]
+    public async Task<IActionResult> GetDailyRewardStatus()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(new { message = "Użytkownik nie jest zalogowany." });
+        }
+
+        var status = await _rewardService.GetDailyRewardStatusAsync(userId);
+        
+        return Ok(new
+        {
+            canClaim = status.CanClaim,
+            currentStreak = status.CurrentStreak,
+            nextRewardStreak = status.NextRewardStreak,
+            nextRewardAmount = status.NextRewardAmount,
+            lastClaimedDate = status.LastClaimedDate,
+            timeUntilNextClaim = status.TimeUntilNextClaim?.TotalSeconds
+        });
     }
 }
