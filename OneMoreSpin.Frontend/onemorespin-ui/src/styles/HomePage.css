@@ -101,6 +101,16 @@
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
 }
 
+.header-spacer {
+  width: 125px;
+}
+
+.header-right-icons {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
 .user-icon-btn {
   width: 55px;
   height: 55px;

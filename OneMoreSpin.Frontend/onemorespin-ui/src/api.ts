@@ -1,24 +1,24 @@
 export const API_BASE = import.meta.env.VITE_API_BASE as string;
 
 type PaymentHistoryItem = {
-    id: number;
-    amount: number;
-    createdAt: string;
-    transactionType: string;
+  id: number;
+  amount: number;
+  createdAt: string;
+  transactionType: string;
 };
 type GameHistoryItemVm = {
-    gameName: string;
-    outcome: string;
-    dateOfGame: string; // Zwróć uwagę, że DateTime z C# staje się stringiem w JSON
-    stake: number;
-    moneyWon: number;
+  gameName: string;
+  outcome: string;
+  dateOfGame: string;
+  stake: number;
+  moneyWon: number;
 };
 
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem("jwt");
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...(opts.headers as Record<string, string> ?? {}),
+    ...((opts.headers as Record<string, string>) ?? {}),
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -29,29 +29,37 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
     try {
       const obj = JSON.parse(text);
       if (obj) {
-        if (typeof obj.error === 'string') message = obj.error;
-        else if (Array.isArray(obj.errors)) message = obj.errors.join(', ');
-        else if (typeof obj.message === 'string') message = obj.message;
+        if (typeof obj.error === "string") message = obj.error;
+        else if (Array.isArray(obj.errors)) message = obj.errors.join(", ");
+        else if (typeof obj.message === "string") message = obj.message;
       }
     } catch {
       if (text) message = text;
     }
     throw new Error(message || res.statusText);
   }
-  try { return JSON.parse(text) as T; } catch { return {} as T; }
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return {} as T;
+  }
 }
 
 export const api = {
   auth: {
     register(payload: {
-      email: string; password: string; name: string; surname: string; dateOfBirth: string;
+      email: string;
+      password: string;
+      name: string;
+      surname: string;
+      dateOfBirth: string;
     }) {
       return request<{ message: string }>("/auth/register", {
         method: "POST",
         body: JSON.stringify({
           ...payload,
-          
-          dateOfBirth: payload.dateOfBirth
+
+          dateOfBirth: payload.dateOfBirth,
         }),
       });
     },
@@ -64,9 +72,9 @@ export const api = {
     },
     me() {
       return request("/users/me");
-    }
+    },
   },
-  
+
   users: {
     changePassword(payload: { currentPassword: string; newPassword: string }) {
       return request<{ message: string }>("/users/change-password", {
@@ -74,15 +82,15 @@ export const api = {
         body: JSON.stringify(payload),
       });
     },
-    
+
     deleteAccount(payload: { password: string }) {
       return request<{ message: string }>("/users/delete-account", {
         method: "DELETE",
         body: JSON.stringify(payload),
       });
-    }
+    },
   },
-payment: {
+  payment: {
     createCheckoutSession: (amount: number) => {
       return request<{ url: string }>("/payment/create-checkout-session", {
         method: "POST",
@@ -91,21 +99,21 @@ payment: {
     },
 
     getHistory: () => {
-      return request<PaymentHistoryItem[]>("/profile/payments"); // Poprawiona ścieżka
+      return request<PaymentHistoryItem[]>("/profile/payments");
     },
 
     createWithdrawal: (amount: number) => {
       return request<{ newBalance: number }>("/payment/withdraw", {
-          method: "POST",
-          body: JSON.stringify({ amount }),
+        method: "POST",
+        body: JSON.stringify({ amount }),
       });
-    }
+    },
   },
   game: {
-        getHistory: () => {
-            return request<GameHistoryItemVm[]>("/profile/games"); // Poprawiona ścieżka
-        }
+    getHistory: () => {
+      return request<GameHistoryItemVm[]>("/profile/games");
     },
+  },
 
   slots: {
     spin(bet: number) {
@@ -114,11 +122,18 @@ payment: {
         win: number;
         balance: number;
         isWin: boolean;
-        winDetails: { paylineIndex: number, count: number }[];
+        winDetails: {
+          paylineIndex: number;
+          count: number;
+          multiplier: number;
+          PaylineIndex: number;
+          Count: number;
+          Multiplier: number;
+        }[];
       }>("/Slots/spin", {
         method: "POST",
         body: JSON.stringify({ bet }),
       });
-    }
-  }
+    },
+  },
 };

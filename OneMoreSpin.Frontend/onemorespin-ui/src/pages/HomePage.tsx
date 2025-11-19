@@ -19,6 +19,24 @@ const HomePage: React.FC = () => {
     }
   }, [navigate]);
 
+  useEffect(() => {
+    const preloadImages = () => {
+      const images = [
+        slotMachineIcon,
+        rouletteIcon,
+        blackjackIcon,
+        cardsIcon
+      ];
+      
+      images.forEach(src => {
+        const img = new Image();
+        img.src = src;
+      });
+    };
+    
+    preloadImages();
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem("jwt");
     localStorage.removeItem("user");
@@ -71,27 +89,31 @@ const HomePage: React.FC = () => {
       </div>
 
       <header className="home-header">
-        <button className="user-icon-btn" onClick={() => navigate('/profile')}> 
-          <div className="icon-wrapper">
-            <i className="fas fa-user"></i>
-            <div className="icon-glow"></div>
-          </div>
-        </button>
-
+        <div className="header-spacer"></div>
+        
         <h1 className="home-page-title">
           <span className="title-word">ONE</span>
           <span className="title-word">MORE</span>
           <span className="title-word">SPIN</span>
         </h1>
 
-        <button 
-          className={`hamburger-menu-btn ${isMenuOpen ? 'active' : ''}`}
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+        <div className="header-right-icons">
+          <button className="user-icon-btn" onClick={() => navigate('/profile')}> 
+            <div className="icon-wrapper">
+              <i className="fas fa-user"></i>
+              <div className="icon-glow"></div>
+            </div>
+          </button>
+
+          <button 
+            className={`hamburger-menu-btn ${isMenuOpen ? 'active' : ''}`}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
       </header>
 
       <div className={`menu-dropdown ${isMenuOpen ? 'open' : ''}`}>

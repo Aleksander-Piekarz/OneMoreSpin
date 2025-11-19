@@ -4,5 +4,6 @@ namespace OneMoreSpin.ViewModels.VM
     {
         public int PaylineIndex { get; set; }
         public int Count { get; set; }
+        public decimal Multiplier { get; set; }
     }
 }

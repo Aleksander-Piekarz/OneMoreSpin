@@ -18,14 +18,14 @@ namespace OneMoreSpin.Services.ConcreteServices
         private const int Rows = 3;
         private const int Cols = 5;
 
-        private static readonly string[] Symbols = { "J", "Q", "K", "A", "🔔", "💎", "7️⃣" };
+        private static readonly string[] Symbols = { "LEMON", "CHERRIES", "GRAPES", "BELL", "CLOVER", "SEVEN", "DIAMOND" };
         private readonly Random _rng = new();
         private readonly IMissionService _missionService;
 
         private static readonly Dictionary<string, Dictionary<int, decimal>> PayoutTable = new()
         {
             {
-                "J",
+                "LEMON",
                 new Dictionary<int, decimal>
                 {
                     { 3, 0.3m },
@@ -34,16 +34,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                 }
             },
             {
-                "Q",
-                new Dictionary<int, decimal>
-                {
-                    { 3, 0.4m },
-                    { 4, 0.8m },
-                    { 5, 1.6m },
-                }
-            },
-            {
-                "K",
+                "CHERRIES",
                 new Dictionary<int, decimal>
                 {
                     { 3, 0.5m },
@@ -52,7 +43,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                 }
             },
             {
-                "A",
+                "GRAPES",
                 new Dictionary<int, decimal>
                 {
                     { 3, 0.6m },
@@ -61,7 +52,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                 }
             },
             {
-                "🔔",
+                "BELL",
                 new Dictionary<int, decimal>
                 {
                     { 3, 1.0m },
@@ -70,7 +61,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                 }
             },
             {
-                "💎",
+                "CLOVER",
                 new Dictionary<int, decimal>
                 {
                     { 3, 2.5m },
@@ -79,12 +70,21 @@ namespace OneMoreSpin.Services.ConcreteServices
                 }
             },
             {
-                "7️⃣",
+                "SEVEN",
                 new Dictionary<int, decimal>
                 {
                     { 3, 5.0m },
                     { 4, 25.0m },
                     { 5, 100.0m },
+                }
+            },
+            {
+                "DIAMOND",
+                new Dictionary<int, decimal>
+                {
+                    { 3, 10.0m },
+                    { 4, 50.0m },
+                    { 5, 200.0m },
                 }
             },
         };
@@ -154,7 +154,7 @@ namespace OneMoreSpin.Services.ConcreteServices
             var gameHistoryEntry = new UserScore
             {
                 UserId = parsedUserId,
-                GameId = 3, // TODO: Hardcoded ID, consider making it dynamic
+                GameId = 3,
                 Stake = bet,
                 MoneyWon = totalWin,
                 Score = totalWin > 0 ? "Wygrana" : "Przegrana",
@@ -215,7 +215,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                         {
                             totalWin += bet * multiplier;
                             winDetails.Add(
-                                new WinDetailVm { PaylineIndex = paylineIndex, Count = count }
+                                new WinDetailVm { PaylineIndex = paylineIndex, Count = count, Multiplier = multiplier }
                             );
                         }
                     }
