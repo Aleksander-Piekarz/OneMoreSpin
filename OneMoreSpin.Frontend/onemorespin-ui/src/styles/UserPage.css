@@ -492,10 +492,12 @@
     margin-bottom: 8px;
     letter-spacing: 1px;
     text-transform: uppercase;
+    text-align: center;
 }
 
 .modal-form-group input {
     width: 100%;
+    max-width: 300px;
     padding: 14px 16px;
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid rgba(255, 255, 255, 0.1);
@@ -504,6 +506,20 @@
     font-size: 16px;
     transition: all 0.3s ease;
     outline: none;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Hide number input spinner arrows */
+.modal-form-group input[type="number"]::-webkit-outer-spin-button,
+.modal-form-group input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.modal-form-group input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .modal-form-group input:focus {

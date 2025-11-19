@@ -230,7 +230,6 @@ function UserProfile() {
                         <CardHeader icon={<WalletIcon />} title="Mój Portfel" />
                         <div className="userpage-balance-label">Aktualne Saldo</div>
                         <div className="userpage-balance">{balanceText}</div>
-                        <div className="userpage-balance-info">+100 Monet za jutrzejsze logowanie!</div>
                         <button className="userpage-btn" onClick={() => setShowDepositModal(true)}>WPŁAĆ</button>
                         <button className="userpage-btn" onClick={() => setShowWithdrawalModal(true)}>WYPŁAĆ</button>
                     </div>
