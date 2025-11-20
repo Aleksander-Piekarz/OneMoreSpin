@@ -19,14 +19,6 @@ const DailyRewardWidget: React.FC<DailyRewardWidgetProps> = ({ user, onRewardCla
     const [errorMsg, setErrorMsg] = useState('');
     const [isExpanded, setIsExpanded] = useState(false);
 
-    const BASE_REWARD = 50;
-    const MAX_STREAK_DAYS = 7;
-
-    const calculateReward = (streak: number) => {
-        const validStreak = Math.max(1, Math.min(streak, MAX_STREAK_DAYS));
-        return BASE_REWARD + (BASE_REWARD * (validStreak - 1));
-    };
-
     const fetchStatus = async () => {
         try {
             const data = await api.reward.getStatus();
@@ -100,15 +92,16 @@ const DailyRewardWidget: React.FC<DailyRewardWidgetProps> = ({ user, onRewardCla
 
     const alreadyClaimed = !status.canClaim;
     const claimableStreak = status.nextRewardStreak;
-    const todayReward = calculateReward(claimableStreak);
+    const todayReward = status.nextRewardAmount;
     let tomorrowStreak: number;
     if (alreadyClaimed) {
         tomorrowStreak = claimableStreak;
     } else {
         tomorrowStreak = claimableStreak + 1;
-        if (tomorrowStreak > MAX_STREAK_DAYS) tomorrowStreak = 1;
+        if (tomorrowStreak > 7) tomorrowStreak = 1;
     }
-    const tomorrowReward = calculateReward(tomorrowStreak);
+    const baseReward = 50;
+    const tomorrowReward = baseReward + (baseReward * (tomorrowStreak - 1));
 
     return (
         <>
@@ -137,7 +130,8 @@ const DailyRewardWidget: React.FC<DailyRewardWidgetProps> = ({ user, onRewardCla
                     </div>
                     <div className="drw-days">
                         {[1,2,3,4,5,6,7].map(day => {
-                            const reward = calculateReward(day);
+                            const baseReward = 50;
+                            const reward = baseReward + (baseReward * (day - 1));
                             const isCompleted = day <= status.currentStreak && status.currentStreak > 0;
                             const isClaimable = day === claimableStreak;
                             return (
