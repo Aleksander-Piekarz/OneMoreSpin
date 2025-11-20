@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
+import { refreshMissions } from "../events";
 import "../styles/SlotsPage.css";
 
 import lemonImg from "../assets/img/slots/lemon.png";
@@ -222,6 +223,7 @@ const SlotsPage: React.FC = () => {
         setGrid(result.grid);
         setBalance(result.balance);
         setIsSpinning(false);
+        refreshMissions();
 
         if (result.isWin && result.winDetails?.length > 0) {
           playSound('win');
