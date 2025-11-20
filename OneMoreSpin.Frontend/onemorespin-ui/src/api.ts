@@ -1,3 +1,23 @@
+export type UserMissionVm = {
+  MissionId: number;
+  Name: string;
+  Description: string;
+  CurrentProgress: number;
+  RequiredAmount: number;
+  RewardAmount: number;
+  IsCompleted: boolean;
+  IsClaimed: boolean;
+};
+
+export type UserInfo = {
+  id: number;
+  email: string;
+  name: string;
+  surname: string;
+  isVip: boolean;
+  balance: number;
+};
+
 export const API_BASE = import.meta.env.VITE_API_BASE as string;
 
 type PaymentHistoryItem = {
@@ -61,6 +81,14 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
+    missions: {
+      getUserMissions(): Promise<UserMissionVm[]> {
+        return request<UserMissionVm[]>("/Missions");
+      },
+      claimMissionReward(missionId: number): Promise<{ message: string }> {
+        return request<{ message: string }>(`/Missions/${missionId}/claim`, { method: "POST" });
+      },
+    },
   auth: {
     register(payload: {
       email: string;

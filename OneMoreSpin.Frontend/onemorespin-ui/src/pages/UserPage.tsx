@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api';
+import { refreshMissions } from '../events';
 import DailyRewardWidget from '../components/DailyRewardWidget';
+import MissionsWidget from '../components/MissionsWidget';
 import '../styles/UserPage.css';
 
 // Ikony
@@ -187,6 +189,7 @@ function UserProfile() {
             setMe(user as MeUser);
             // Odśwież historię transakcji
             api.payment.getHistory().then(setTransactions).catch(() => {});
+            refreshMissions();
         } catch {
             console.error('Nie udało się odświeżyć danych');
         }
@@ -211,7 +214,9 @@ function UserProfile() {
                 <div className="floating-shape" style={{background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', width: 300, height: 300, bottom: '10%', right: '15%', position: 'absolute', animationDuration: '27s', animationDelay: '8s'}}></div>
             </div>
             
+
             <DailyRewardWidget user={me} onRewardClaimed={handleRewardClaimed} />
+            <MissionsWidget onRewardClaimed={handleRewardClaimed} />
             
             <button className="userpage-back-btn" onClick={() => navigate('/home')}>
                 Powrót
@@ -451,6 +456,7 @@ function UserProfile() {
                                 setToast(`Wypłacono ${withdrawalAmount.toFixed(2)} PLN. Saldo zaktualizowane!`);
                                 // Odśwież historię transakcji
                                 api.payment.getHistory().then(setTransactions);
+                                refreshMissions();
                                 setTimeout(() => {
                                     setShowWithdrawalModal(false);
                                     setIsWithdrawing(false);
