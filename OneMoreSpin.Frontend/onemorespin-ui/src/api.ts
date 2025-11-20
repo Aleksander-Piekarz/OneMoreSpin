@@ -83,10 +83,10 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
 export const api = {
     missions: {
       getUserMissions(): Promise<UserMissionVm[]> {
-        return request<UserMissionVm[]>("/api/Missions");
+        return request<UserMissionVm[]>("/Missions");
       },
       claimMissionReward(missionId: number): Promise<{ message: string }> {
-        return request<{ message: string }>(`/api/Missions/${missionId}/claim`, { method: "POST" });
+        return request<{ message: string }>(`/Missions/${missionId}/claim`, { method: "POST" });
       },
     },
   auth: {
