@@ -23,15 +23,12 @@ namespace OneMoreSpin.Services.ConcreteServices
 
         public async Task<UserProfileVm?> GetUserProfileAsync(string userId)
         {
-
-                if (!int.TryParse(userId, out int parsedUserId))
+            if (!int.TryParse(userId, out int parsedUserId))
             {
                 throw new ArgumentException("Nieprawidłowy format ID użytkownika.", nameof(userId));
             }
 
-           var user = await DbContext
-                .Users
-                .FirstOrDefaultAsync(u => u.Id == parsedUserId); 
+            var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == parsedUserId);
 
             if (user == null)
             {
@@ -43,6 +40,5 @@ namespace OneMoreSpin.Services.ConcreteServices
             // return userProfileVm;
             return Mapper.Map<UserProfileVm>(user);
         }
-
     }
 }

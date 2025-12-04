@@ -1,0 +1,113 @@
+
+/* High-fidelity, luxury navy & gold poker theme
+   Default palette: Deep Navy (#041424) + Gold (#FFD166)
+   NOTE: if you want other hex codes, provide them and I'll adapt
+*/
+
+:root{
+  --primary-navy:#041424; /* deep navy */
+  --primary-navy-2:#081a2a;
+  --gold:#ffd166;
+  --muted-gold: rgba(255,209,102,0.18);
+  --accent:#7be4d6; /* subtle teal accent for micro details */
+  --card-width:140px;
+  --card-height:200px;
+  --gap:18px;
+  --card-radius:16px;
+  --glass: rgba(255,255,255,0.04);
+  --glass-blur:14px;
+}
+
+/* Page container */
+.poker-root{
+  min-height:100vh;
+  padding:36px;
+  background: radial-gradient(1200px 400px at 10% 10%, rgba(255,209,102,0.02), transparent 8%), linear-gradient(180deg, var(--primary-navy) 0%, var(--primary-navy-2) 100%);
+  color:#fff;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  position:relative;
+}
+
+/* Glowing decorative vignette */
+.poker-root::after{
+  content:''; position:absolute; inset:0; pointer-events:none; background: radial-gradient(600px 200px at 50% 20%, rgba(255,197,102,0.03), transparent 12%);
+}
+
+.header-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px }
+.poker-title{ font-size:28px; font-weight:800; letter-spacing:1px; color:var(--gold); text-shadow:0 6px 24px rgba(0,0,0,0.6) }
+
+.poker-top{ display:flex; gap:12px; align-items:center }
+.poker-balance{ display:flex; align-items:center; gap:10px; padding:10px 18px; border-radius:30px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.04); box-shadow: 0 8px 30px rgba(3,6,12,0.6)}
+.poker-balance strong{ color:var(--gold); font-weight:800 }
+
+.poker-controls{ display:flex; gap:12px; align-items:center }
+.poker-controls label{ font-weight:700 }
+.bet-input{ min-width:120px; padding:10px 12px; border-radius:10px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04); color:#fff }
+.btn-primary{ background: linear-gradient(90deg,var(--gold), #ffb24d); color:#041018; padding:10px 18px; border-radius:12px; border:none; font-weight:800; cursor:pointer; box-shadow:0 12px 40px rgba(255,177,77,0.06) }
+.btn-ghost{ background:transparent; color:rgba(255,255,255,0.85); border:1px solid rgba(255,255,255,0.04); padding:8px 12px; border-radius:10px }
+
+/* Layout: centered poker table */
+.table-wrap{ display:flex; justify-content:center; margin-top:18px }
+.poker-table{ width:920px; max-width:95vw; height:520px; border-radius:50%; background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.02), rgba(0,0,0,0.18) 60%), linear-gradient(180deg, rgba(5,20,36,0.95), rgba(3,10,18,0.95)); box-shadow: inset 0 8px 30px rgba(255,209,102,0.02), 0 40px 120px rgba(2,6,12,0.6); display:flex; align-items:center; justify-content:center; position:relative }
+.table-felt{ width:82%; height:66%; border-radius:40%; background: linear-gradient(180deg,#041f2a 0%, #052a30 100%); border:6px solid rgba(255,209,102,0.06); box-shadow: 0 18px 60px rgba(2,6,12,0.7); display:flex; align-items:center; justify-content:center; position:relative }
+
+.table-center{ position:absolute; top:48%; transform:translateY(-50%); display:flex; gap:12px; align-items:center; z-index:3 }
+.pot{ min-width:140px; padding:12px 16px; border-radius:12px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.04); text-align:center }
+.pot .label{ font-size:12px; color:rgba(255,255,255,0.6) }
+.pot .amount{ font-size:20px; font-weight:800; color:var(--gold) }
+
+/* Player & dealer sections are visually placed at bottom/top of the felt */
+.player-area{ position:absolute; bottom:28px; left:50%; transform:translateX(-50%); z-index:4; text-align:center }
+.dealer-area{ position:absolute; top:28px; left:50%; transform:translateX(-50%); z-index:3; text-align:center }
+
+.hand{ display:flex; gap:calc(var(--gap) + 6px); align-items:flex-end; justify-content:center }
+.card{ width:var(--card-width); height:var(--card-height); border-radius:var(--card-radius); padding:14px; text-align:center; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border:1px solid rgba(255,255,255,0.06); box-shadow: 0 30px 60px rgba(2,6,12,0.6), inset 0 1px 0 rgba(255,255,255,0.02); cursor:pointer; transition: transform .28s cubic-bezier(.2,.9,.25,1), box-shadow .28s, filter .28s }
+.card .rank{ font-size:22px; font-weight:900 }
+.card .suit{ font-size:36px; margin-top:8px }
+.card .card-id{ font-size:11px; color:rgba(255,255,255,0.6); margin-top:8px }
+
+/* Fan effect by nth-child transforms (player hand) */
+.player-area .hand .card:nth-child(1){ transform: rotate(-14deg) translateY(6px) }
+.player-area .hand .card:nth-child(2){ transform: rotate(-7deg) translateY(3px) }
+.player-area .hand .card:nth-child(3){ transform: rotate(0deg) }
+.player-area .hand .card:nth-child(4){ transform: rotate(7deg) translateY(3px) }
+.player-area .hand .card:nth-child(5){ transform: rotate(14deg) translateY(6px) }
+
+.card:hover{ transform: translateY(-20px) scale(1.02); z-index:6 }
+.card.selected{ border:2px solid var(--gold); transform: translateY(-36px) scale(1.04); box-shadow: 0 40px 90px rgba(0,0,0,0.8) }
+
+.dealer-card.face-down{ background: linear-gradient(90deg, rgba(0,0,0,0.18), rgba(0,0,0,0.06)); color:rgba(255,255,255,0.22); cursor:default }
+.dealer-card .face-back{ font-size:40px; line-height: var(--card-height); }
+
+.controls-bar{ position:absolute; right:40px; top:50%; transform:translateY(-50%); display:flex; flex-direction:column; gap:12px; z-index:5 }
+.controls-bar .btn{ margin-bottom:6px }
+
+.result-banner{ position:absolute; left:50%; transform:translateX(-50%); bottom:16px; padding:12px 20px; border-radius:14px; background: linear-gradient(90deg, rgba(255,209,102,0.06), rgba(255,255,255,0.02)); border:1px solid rgba(255,209,102,0.08); font-weight:800; color:#fff; display:flex; gap:12px; align-items:center; z-index:10 }
+.result-banner.win{ box-shadow: 0 30px 90px rgba(255,209,102,0.08) }
+.result-banner.lose{ background: linear-gradient(90deg, rgba(255,107,107,0.06), rgba(255,255,255,0.01)); border:1px solid rgba(255,107,107,0.06) }
+
+/* subtle animations */
+@keyframes card-deal{
+  from{ transform: translateY(-120px) scale(.8); opacity:0 }
+  to{ transform: translateY(0) scale(1); opacity:1 }
+}
+.card{ animation: card-deal .38s ease both }
+
+/* dealer reveal flip (3D-ish) */
+.dealer-card{ transform-origin:center center; transform: perspective(900px) rotateX(70deg); transition: transform .6s cubic-bezier(.2,.9,.25,1), filter .6s }
+.dealer-card.revealed{ transform: perspective(900px) rotateX(0deg); filter: none }
+
+
+/* responsive */
+@media (max-width:1100px){
+  .poker-table{ height:460px }
+  :root{ --card-width:120px; --card-height:170px }
+}
+@media (max-width:700px){
+  .poker-table{ width:95vw; height:62vw }
+  :root{ --card-width:84px; --card-height:120px; --gap:10px }
+  .player-area{ bottom:18px }
+  .dealer-area{ top:18px }
+  .controls-bar{ right:8px }
+}
+

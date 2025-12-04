@@ -23,47 +23,82 @@ namespace OneMoreSpin.Services.ConcreteServices
         // Tabela wypłat
         private static readonly Dictionary<string, Dictionary<int, decimal>> PayoutTable = new()
         {
-{
-        "LEMON",
-        new Dictionary<int, decimal> { { 3, 0.5m }, { 4, 2.0m }, { 5, 5.0m } }
-    },
-    {
-        "CHERRIES", 
-        new Dictionary<int, decimal> { { 3, 1.0m }, { 4, 3.0m }, { 5, 10.0m } }
-    },
-    {
-        "GRAPES",
-        new Dictionary<int, decimal> { { 3, 2.0m }, { 4, 6.0m }, { 5, 20.0m } }
-    },
-    {
-        "BELL",
-        new Dictionary<int, decimal> { { 3, 3.0m }, { 4, 10.0m }, { 5, 40.0m } }
-    },
-    {
-        "CLOVER",
-        new Dictionary<int, decimal> { { 3, 5.0m }, { 4, 15.0m }, { 5, 60.0m } }
-    },
-    {
-        "DIAMOND", 
-        new Dictionary<int, decimal> { { 3, 10.0m }, { 4, 30.0m }, { 5, 150.0m } }
-    },
-    {
-        "SEVEN",
-        new Dictionary<int, decimal> { { 3, 20.0m }, { 4, 100.0m }, { 5, 500.0m } }
-    }
+            {
+                "LEMON",
+                new Dictionary<int, decimal>
+                {
+                    { 3, 0.5m },
+                    { 4, 2.0m },
+                    { 5, 5.0m },
+                }
+            },
+            {
+                "CHERRIES",
+                new Dictionary<int, decimal>
+                {
+                    { 3, 1.0m },
+                    { 4, 3.0m },
+                    { 5, 10.0m },
+                }
+            },
+            {
+                "GRAPES",
+                new Dictionary<int, decimal>
+                {
+                    { 3, 2.0m },
+                    { 4, 6.0m },
+                    { 5, 20.0m },
+                }
+            },
+            {
+                "BELL",
+                new Dictionary<int, decimal>
+                {
+                    { 3, 3.0m },
+                    { 4, 10.0m },
+                    { 5, 40.0m },
+                }
+            },
+            {
+                "CLOVER",
+                new Dictionary<int, decimal>
+                {
+                    { 3, 5.0m },
+                    { 4, 15.0m },
+                    { 5, 60.0m },
+                }
+            },
+            {
+                "DIAMOND",
+                new Dictionary<int, decimal>
+                {
+                    { 3, 10.0m },
+                    { 4, 30.0m },
+                    { 5, 150.0m },
+                }
+            },
+            {
+                "SEVEN",
+                new Dictionary<int, decimal>
+                {
+                    { 3, 20.0m },
+                    { 4, 100.0m },
+                    { 5, 500.0m },
+                }
+            },
         };
 
         // --- WOREK Z WAGAMI (ODDS) ---
         private static readonly Dictionary<string, int> SymbolWeights = new()
         {
-        { "LEMON",    40 },
-        { "CHERRIES", 30 }, 
-        { "GRAPES",   25 },
-         { "BELL",     20 },
-        { "CLOVER",   15 }, 
-         { "DIAMOND",  10 },
-        { "SEVEN",    8 }   
-};
+            { "LEMON", 40 },
+            { "CHERRIES", 30 },
+            { "GRAPES", 25 },
+            { "BELL", 20 },
+            { "CLOVER", 15 },
+            { "DIAMOND", 10 },
+            { "SEVEN", 8 },
+        };
 
         // Linie wygrywające
         private static readonly List<List<(int row, int col)>> Paylines = new()
@@ -85,7 +120,8 @@ namespace OneMoreSpin.Services.ConcreteServices
             ApplicationDbContext dbContext,
             IMapper mapper,
             ILogger<SlotService> logger
-        ) : base(dbContext, mapper, logger)
+        )
+            : base(dbContext, mapper, logger)
         {
             _missionService = missionService;
         }
@@ -221,7 +257,12 @@ namespace OneMoreSpin.Services.ConcreteServices
                         {
                             totalWin += bet * multiplier;
                             winDetails.Add(
-                                new WinDetailVm { PaylineIndex = paylineIndex, Count = count, Multiplier = multiplier }
+                                new WinDetailVm
+                                {
+                                    PaylineIndex = paylineIndex,
+                                    Count = count,
+                                    Multiplier = multiplier,
+                                }
                             );
                         }
                     }

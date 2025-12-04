@@ -191,4 +191,21 @@ export const api = {
       });
     },
   },
+  poker: {
+    start(bet: number) {
+      return request<any>("/Poker/start", {
+        method: "POST",
+        body: JSON.stringify({ betAmount: bet }),
+      });
+    },
+    draw(sessionId: number, discardIndices: number[]) {
+      return request<any>(`/Poker/${sessionId}/draw`, {
+        method: "POST",
+        body: JSON.stringify({ discardIndices }),
+      });
+    },
+    getSession(sessionId: number) {
+      return request<any>(`/Poker/${sessionId}`);
+    }
+  },
 };
