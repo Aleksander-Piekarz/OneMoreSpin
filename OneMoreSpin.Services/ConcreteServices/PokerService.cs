@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using OneMoreSpin.DAL.EF;
 using OneMoreSpin.Model.DataModels;
 using OneMoreSpin.Services.Interfaces;
@@ -18,15 +19,19 @@ public class PokerService : BaseService, IPokerService
     private static readonly Random Rng = new();
     private static readonly ConcurrentDictionary<int, PokerGameSession> Sessions = new();
     private static int _nextId = 0;
+    private readonly IMissionService _missionService;
 
     public PokerService(
         ApplicationDbContext dbContext,
         IMapper mapper,
-        ILogger<PokerService> logger
+        ILogger<PokerService> logger,
+        IMissionService missionService
     )
-        : base(dbContext, mapper, logger) { }
-
-    public Task<PokerGameSessionVm> StartSessionAsync(string userId, decimal betAmount)
+        : base(dbContext, mapper, logger)
+    {
+        _missionService = missionService;
+    }
+    public async Task<PokerGameSessionVm> StartSessionAsync(string userId, decimal betAmount)
     {
         if (!int.TryParse(userId, out int parsedUserId))
             throw new ArgumentException("Nieprawidłowy format ID użytkownika");
@@ -40,7 +45,7 @@ public class PokerService : BaseService, IPokerService
 
         // Zabezpieczenie proste: odejmujemy zakład teraz
         user.Balance -= betAmount;
-        DbContext.SaveChanges();
+        await DbContext.SaveChangesAsync();
 
         var deck = CreateShuffledDeck();
 
@@ -67,11 +72,18 @@ public class PokerService : BaseService, IPokerService
 
         Sessions[session.Id] = session;
 
+        var pokerGame = await DbContext.Games.FirstOrDefaultAsync(g => g.Name == "Poker");
+        if (pokerGame != null)
+        {
+            await _missionService.UpdateAllGamesPlayedProgressAsync(userId, pokerGame.Id);
+        }
+        await DbContext.SaveChangesAsync();
         var vm = Mapper.Map<PokerGameSessionVm>(session);
-        return Task.FromResult(vm);
+        return vm;
     }
+    
 
-    public Task<PokerGameSessionVm> DrawAsync(int sessionId, IEnumerable<int> cardIndicesToDiscard)
+    public async Task<PokerGameSessionVm> DrawAsync(int sessionId, IEnumerable<int> cardIndicesToDiscard)
     {
         if (!Sessions.TryGetValue(sessionId, out var session))
             throw new KeyNotFoundException("Nie znaleziono sesji");
@@ -110,9 +122,15 @@ public class PokerService : BaseService, IPokerService
                 if (user != null)
                 {
                     user.Balance += session.WinAmount;
-                    DbContext.SaveChanges();
+                    await DbContext.SaveChangesAsync();
                 }
             }
+
+            await _missionService.UpdateWinTotalAmountProgressAsync(
+                session.UserId,
+                session.WinAmount
+            );
+            await _missionService.UpdateWinInARowProgressAsync(session.UserId, session.PlayerWon);
         }
         else if (compare < 0)
         {
@@ -135,16 +153,16 @@ public class PokerService : BaseService, IPokerService
         }
 
         var vm = Mapper.Map<PokerGameSessionVm>(session);
-        return Task.FromResult(vm);
+        return vm;
     }
 
-    public Task<PokerGameSessionVm?> GetSessionAsync(int sessionId)
+    public async Task<PokerGameSessionVm?> GetSessionAsync(int sessionId)
     {
         if (!Sessions.TryGetValue(sessionId, out var session))
-            return Task.FromResult<PokerGameSessionVm?>(null);
+            return null;
 
         var vm = Mapper.Map<PokerGameSessionVm>(session);
-        return Task.FromResult<PokerGameSessionVm?>(vm);
+        return vm;
     }
 
     private static List<Card> CreateShuffledDeck()

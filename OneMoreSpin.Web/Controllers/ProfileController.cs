@@ -1,9 +1,9 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OneMoreSpin.Model.DataModels;
 using OneMoreSpin.Services.Interfaces;
-using System.Security.Claims;
 
 namespace OneMoreSpin.Web.Controllers;
 
@@ -23,7 +23,8 @@ public class ProfileController : ControllerBase
         IPaymentService paymentService,
         IGameService gameService,
         IRewardService rewardService,
-        UserManager<User> userManager)
+        UserManager<User> userManager
+    )
     {
         _profileService = profileService;
         _paymentService = paymentService;
@@ -37,10 +38,12 @@ public class ProfileController : ControllerBase
     public async Task<IActionResult> GetProfile()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
 
         var profile = await _profileService.GetUserProfileAsync(userId);
-        if (profile == null) return NotFound();
+        if (profile == null)
+            return NotFound();
 
         return Ok(profile);
     }
@@ -50,7 +53,8 @@ public class ProfileController : ControllerBase
     public async Task<IActionResult> GetPaymentHistory()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
 
         var history = await _paymentService.GetPaymentHistoryAsync(userId);
         return Ok(history);
@@ -61,7 +65,8 @@ public class ProfileController : ControllerBase
     public async Task<IActionResult> GetGameHistory()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
 
         var games = await _gameService.GetGameHistoryAsync(userId);
         return Ok(games);
@@ -85,18 +90,20 @@ public class ProfileController : ControllerBase
             {
                 message = "Nie można jeszcze odebrać nagrody.",
                 dailyStreak = result.DailyStreak,
-                nextClaimAvailableIn = result.NextClaimAvailableIn?.TotalSeconds
+                nextClaimAvailableIn = result.NextClaimAvailableIn?.TotalSeconds,
             };
             return BadRequest(response);
         }
 
         // Zwróć pełne informacje o odebranej nagrodzie
-        return Ok(new
-        {
-            success = true,
-            amount = result.Amount,
-            dailyStreak = result.DailyStreak
-        });
+        return Ok(
+            new
+            {
+                success = true,
+                amount = result.Amount,
+                dailyStreak = result.DailyStreak,
+            }
+        );
     }
 
     [HttpGet("daily-reward-status")]
@@ -109,15 +116,17 @@ public class ProfileController : ControllerBase
         }
 
         var status = await _rewardService.GetDailyRewardStatusAsync(userId);
-        
-        return Ok(new
-        {
-            canClaim = status.CanClaim,
-            currentStreak = status.CurrentStreak,
-            nextRewardStreak = status.NextRewardStreak,
-            nextRewardAmount = status.NextRewardAmount,
-            lastClaimedDate = status.LastClaimedDate,
-            timeUntilNextClaim = status.TimeUntilNextClaim?.TotalSeconds
-        });
+
+        return Ok(
+            new
+            {
+                canClaim = status.CanClaim,
+                currentStreak = status.CurrentStreak,
+                nextRewardStreak = status.NextRewardStreak,
+                nextRewardAmount = status.NextRewardAmount,
+                lastClaimedDate = status.LastClaimedDate,
+                timeUntilNextClaim = status.TimeUntilNextClaim?.TotalSeconds,
+            }
+        );
     }
 }
