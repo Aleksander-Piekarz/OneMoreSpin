@@ -5,8 +5,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OneMoreSpin.DAL.EF;
 using OneMoreSpin.Model.DataModels;
 using OneMoreSpin.Services.Interfaces;
@@ -31,6 +31,7 @@ public class PokerService : BaseService, IPokerService
     {
         _missionService = missionService;
     }
+
     public async Task<PokerGameSessionVm> StartSessionAsync(string userId, decimal betAmount)
     {
         if (!int.TryParse(userId, out int parsedUserId))
@@ -81,9 +82,11 @@ public class PokerService : BaseService, IPokerService
         var vm = Mapper.Map<PokerGameSessionVm>(session);
         return vm;
     }
-    
 
-    public async Task<PokerGameSessionVm> DrawAsync(int sessionId, IEnumerable<int> cardIndicesToDiscard)
+    public async Task<PokerGameSessionVm> DrawAsync(
+        int sessionId,
+        IEnumerable<int> cardIndicesToDiscard
+    )
     {
         if (!Sessions.TryGetValue(sessionId, out var session))
             throw new KeyNotFoundException("Nie znaleziono sesji");
@@ -151,6 +154,17 @@ public class PokerService : BaseService, IPokerService
                 }
             }
         }
+        var gameHistoryEntry = new UserScore
+        {
+            UserId = int.TryParse(session.UserId, out var parsedUserId) ? parsedUserId : 0,
+            GameId = 4,
+            Stake = session.BetAmount,
+            MoneyWon = session.WinAmount,
+            Score = session.WinAmount > 0 ? "Wygrana" : "Przegrana",
+            DateOfGame = DateTime.UtcNow,
+        };
+        await DbContext.UserScores.AddAsync(gameHistoryEntry);
+        await DbContext.SaveChangesAsync();
 
         var vm = Mapper.Map<PokerGameSessionVm>(session);
         return vm;
