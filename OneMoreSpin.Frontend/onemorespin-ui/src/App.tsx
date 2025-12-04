@@ -4,6 +4,7 @@ import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import UserPage from "./pages/UserPage";
 import SlotsPage from "./pages/SlotsPage";
+import PokerGame from "./pages/PokerGame";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/home" element={<HomePage />} />
         <Route path="/profile" element={<UserPage />} />
         <Route path="/slots" element={<SlotsPage />} />
+        <Route path="/PokerGame" element={<PokerGame />} />
       </Routes>
     </BrowserRouter>
   );
