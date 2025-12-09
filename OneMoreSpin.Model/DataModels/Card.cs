@@ -3,11 +3,29 @@ using System;
 namespace OneMoreSpin.Model.DataModels
 {
     // Te enumy możesz zostawić w tym samym pliku lub przenieść do np. OneMoreSpin.Model/Enums
-    public enum Suit { Hearts, Diamonds, Clubs, Spades }
+    public enum Suit
+    {
+        Hearts,
+        Diamonds,
+        Clubs,
+        Spades,
+    }
+
     public enum Rank
     {
-        Two = 2, Three, Four, Five, Six, Seven, Eight, Nine, Ten,
-        Jack = 11, Queen = 12, King = 13, Ace = 14
+        Two = 2,
+        Three,
+        Four,
+        Five,
+        Six,
+        Seven,
+        Eight,
+        Nine,
+        Ten,
+        Jack = 11,
+        Queen = 12,
+        King = 13,
+        Ace = 14,
     }
 
     public class Card

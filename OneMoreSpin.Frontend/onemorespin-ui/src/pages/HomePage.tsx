@@ -76,6 +76,14 @@ const HomePage: React.FC = () => {
       particles: ["🃏", "💵", "🏆", "♦️", "♠️", "💎"],
       onClick: () => navigate("/poker")
     },
+    { 
+      id: 5, 
+      title: "SINGLE POKER", 
+      iconImage: cardsIcon,
+      gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+      particles: ["🃏", "💵", "🏆", "♦️", "♠️", "💎"],
+      onClick: () => navigate("/single-poker")
+    },
   ];
 
   return (

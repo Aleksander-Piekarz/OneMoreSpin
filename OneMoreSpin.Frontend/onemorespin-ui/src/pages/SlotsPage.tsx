@@ -234,6 +234,7 @@ const SlotsPage: React.FC = () => {
           const totalMultiplier = result.winDetails.reduce((sum: number, detail: any) => sum + (detail.Multiplier || detail.multiplier || 0), 0);
           setWinMultiplier(totalMultiplier);
           
+          // Pokaż overlay dłużej, bez migania
           setTimeout(() => {
             setShowWin(true);
             setShowConfetti(true);
@@ -242,7 +243,7 @@ const SlotsPage: React.FC = () => {
           
           setTimeout(() => {
             setIsFadingOut(true);
-          }, 1700);
+          }, 3200);
           
           setTimeout(() => {
             setShowWin(false);
@@ -250,7 +251,7 @@ const SlotsPage: React.FC = () => {
             setWinningLines([]);
             setIsFadingOut(false);
             setIsShowingWin(false);
-          }, 2000);
+          }, 3800);
         } else {
           playSound('lose');
         }

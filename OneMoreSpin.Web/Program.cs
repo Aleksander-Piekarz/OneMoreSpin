@@ -12,9 +12,9 @@ using OneMoreSpin.Model.DataModels;
 using OneMoreSpin.Services.ConcreteServices;
 using OneMoreSpin.Services.Configuration.AutoMapperProfiles;
 using OneMoreSpin.Services.Email;
+using OneMoreSpin.Services.Hubs;
 using OneMoreSpin.Services.Interfaces;
 using Stripe;
-using OneMoreSpin.Services.Hubs;
 
 namespace OneMoreSpin.Web;
 
@@ -25,8 +25,9 @@ public class Program
         DotNetEnv.Env.Load();
         var builder = WebApplication.CreateBuilder(args);
         builder.Configuration.AddEnvironmentVariables();
-        
-        StripeConfiguration.ApiKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY") 
+
+        StripeConfiguration.ApiKey =
+            Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY")
             ?? builder.Configuration["Stripe:SecretKey"];
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -36,7 +37,8 @@ public class Program
         });
 
         // --- Identity ---
-        builder.Services.AddIdentity<User, Role>(opt =>
+        builder
+            .Services.AddIdentity<User, Role>(opt =>
             {
                 opt.User.RequireUniqueEmail = true;
                 opt.SignIn.RequireConfirmedEmail = true;
@@ -55,7 +57,8 @@ public class Program
         var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "onemorespin.local";
         var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "onemorespin.local";
 
-        builder.Services.AddAuthentication(o =>
+        builder
+            .Services.AddAuthentication(o =>
             {
                 o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -64,8 +67,8 @@ public class Program
             .AddJwtBearer(options =>
             {
                 options.SaveToken = true;
-                options.RequireHttpsMetadata = false; 
-                
+                options.RequireHttpsMetadata = false;
+
                 // 2. Używamy tych zmiennych w walidacji!
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -73,10 +76,10 @@ public class Program
                     ValidateAudience = true, // Jeśli token generowany ma aud, to musi być true
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    
-                    ValidIssuer = jwtIssuer,       // <-- TU BYŁ BŁĄD (używamy zmiennej)
-                    ValidAudience = jwtAudience,   // <-- TU BYŁ BŁĄD (używamy zmiennej)
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)) // <-- TU TEŻ
+
+                    ValidIssuer = jwtIssuer, // <-- TU BYŁ BŁĄD (używamy zmiennej)
+                    ValidAudience = jwtAudience, // <-- TU BYŁ BŁĄD (używamy zmiennej)
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)), // <-- TU TEŻ
                 };
 
                 // Obsługa SignalR (Token w URL)
@@ -87,29 +90,37 @@ public class Program
                         var accessToken = context.Request.Query["access_token"];
                         var path = context.HttpContext.Request.Path;
 
-                        if (!string.IsNullOrEmpty(accessToken) &&
-                            (path.StartsWithSegments("/pokerHub") || 
-                             path.StartsWithSegments("/blackjackHub") ||
-                             path.StartsWithSegments("/rouletteHub")))
+                        if (
+                            !string.IsNullOrEmpty(accessToken)
+                            && (
+                                path.StartsWithSegments("/pokerHub")
+                                || path.StartsWithSegments("/blackjackHub")
+                                || path.StartsWithSegments("/rouletteHub")
+                            )
+                        )
                         {
                             context.Token = accessToken;
                         }
                         return Task.CompletedTask;
-                    }
+                    },
                 };
             });
 
         // --- Services ---
-        builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection("EmailSender"));
+        builder.Services.Configure<EmailSenderOptions>(
+            builder.Configuration.GetSection("EmailSender")
+        );
         builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
         builder.Services.AddSignalR();
         builder.Services.AddSingleton<IPokerService, PokerService>();
 
-        builder.Services.AddControllers().AddJsonOptions(options =>
-        {
-            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        });
-        
+        builder
+            .Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            });
+
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
@@ -121,19 +132,25 @@ public class Program
                 Scheme = "bearer",
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Description = "Enter 'Bearer' [space] and then your JWT token."
+                Description = "Enter 'Bearer' [space] and then your JWT token.",
             };
             options.AddSecurityDefinition("Bearer", jwtScheme);
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
+            options.AddSecurityRequirement(
+                new OpenApiSecurityRequirement
                 {
-                    new OpenApiSecurityScheme
                     {
-                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer",
+                            },
+                        },
+                        new string[] { }
                     },
-                    new string[] { }
                 }
-            });
+            );
         });
 
         // Rejestracja serwisów
@@ -144,16 +161,20 @@ public class Program
         builder.Services.AddScoped<IPaymentService, PaymentService>();
         builder.Services.AddScoped<IRewardService, RewardService>();
         builder.Services.AddScoped<IMissionService, MissionService>();
+        builder.Services.AddScoped<ISinglePokerService, SinglePokerService>();
         builder.Services.AddHostedService<MissionResetService>();
 
         // CORS Policy
         builder.Services.AddCors(opt =>
         {
-            opt.AddPolicy("SpaDev", p => 
-                p.WithOrigins("http://localhost:5173", "http://localhost:3000")
-                 .AllowAnyHeader()
-                 .AllowAnyMethod()
-                 .AllowCredentials());
+            opt.AddPolicy(
+                "SpaDev",
+                p =>
+                    p.WithOrigins("http://localhost:5173", "http://localhost:3000")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials()
+            );
         });
 
         var app = builder.Build();
@@ -171,17 +192,15 @@ public class Program
         app.UseRouting();
 
         // --- CORS (Tylko raz!) ---
-        app.UseCors("SpaDev"); 
+        app.UseCors("SpaDev");
 
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapControllers();
         app.MapHub<PokerHub>("/pokerHub");
-        
-        app.MapControllerRoute(
-            name: "default",
-            pattern: "{controller=Home}/{action=Index}/{id?}");
+
+        app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
         app.Run();
     }
