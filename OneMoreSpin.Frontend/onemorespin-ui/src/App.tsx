@@ -4,7 +4,9 @@ import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import UserPage from "./pages/UserPage";
 import SlotsPage from "./pages/SlotsPage";
-import PokerGame from "./pages/PokerGame";
+import { PokerLobby } from "./pages/PokerLobby";
+import { PokerPage } from "./pages/PokerPage";
+
 
 export default function App() {
   return (
@@ -15,7 +17,8 @@ export default function App() {
         <Route path="/home" element={<HomePage />} />
         <Route path="/profile" element={<UserPage />} />
         <Route path="/slots" element={<SlotsPage />} />
-        <Route path="/PokerGame" element={<PokerGame />} />
+        <Route path="/poker" element={<PokerLobby />} />
+        <Route path="/poker/:tableId" element={<PokerPage />} />
       </Routes>
     </BrowserRouter>
   );

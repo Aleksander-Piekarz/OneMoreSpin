@@ -14,6 +14,7 @@ using OneMoreSpin.Services.Configuration.AutoMapperProfiles;
 using OneMoreSpin.Services.Email;
 using OneMoreSpin.Services.Interfaces;
 using Stripe;
+using OneMoreSpin.Services.Hubs;
 
 namespace OneMoreSpin.Web;
 
@@ -21,11 +22,12 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        DotNetEnv.Env.Load(); // Ładowanie zmiennych
-        var builder = WebApplication.CreateBuilder(args); // Budowanie konfiguracji
-        builder.Configuration.AddEnvironmentVariables(); // Dodanie zmiennych środowiskowych do konfiguracji
+        DotNetEnv.Env.Load();
+        var builder = WebApplication.CreateBuilder(args);
+        builder.Configuration.AddEnvironmentVariables();
+        
         StripeConfiguration.ApiKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY") 
-            ?? builder.Configuration["Stripe:SecretKey"]; // Użycie konfiguracji Stripe
+            ?? builder.Configuration["Stripe:SecretKey"];
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -34,8 +36,7 @@ public class Program
         });
 
         // --- Identity ---
-        builder
-            .Services.AddIdentity<User, Role>(opt =>
+        builder.Services.AddIdentity<User, Role>(opt =>
             {
                 opt.User.RequireUniqueEmail = true;
                 opt.SignIn.RequireConfirmedEmail = true;
@@ -48,49 +49,71 @@ public class Program
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-        // --- JWT ---
+        // --- JWT CONFIGURATION ---
+        // 1. Definiujemy zmienne z bezpiecznymi wartościami domyślnymi
         var jwtKey = builder.Configuration["Jwt:Key"] ?? "super_secret_dev_key_change_this";
         var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "onemorespin.local";
+        var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "onemorespin.local";
 
-        builder
-            .Services.AddAuthentication(o =>
+        builder.Services.AddAuthentication(o =>
             {
                 o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddJwtBearer(o =>
+            .AddJwtBearer(options =>
             {
-                o.RequireHttpsMetadata = false; // DEV; w PROD -> true
-                o.TokenValidationParameters = new TokenValidationParameters
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = false; 
+                
+                // 2. Używamy tych zmiennych w walidacji!
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
-                    ValidateAudience = true,
+                    ValidateAudience = true, // Jeśli token generowany ma aud, to musi być true
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtIssuer,
-                    ValidAudience = jwtIssuer,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-                    ClockSkew = TimeSpan.FromMinutes(1),
+                    
+                    ValidIssuer = jwtIssuer,       // <-- TU BYŁ BŁĄD (używamy zmiennej)
+                    ValidAudience = jwtAudience,   // <-- TU BYŁ BŁĄD (używamy zmiennej)
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)) // <-- TU TEŻ
+                };
+
+                // Obsługa SignalR (Token w URL)
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            (path.StartsWithSegments("/pokerHub") || 
+                             path.StartsWithSegments("/blackjackHub") ||
+                             path.StartsWithSegments("/rouletteHub")))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
                 };
             });
 
-        // --- Email Sender ---
-        builder.Services.Configure<EmailSenderOptions>(
-            builder.Configuration.GetSection("EmailSender")
-        );
+        // --- Services ---
+        builder.Services.Configure<EmailSenderOptions>(builder.Configuration.GetSection("EmailSender"));
         builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
+        builder.Services.AddSignalR();
+        builder.Services.AddSingleton<IPokerService, PokerService>();
 
-        // --- MVC / Swagger / CORS ---
         builder.Services.AddControllers().AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         });
+        
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
             options.SwaggerDoc("v1", new OpenApiInfo { Title = "OneMoreSpin API", Version = "v1" });
-
-            // JWT Bearer
             var jwtScheme = new OpenApiSecurityScheme
             {
                 Name = "Authorization",
@@ -98,50 +121,39 @@ public class Program
                 Scheme = "bearer",
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Description =
-                    "Enter 'Bearer' [space] and then your JWT token.\n\nExample: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                Description = "Enter 'Bearer' [space] and then your JWT token."
             };
-
             options.AddSecurityDefinition("Bearer", jwtScheme);
-
-            options.AddSecurityRequirement(
-                new OpenApiSecurityRequirement
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
                 {
+                    new OpenApiSecurityScheme
                     {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer",
-                            },
-                        },
-                        new string[] { }
+                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
                     },
+                    new string[] { }
                 }
-            );
+            });
         });
+
+        // Rejestracja serwisów
         builder.Services.AddScoped<ISlotService, SlotService>();
         builder.Services.AddScoped<IGameService, GameService>();
         builder.Services.AddAutoMapper(typeof(MainProfile));
         builder.Services.AddScoped<IProfileService, ProfileService>();
         builder.Services.AddScoped<IPaymentService, PaymentService>();
-        builder.Services.AddScoped<IGameService, GameService>();
         builder.Services.AddScoped<IRewardService, RewardService>();
         builder.Services.AddScoped<IMissionService, MissionService>();
-        builder.Services.AddScoped<IPokerService, PokerService>();
-        builder.Services.AddScoped<ISlotService, SlotService>();
         builder.Services.AddHostedService<MissionResetService>();
+
+        // CORS Policy
         builder.Services.AddCors(opt =>
         {
-            opt.AddPolicy(
-                "SpaDev",
-                p =>
-                    p.WithOrigins("http://localhost:5173", "http://localhost:3000")
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials()
-            );
+            opt.AddPolicy("SpaDev", p => 
+                p.WithOrigins("http://localhost:5173", "http://localhost:3000")
+                 .AllowAnyHeader()
+                 .AllowAnyMethod()
+                 .AllowCredentials());
         });
 
         var app = builder.Build();
@@ -151,15 +163,25 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-
-        if (!app.Environment.IsDevelopment())
+        else
         {
             app.UseHttpsRedirection();
         }
-        app.UseCors("SpaDev");
+
+        app.UseRouting();
+
+        // --- CORS (Tylko raz!) ---
+        app.UseCors("SpaDev"); 
+
         app.UseAuthentication();
         app.UseAuthorization();
+
         app.MapControllers();
+        app.MapHub<PokerHub>("/pokerHub");
+        
+        app.MapControllerRoute(
+            name: "default",
+            pattern: "{controller=Home}/{action=Index}/{id?}");
 
         app.Run();
     }
