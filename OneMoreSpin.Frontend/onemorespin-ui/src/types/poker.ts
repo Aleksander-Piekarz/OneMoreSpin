@@ -23,13 +23,14 @@ export interface Card {
 
 export interface PokerPlayer {
     connectionId: string;
-    userId: string; // <--- DODAJ TO
+    userId: string;
     username: string;
     chips: number;
     currentBet: number;
     isFolded: boolean;
     isActive: boolean;
     hand: Card[]; 
+    isVip: boolean;
 }
 
 export interface PokerTable {

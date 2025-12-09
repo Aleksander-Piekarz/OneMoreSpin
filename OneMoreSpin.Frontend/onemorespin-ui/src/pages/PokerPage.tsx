@@ -104,25 +104,28 @@ export const PokerPage = () => {
 
                 {sortedPlayers.map((p, i) => {
                     const isActiveTurn = table.players[table.currentPlayerIndex]?.userId === p.userId;
-                    
-                    const isMe = p.userId === myUserId; 
-                    
+                    const isMe = p.userId === myUserId;
                     const pos = getPosition(i, table.players.length);
-                    
                     const showCards = isMe || (table.stage === 'Showdown' && !p.isFolded);
-                    
                     const isAllIn = !p.isFolded && p.chips === 0 && table.gameInProgress;
+
+                    const isVipUser = p.isVip;
 
                     let seatClasses = "player-seat";
                     if (isMe) seatClasses += " is-me";
                     if (isActiveTurn) seatClasses += " active-turn";
                     if (p.isFolded) seatClasses += " folded";
+                    
+                    if (isVipUser) seatClasses += " is-vip-seat";
 
                     return (
                         <div key={p.userId} className={seatClasses} style={pos}>
                             {isActiveTurn && <div className="badge-turn">Ruch</div>}
                             
-                            <div className="player-name">{p.username} {isMe && "(Ty)"}</div>
+                            <div className="player-name">
+                                {isVipUser && <span className="vip-crown">♛</span>}
+                                {p.username} {isMe && "(Ty)"}
+                            </div>
                             
                             <div className="player-cards">
                                 {p.hand && p.hand.length > 0 ? (

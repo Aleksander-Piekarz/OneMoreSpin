@@ -62,31 +62,67 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             decimal playerChips = 1000;
             string dbUsername = "Nieznany";
+            bool isVipFromDb = false; // Domyślnie false
 
             using (var scope = _scopeFactory.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                // Logika szukania usera (taka jak wcześniej)
-                if (int.TryParse(userId, out int idAsInt)) {
+                
+                // Pobieranie danych (z uwzględnieniem IsVip)
+                if (int.TryParse(userId, out int idAsInt))
+                {
                     var user = db.Users.FirstOrDefault(u => u.Id == idAsInt);
-                    if (user != null) { playerChips = user.Balance; dbUsername = user.UserName; }
-                    else { dbUsername = $"Guest_{idAsInt}"; }
-                } else {
+                    if (user != null) 
+                    { 
+                        playerChips = user.Balance; 
+                        dbUsername = user.UserName;
+                        isVipFromDb = user.IsVip; // <--- POBIERAMY Z BAZY
+                    }
+                    else 
+                    { 
+                        dbUsername = $"Guest_{idAsInt}"; 
+                    }
+                }
+                else
+                {
                     var user = db.Users.FirstOrDefault(u => u.UserName == userId);
-                    if (user != null) { playerChips = user.Balance; dbUsername = user.UserName; }
-                    else { dbUsername = userId ?? "Guest"; }
+                    if (user != null) 
+                    { 
+                        playerChips = user.Balance; 
+                        dbUsername = user.UserName;
+                        isVipFromDb = user.IsVip; // <--- POBIERAMY Z BAZY
+                    }
+                    else 
+                    { 
+                        dbUsername = userId ?? "Guest"; 
+                    }
                 }
             }
+
+            // --- BRAMKA VIP ---
+            // Wpuszczamy na stół VIP tylko jeśli w bazie IsVip == true
+            if (tableId.Contains("vip") && !isVipFromDb)
+            {
+                _hubContext.Clients.Client(connectionId).SendAsync("Error", "⛔ Wstęp tylko dla użytkowników ze statusem VIP!");
+                return;
+            }
+            // ------------------
 
             lock (table)
             {
                 var existing = table.Players.FirstOrDefault(p => p.UserId == userId);
-                if (existing != null) {
+                
+                if (existing != null)
+                {
                     existing.ConnectionId = connectionId;
                     existing.Username = dbUsername;
-                } else {
+                    existing.IsVip = isVipFromDb; // Aktualizujemy status
+                }
+                else
+                {
                     var newPlayer = new PokerPlayer(connectionId, dbUsername, playerChips);
                     newPlayer.UserId = userId; 
+                    newPlayer.IsVip = isVipFromDb; // <--- PRZYPISUJEMY STATUS DO GRACZA
                     table.Players.Add(newPlayer);
                 }
                 _playerTables.TryAdd(connectionId, tableId);
