@@ -1,0 +1,165 @@
+/* Kontener główny - teraz responsywny */
+.poker-mode-selector {
+  display: flex;
+  width: 90%;
+  max-width: 1200px;
+  height: 60vh; /* Wysokość zależna od ekranu */
+  min-height: 500px;
+  margin: 20px auto;
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  position: relative;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mode-panel {
+  flex: 1;
+  position: relative;
+  transition: flex 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+/* Tła */
+.mode-panel.single {
+  background: radial-gradient(circle at center, #2c5364 0%, #203a43 50%, #0f2027 100%);
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.mode-panel.multiplayer {
+  background: radial-gradient(circle at center, #4b1d68 0%, #1a0b2e 100%);
+}
+
+.panel-overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  transition: background 0.4s;
+  z-index: 1;
+}
+
+/* --- EFEKT HOVER --- */
+.mode-panel:hover {
+  flex: 2.5; /* Panel rośnie */
+}
+
+.mode-panel:hover .panel-overlay {
+  background: rgba(0, 0, 0, 0.1); /* Rozjaśnia się */
+}
+
+/* --- TREŚĆ --- */
+.mode-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 20px;
+  transition: transform 0.4s ease;
+}
+
+.mode-icon-container {
+  margin-bottom: 20px;
+  transform: scale(0.8);
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
+}
+.mode-icon {
+  width: 100px; height: auto;
+}
+
+.mode-title {
+  font-family: 'Big Shoulders', sans-serif;
+  font-size: 3rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+}
+
+.mode-description {
+  font-family: 'Poppins', sans-serif;
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 1.1rem;
+  margin-top: 15px;
+  max-width: 300px;
+  margin-left: auto; margin-right: auto;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.5s ease 0.1s;
+}
+
+.mode-action {
+  margin-top: 30px;
+  z-index: 10;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.5s ease 0.2s;
+  
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.mode-play-btn {
+  padding: 14px 40px;
+  background: #fff;
+  color: #000;
+  border: none;
+  border-radius: 50px;
+  font-weight: 800;
+  font-family: 'Big Shoulders', sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.mode-play-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 15px 30px rgba(255,255,255,0.2);
+}
+
+/* Animacje przy Hover */
+.mode-panel:hover .mode-icon-container {
+  transform: scale(1.1) translateY(-10px);
+}
+.mode-panel:hover .mode-description,
+.mode-panel:hover .mode-action {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Nieaktywny panel */
+.poker-mode-selector:hover .mode-panel:not(:hover) {
+  filter: brightness(0.6) blur(2px);
+}
+
+/* RWD - Telefon */
+@media (max-width: 768px) {
+  .poker-mode-selector {
+    flex-direction: column;
+    height: auto;
+    min-height: 80vh;
+  }
+  .mode-panel { min-height: 300px; width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .mode-panel:hover { flex: 1.5; }
+  .mode-title { font-size: 2rem; }
+  
+  /* Na telefonie pokazujemy opis od razu, bo nie ma "hover" */
+  .mode-description, .mode-action { opacity: 1; transform: translateY(0); }
+}
