@@ -751,3 +751,30 @@
 .tile-button:active {
   transform: scale(0.95);
 }
+
+
+.header-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.back-btn-home {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.back-btn-home:hover {
+  background: rgba(255,255,255,0.2);
+  transform: translateX(-3px);
+}
