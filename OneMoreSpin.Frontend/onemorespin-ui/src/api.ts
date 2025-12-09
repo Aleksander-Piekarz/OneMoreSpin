@@ -191,5 +191,18 @@ export const api = {
       });
     },
   },
-  // Usunięto sekcję poker, ponieważ teraz używamy SignalR (PokerHub)
+  poker: {
+    start(betAmount: number) {
+      return request<any>("/singlepoker/start", {
+        method: "POST",
+        body: JSON.stringify({ betAmount }),
+      });
+    },
+    draw(sessionId: number, indices: number[]) {
+      return request<any>("/singlepoker/draw", {
+        method: "POST",
+        body: JSON.stringify({ sessionId, indices }),
+      });
+    },
+  },
 };
