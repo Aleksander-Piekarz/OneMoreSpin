@@ -74,15 +74,11 @@ const HomePage: React.FC = () => {
       iconImage: cardsIcon,
       gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
       particles: ["🃏", "💵", "🏆", "♦️", "♠️", "💎"],
-      onClick: () => navigate("/poker")
-    },
-    { 
-      id: 5, 
-      title: "SINGLE POKER", 
-      iconImage: cardsIcon,
-      gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-      particles: ["🃏", "💵", "🏆", "♦️", "♠️", "💎"],
-      onClick: () => navigate("/single-poker")
+      isDoubleButton: true,
+      buttons: [
+        { label: "POKER", onClick: () => navigate("/poker") },
+        { label: "SINGLE", onClick: () => navigate("/single-poker") }
+      ]
     },
   ];
 
@@ -149,7 +145,7 @@ const HomePage: React.FC = () => {
               }}
               onMouseEnter={() => setHoveredTile(tile.id)}
               onMouseLeave={() => setHoveredTile(null)}
-              onClick={tile.onClick}
+              onClick={!tile.isDoubleButton ? tile.onClick : undefined}
             >
               {hoveredTile === tile.id && (
                 <div className="particles-container">
@@ -181,10 +177,27 @@ const HomePage: React.FC = () => {
                   />
                 </div>
                 <h3 className="tile-title">{tile.title}</h3>
-                <div className="tile-play-btn">
-                  <i className="fas fa-play"></i>
-                  <span>ZAGRAJ</span>
-                </div>
+                {tile.isDoubleButton ? (
+                  <div className="tile-double-buttons">
+                    {tile.buttons?.map((btn, idx) => (
+                      <button 
+                        key={idx}
+                        className="tile-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          btn.onClick();
+                        }}
+                      >
+                        {btn.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="tile-play-btn">
+                    <i className="fas fa-play"></i>
+                    <span>ZAGRAJ</span>
+                  </div>
+                )}
               </div>
 
               <div className="tile-border">

@@ -4,11 +4,6 @@ import { api } from '../api';
 import type { UserInfo } from '../api';
 import { fireConfetti } from '../utils/confetti';
 
-// Import dźwięków (pozostaje bez zmian)
-import leverSnd from '../assets/sounds/lever-pull-default.mp3';
-import winSnd from '../assets/sounds/win-default.mp3';
-import loseSnd from '../assets/sounds/lose-default.mp3';
-
 type CardVm = { id: number; rank: string; suit: string };
 type PokerSessionVm = {
   id: number;
@@ -57,17 +52,6 @@ export default function PokerGame() {
   const hasWon = session ? (session.isWin || session.playerWon || session.winAmount > 0) : false;
   const isGameFinished = Boolean(session?.playerHandRank && session?.dealerHandRank);
 
-  const playSound = (type: 'deal' | 'win' | 'lose') => {
-    try {
-      const audio = new Audio(
-        type === 'deal' ? leverSnd :
-        type === 'win' ? winSnd : loseSnd
-      );
-      audio.volume = 0.4;
-      audio.play().catch(() => {});
-    } catch (e) { console.warn("Audio play failed", e); }
-  };
-
   async function fetchMe() {
     try {
       const me = (await api.auth.me()) as UserInfo;
@@ -81,7 +65,7 @@ export default function PokerGame() {
 
   useEffect(() => {
     if (session && isGameFinished && !loading) {
-      if (hasWon) { fireConfetti(); playSound('win'); } else { playSound('lose'); }
+      if (hasWon) { fireConfetti(); }
     }
   }, [session, loading, isGameFinished]);
 
@@ -89,7 +73,6 @@ export default function PokerGame() {
     if (loading) return;
     setLoading(true);
     setMessage(null);
-    playSound('deal');
 
     try {
       const vm = await api.poker.start(betAmount) as PokerSessionVm;
@@ -110,7 +93,6 @@ export default function PokerGame() {
     
     setLoading(true);
     setMessage(null);
-    playSound('deal');
 
     try {
       const updated = await api.poker.draw(session.id, indices) as PokerSessionVm;
@@ -146,12 +128,6 @@ export default function PokerGame() {
 
   return (
     <div className="poker-page">
-      <div className="animated-bg">
-        <div className="floating-shape shape-1"></div>
-        <div className="floating-shape shape-2"></div>
-        <div className="floating-shape shape-3"></div>
-      </div>
-
       <div className="poker-container">
         {/* HEADER */}
         <div className="poker-header">
@@ -221,7 +197,7 @@ export default function PokerGame() {
               {/* Tutaj wyświetlamy układ gracza (Twoja prośba) */}
               {session && (
                 <div className="rank-badge player-rank-badge">
-                  {formatRank(session.playerHandRank || 'Rozdanie...')}
+                  {formatRank(session.playerHandRank || 'Rozdanie')}
                 </div>
               )}
 
@@ -263,9 +239,6 @@ export default function PokerGame() {
                 </>
               ) : (
                 <>
-                   <button className="main-btn btn-fold" onClick={resetGame} disabled={loading}>
-                    PAS
-                  </button>
                   <button className="main-btn btn-action" onClick={confirmDiscard} disabled={loading}>
                     {loading 
                       ? 'WYMIENIAM...' 
@@ -294,9 +267,9 @@ function PokerCard({ card, selected, onClick, disabled, index, mini }: any) {
       onClick={!disabled ? onClick : undefined}
       style={{ animationDelay: `${index * 0.1}s` }} 
     >
+      {selected && !mini && <div className="discard-badge">WYMIEŃ</div>}
+      
       <div className="card-inner">
-        {selected && !mini && <div className="discard-badge">WYMIEŃ</div>}
-        
         <div className="card-top">
           <span className="rank">{translateRank(card.rank)}</span>
           <span className="suit">{suitIcon}</span>
