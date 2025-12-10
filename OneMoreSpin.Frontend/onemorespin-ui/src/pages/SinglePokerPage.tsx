@@ -214,7 +214,7 @@ export default function PokerGame() {
                     />
                   ))
                 ) : (
-                  [1,2,3,4,5].map(i => <div key={i} className="card-slot"></div>)
+                  [1,2,3,4,5].map(i => <div key={i} className="sp-card-slot"></div>)
                 )}
               </div>
             </div>
@@ -263,23 +263,23 @@ function PokerCard({ card, selected, onClick, disabled, index, mini }: any) {
   
   return (
     <div 
-      className={`poker-card ${selected ? 'selected' : ''} ${isRed ? 'red' : 'black'} ${mini ? 'mini' : ''}`}
+      className={`sp-poker-card ${selected ? 'sp-selected' : ''} ${isRed ? 'sp-red' : 'sp-black'} ${mini ? 'sp-mini' : ''}`}
       onClick={!disabled ? onClick : undefined}
       style={{ animationDelay: `${index * 0.1}s` }} 
     >
-      {selected && !mini && <div className="discard-badge">WYMIEŃ</div>}
+      {selected && !mini && <div className="sp-discard-badge">WYMIEŃ</div>}
       
-      <div className="card-inner">
-        <div className="card-top">
-          <span className="rank">{translateRank(card.rank)}</span>
-          <span className="suit">{suitIcon}</span>
+      <div className="sp-card-inner">
+        <div className="sp-card-top">
+          <span className="sp-rank">{translateRank(card.rank)}</span>
+          <span className="sp-suit">{suitIcon}</span>
         </div>
         
-        <div className="card-center-suit">{suitIcon}</div>
+        <div className="sp-card-center-suit">{suitIcon}</div>
         
-        <div className="card-bottom">
-          <span className="rank">{translateRank(card.rank)}</span>
-          <span className="suit">{suitIcon}</span>
+        <div className="sp-card-bottom">
+          <span className="sp-rank">{translateRank(card.rank)}</span>
+          <span className="sp-suit">{suitIcon}</span>
         </div>
       </div>
     </div>
