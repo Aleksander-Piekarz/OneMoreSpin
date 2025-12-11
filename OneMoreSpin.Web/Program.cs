@@ -163,6 +163,7 @@ public class Program
         builder.Services.AddScoped<IMissionService, MissionService>();
         builder.Services.AddScoped<IPokerService, PokerService>();
         builder.Services.AddScoped<ISlotService, SlotService>();
+            builder.Services.AddScoped<IRouletteService, RouletteService>();
         builder.Services.AddScoped<IBlackjackService, BlackjackService>();
         builder.Services.AddScoped<ISinglePokerService, SinglePokerService>();
         builder.Services.AddHostedService<MissionResetService>();
@@ -200,10 +201,14 @@ public class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
+        app.UseStaticFiles();
+
         app.MapControllers();
         app.MapHub<PokerHub>("/pokerHub");
 
         app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
+
+        app.MapFallbackToFile("index.html");
 
         app.Run();
     }

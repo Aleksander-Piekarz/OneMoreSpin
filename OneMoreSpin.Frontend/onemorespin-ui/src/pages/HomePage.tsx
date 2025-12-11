@@ -64,7 +64,7 @@ const HomePage: React.FC = () => {
       iconImage: rouletteIcon,
       gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
       particles: ["🔴", "⚫", "💰", "🎲", "💵", "🎯"],
-      onClick: () => console.log("Ruletka")
+      onClick: () => navigate("/roulette")
     },
     { 
       id: 3, 

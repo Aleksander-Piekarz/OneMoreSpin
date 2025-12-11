@@ -49,6 +49,25 @@ export type DailyRewardStatusResponse = {
     timeUntilNextClaim?: number; // sekundy
 };
 
+export type RouletteBetVm = {
+  type: string;
+  value: string;
+  amount: number;
+};
+
+export type RouletteSpinRequestVm = {
+  bets: RouletteBetVm[];
+};
+
+export type RouletteSpinResultVm = {
+  winNumber: number;
+  isWin: boolean;
+  winAmount: number;
+  message: string;
+  balance: number;
+  winColor: string;
+};
+
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem("jwt");
   const headers: Record<string, string> = {
@@ -191,6 +210,12 @@ export const api = {
       });
     },
   },
+
+  roulette: {
+    spin(payload: RouletteSpinRequestVm): Promise<RouletteSpinResultVm> {
+      return request<RouletteSpinResultVm>("/Roulette/spin", {
+        method: "POST",
+        body: JSON.stringify(payload),
   poker: {
     start(betAmount: number) {
       return request<any>("/singlepoker/start", {
