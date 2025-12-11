@@ -174,10 +174,9 @@ public class Program
             opt.AddPolicy(
                 "SpaDev",
                 p =>
-                    p.WithOrigins("http://localhost:5173", "http://localhost:3000")
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials()
+                    p.AllowAnyOrigin() // <-- To pozwala łączyć się z każdego IP
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
             );
         });
 
@@ -188,10 +187,10 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        else
-        {
-            app.UseHttpsRedirection();
-        }
+        // else
+        // {
+        //     app.UseHttpsRedirection();
+        // }
 
         app.UseRouting();
 
