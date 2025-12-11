@@ -9,6 +9,7 @@ import BlackjackPage from "./pages/BlackjackPage";
 import { PokerLobby } from "./pages/PokerLobby";
 import { PokerPage } from "./pages/PokerPage";
 import SinglePokerPage  from "./pages/SinglePokerPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/profile" element={<UserPage />} />
         <Route path="/slots" element={<SlotsPage />} />
