@@ -49,6 +49,8 @@ export type DailyRewardStatusResponse = {
     timeUntilNextClaim?: number; // sekundy
 };
 
+
+
 export type RouletteBetVm = {
   type: string;
   value: string;
@@ -128,6 +130,18 @@ export const api = {
 
     login(payload: { email: string; password: string }) {
       return request<{ token: string; user: any }>("/auth/login", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    },
+    forgotPassword(payload: { email: string }) {
+      return request<{ message: string }>("/auth/forgot-password", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    },
+    resetPassword(payload: { email: string; token: string; newPassword: string; confirmNewPassword: string }) {
+      return request<{ message: string }>("/auth/reset-password", {
         method: "POST",
         body: JSON.stringify(payload),
       });
@@ -216,6 +230,9 @@ export const api = {
       return request<RouletteSpinResultVm>("/Roulette/spin", {
         method: "POST",
         body: JSON.stringify(payload),
+      });
+    },
+  },
   poker: {
     start(betAmount: number) {
       return request<any>("/singlepoker/start", {
