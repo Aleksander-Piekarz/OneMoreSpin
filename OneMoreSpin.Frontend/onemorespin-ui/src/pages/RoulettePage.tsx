@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Trash2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
@@ -158,6 +158,61 @@ export default function RouletteGame() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
 
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  useEffect(() => {
+    audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    return () => {
+      audioContextRef.current?.close();
+    };
+  }, []);
+
+  const playTick = () => {
+    if (!audioContextRef.current) return;
+    const ctx = audioContextRef.current;
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800, ctx.currentTime);
+    
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.002);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
+    
+    osc.start();
+    osc.stop(ctx.currentTime + 0.03);
+  };
+
+  useEffect(() => {
+    if (isSpinning) {
+      let startTime = Date.now();
+      let timeoutId: any;
+      const duration = 8000;
+      
+      const tick = () => {
+        const elapsed = Date.now() - startTime;
+        if (elapsed >= duration) return;
+        
+        playTick();
+        
+        const progress = elapsed / duration;
+        const nextDelay = 50 + 800 * Math.pow(progress, 3);
+        
+        timeoutId = setTimeout(tick, nextDelay);
+      };
+      
+      tick();
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isSpinning]);
+
   useEffect(() => {
     api.auth.me().then((user: any) => {
         if(user && user.balance !== undefined) {
@@ -203,6 +258,10 @@ export default function RouletteGame() {
       return;
     }
     if (isSpinning) return;
+
+    if (audioContextRef.current?.state === 'suspended') {
+      await audioContextRef.current.resume();
+    }
 
     setIsSpinning(true);
     setShowWin(false);
