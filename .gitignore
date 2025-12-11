@@ -3,6 +3,6 @@ obj/
 .env
 .fake
 node_modules/
-przydatne.md
-.github/
+przydatne_komendy.txt
+
 .vs
