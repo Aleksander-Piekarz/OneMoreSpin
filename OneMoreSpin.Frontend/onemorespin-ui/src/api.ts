@@ -208,4 +208,91 @@ export const api = {
       return request<any>(`/Poker/${sessionId}`);
     }
   },
+
+  blackjack: {
+    start(bet: number) {
+      return request<{
+        sessionId: number;
+        playerHand: { rank: string; suit: string; value: number }[];
+        dealerHand: { rank: string; suit: string; value: number }[];
+        playerScore: number;
+        dealerScore: number;
+        gameState: string;
+        result: string;
+        bet: number;
+        payout: number;
+        balance: number;
+        canHit: boolean;
+        canStand: boolean;
+        canDouble: boolean;
+        gameFinished: boolean;
+      }>("/Blackjack/start", {
+        method: "POST",
+        body: JSON.stringify({ bet }),
+      });
+    },
+    hit(sessionId: number) {
+      return request<{
+        sessionId: number;
+        playerHand: { rank: string; suit: string; value: number }[];
+        dealerHand: { rank: string; suit: string; value: number }[];
+        playerScore: number;
+        dealerScore: number;
+        gameState: string;
+        result: string;
+        bet: number;
+        payout: number;
+        balance: number;
+        canHit: boolean;
+        canStand: boolean;
+        canDouble: boolean;
+        gameFinished: boolean;
+      }>("/Blackjack/hit", {
+        method: "POST",
+        body: JSON.stringify({ sessionId }),
+      });
+    },
+    stand(sessionId: number) {
+      return request<{
+        sessionId: number;
+        playerHand: { rank: string; suit: string; value: number }[];
+        dealerHand: { rank: string; suit: string; value: number }[];
+        playerScore: number;
+        dealerScore: number;
+        gameState: string;
+        result: string;
+        bet: number;
+        payout: number;
+        balance: number;
+        canHit: boolean;
+        canStand: boolean;
+        canDouble: boolean;
+        gameFinished: boolean;
+      }>("/Blackjack/stand", {
+        method: "POST",
+        body: JSON.stringify({ sessionId }),
+      });
+    },
+    double(sessionId: number) {
+      return request<{
+        sessionId: number;
+        playerHand: { rank: string; suit: string; value: number }[];
+        dealerHand: { rank: string; suit: string; value: number }[];
+        playerScore: number;
+        dealerScore: number;
+        gameState: string;
+        result: string;
+        bet: number;
+        payout: number;
+        balance: number;
+        canHit: boolean;
+        canStand: boolean;
+        canDouble: boolean;
+        gameFinished: boolean;
+      }>("/Blackjack/double", {
+        method: "POST",
+        body: JSON.stringify({ sessionId }),
+      });
+    },
+  },
 };

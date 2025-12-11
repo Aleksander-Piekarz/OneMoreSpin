@@ -5,6 +5,7 @@ import HomePage from "./pages/HomePage";
 import UserPage from "./pages/UserPage";
 import SlotsPage from "./pages/SlotsPage";
 import PokerGame from "./pages/PokerGame";
+import BlackjackPage from "./pages/BlackjackPage";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/profile" element={<UserPage />} />
         <Route path="/slots" element={<SlotsPage />} />
         <Route path="/PokerGame" element={<PokerGame />} />
+        <Route path="/blackjack" element={<BlackjackPage />} />
       </Routes>
     </BrowserRouter>
   );
