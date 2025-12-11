@@ -130,6 +130,7 @@ public class Program
         builder.Services.AddScoped<IRewardService, RewardService>();
         builder.Services.AddScoped<IMissionService, MissionService>();
         builder.Services.AddScoped<ISlotService, SlotService>();
+            builder.Services.AddScoped<IRouletteService, RouletteService>();
         builder.Services.AddHostedService<MissionResetService>();
         builder.Services.AddCors(opt =>
         {
@@ -158,7 +159,12 @@ public class Program
         app.UseCors("SpaDev");
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.UseStaticFiles();
+
         app.MapControllers();
+
+        app.MapFallbackToFile("index.html");
 
         app.Run();
     }
