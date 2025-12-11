@@ -5,6 +5,10 @@ import HomePage from "./pages/HomePage";
 import UserPage from "./pages/UserPage";
 import SlotsPage from "./pages/SlotsPage";
 import RoulettePage from "./pages/RoulettePage";
+import BlackjackPage from "./pages/BlackjackPage";
+import { PokerLobby } from "./pages/PokerLobby";
+import { PokerPage } from "./pages/PokerPage";
+import SinglePokerPage  from "./pages/SinglePokerPage";
 
 export default function App() {
   return (
@@ -16,7 +20,12 @@ export default function App() {
         <Route path="/profile" element={<UserPage />} />
         <Route path="/slots" element={<SlotsPage />} />
           <Route path="/roulette" element={<RoulettePage />} />
+        <Route path="/blackjack" element={<BlackjackPage />} />
+        <Route path="/poker" element={<PokerLobby />} />
+        <Route path="/poker/:tableId" element={<PokerPage />} />
+        <Route path="/single-poker/" element={<SinglePokerPage />} />
       </Routes>
     </BrowserRouter>
   );
 }
+

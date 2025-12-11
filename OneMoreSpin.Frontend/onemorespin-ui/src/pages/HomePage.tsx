@@ -4,11 +4,17 @@ import slotMachineIcon from "../assets/img/slot-machine.png";
 import rouletteIcon from "../assets/img/roulette.png";
 import blackjackIcon from "../assets/img/black-jack.png";
 import cardsIcon from "../assets/img/cards.png";
+// Pamiętaj o imporcie komponentu wyboru!
+import PokerModeSelector from "../components/PokerModeSelector";
+import "../styles/HomePage.css";
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hoveredTile, setHoveredTile] = useState<number | null>(null);
+  
+  // NOWOŚĆ: Stan decydujący co wyświetlamy (siatka gier CZY wybór pokera)
+  const [view, setView] = useState<'grid' | 'poker-select'>('grid');
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
@@ -66,7 +72,7 @@ const HomePage: React.FC = () => {
       iconImage: blackjackIcon,
       gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
       particles: ["♠️", "♥️", "♦️", "♣️", "🃏", "🎴"],
-      onClick: () => console.log("Blackjack")
+      onClick: () => navigate("/blackjack")
     },
     { 
       id: 4, 
@@ -74,7 +80,8 @@ const HomePage: React.FC = () => {
       iconImage: cardsIcon,
       gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
       particles: ["🃏", "💵", "🏆", "♦️", "♠️", "💎"],
-      onClick: () => console.log("Poker")
+      // ZMIANA: Kliknięcie zmienia widok na selector, zamiast nawigować
+      onClick: () => setView('poker-select')
     },
   ];
 
@@ -89,7 +96,16 @@ const HomePage: React.FC = () => {
       </div>
 
       <header className="home-header">
-        <div className="header-spacer"></div>
+        {/* LEWA STRONA NAGŁÓWKA - PRZYCISK POWROTU */}
+        <div className="header-left">
+          {view === 'poker-select' ? (
+             <button className="back-btn-home" onClick={() => setView('grid')}>
+               <i className="fas fa-arrow-left"></i> <span>Powrót</span>
+             </button>
+          ) : (
+             <div className="header-spacer"></div>
+          )}
+        </div>
         
         <h1 className="home-page-title">
           <span className="title-word">ONE</span>
@@ -130,64 +146,76 @@ const HomePage: React.FC = () => {
       </div>
 
       <main className="game-tiles-container">
-        <div className="game-tiles-grid">
-          {tiles.map((tile, index) => (
-            <div 
-              key={tile.id} 
-              className={`game-tile ${hoveredTile === tile.id ? 'hovered' : ''}`}
-              style={{ 
-                animationDelay: `${index * 0.15}s`,
-                background: tile.gradient 
-              }}
-              onMouseEnter={() => setHoveredTile(tile.id)}
-              onMouseLeave={() => setHoveredTile(null)}
-              onClick={tile.onClick}
-            >
-              {hoveredTile === tile.id && (
-                <div className="particles-container">
-                  {[...Array(20)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className="particle"
-                      style={{ 
-                        animationDelay: `${i * 0.15}s`,
-                        left: `${Math.random() * 90 + 5}%`,
-                        animationDuration: `${2 + Math.random() * 1}s`
-                      }}
-                    >
-                      {tile.particles[i % tile.particles.length]}
-                    </div>
-                  ))}
-                </div>
-              )}
+        {/* WARUNEK WYŚWIETLANIA: SIATKA GIER vs WYBÓR POKERA */}
+        {view === 'grid' ? (
+          <div className="game-tiles-grid">
+            {tiles.map((tile, index) => (
+              <div 
+                key={tile.id} 
+                className={`game-tile ${hoveredTile === tile.id ? 'hovered' : ''}`}
+                style={{ 
+                  animationDelay: `${index * 0.15}s`,
+                  background: tile.gradient 
+                }}
+                onMouseEnter={() => setHoveredTile(tile.id)}
+                onMouseLeave={() => setHoveredTile(null)}
+                // Teraz każdy kafelek ma onClick (Poker też)
+                onClick={tile.onClick}
+              >
+                {hoveredTile === tile.id && (
+                  <div className="particles-container">
+                    {/* ... (logika particles bez zmian) */}
+                    {[...Array(20)].map((_, i) => (
+                      <div 
+                        key={i} 
+                        className="particle"
+                        style={{ 
+                          animationDelay: `${i * 0.15}s`,
+                          left: `${Math.random() * 90 + 5}%`,
+                          animationDuration: `${2 + Math.random() * 1}s`
+                        }}
+                      >
+                        {tile.particles[i % tile.particles.length]}
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-              <div className="tile-shine"></div>
-              
-              <div className="tile-content">
-                <div className="tile-icon-wrapper">
-                  <div className="icon-bg"></div>
-                  <img 
-                    src={tile.iconImage} 
-                    alt={tile.title} 
-                    className="tile-icon-image" 
-                  />
+                <div className="tile-shine"></div>
+                
+                <div className="tile-content">
+                  <div className="tile-icon-wrapper">
+                    <div className="icon-bg"></div>
+                    <img 
+                      src={tile.iconImage} 
+                      alt={tile.title} 
+                      className="tile-icon-image" 
+                    />
+                  </div>
+                  <h3 className="tile-title">{tile.title}</h3>
+                  
+                  {/* Zawsze wyświetlamy przycisk ZAGRAJ (usunięto logikę isDoubleButton) */}
+                  <div className="tile-play-btn">
+                    <i className="fas fa-play"></i>
+                    <span>ZAGRAJ</span>
+                  </div>
                 </div>
-                <h3 className="tile-title">{tile.title}</h3>
-                <div className="tile-play-btn">
-                  <i className="fas fa-play"></i>
-                  <span>ZAGRAJ</span>
+
+                <div className="tile-border">
+                  <div className="border-line border-top"></div>
+                  <div className="border-line border-right"></div>
+                  <div className="border-line border-bottom"></div>
+                  <div className="border-line border-left"></div>
                 </div>
               </div>
-
-              <div className="tile-border">
-                <div className="border-line border-top"></div>
-                <div className="border-line border-right"></div>
-                <div className="border-line border-bottom"></div>
-                <div className="border-line border-left"></div>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          /* WIDOK WYBORU POKERA */
+          <div className="poker-selection-wrapper" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+             <PokerModeSelector />
+          </div>
+        )}
       </main>
     </div>
   );

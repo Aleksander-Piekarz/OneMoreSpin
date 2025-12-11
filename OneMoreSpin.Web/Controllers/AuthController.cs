@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.Tokens;
 using OneMoreSpin.Model.DataModels;
+using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Web.Controllers;
 
@@ -147,7 +148,72 @@ public class AuthController : ControllerBase
             }
         );
     }
-}
+
+
+// 1. Endpoint: Żądanie resetu hasła
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordVm model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null) 
+            {
+
+                return Ok(new { message = "Jeśli konto istnieje, link do resetowania hasła został wysłany." });
+            }
+
+            // Generowanie tokenu
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+
+            var frontendUrl = "http://localhost:5173"; // Adres frontendu aplikacji
+            // Token w URLu wymaga zakodowania, bo zawiera znaki + / =
+            var encodedToken = System.Net.WebUtility.UrlEncode(token);
+            var resetLink = $"{frontendUrl}/reset-password?token={encodedToken}&email={model.Email}";
+
+            // Wysyłka maila
+            await _emailSender.SendEmailAsync(
+                model.Email, 
+                "Resetowanie hasła w OneMoreSpin", 
+                $"Kliknij tutaj, aby zresetować hasło: <a href='{resetLink}'>link</a>"
+            );
+
+            return Ok(new { message = "Jeśli konto istnieje, link do resetowania hasła został wysłany." });
+        }
+
+        // 2. Endpoint: Ustawienie nowego hasła
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordVm model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+
+                return BadRequest(new { message = "Nieprawidłowe żądanie." });
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+
+            if (result.Succeeded)
+            {
+                return Ok(new { message = "Hasło zostało pomyślnie zmienione." });
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(error.Code, error.Description);
+            }
+
+            return BadRequest(ModelState);
+        }
+    }
+
 
 public record RegisterDto(
     string Email,

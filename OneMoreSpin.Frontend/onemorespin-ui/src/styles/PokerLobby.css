@@ -1,0 +1,198 @@
+.lobby-container {
+
+    background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+    min-height: 100vh;
+    color: #fff;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.lobby-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 50px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.lobby-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin: 0;
+
+    color: #fff;
+    text-shadow: 
+        0 0 5px #fff,
+        0 0 10px #fff,
+        0 0 20px #00e5ff,
+        0 0 40px #00e5ff;
+}
+
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ccc;
+    padding: 10px 25px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border-color: #fff;
+    transform: translateX(-5px);
+}
+
+
+.tables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+
+.lobby-card {
+    position: relative;
+    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Efekt sprężyny */
+    border: 2px solid transparent;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 320px;
+}
+
+
+.lobby-card:hover {
+    transform: translateY(-15px) scale(1.02);
+}
+
+.card-icon-bg {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    font-size: 150px;
+    opacity: 0.05;
+    transform: rotate(20deg);
+    pointer-events: none;
+}
+
+
+.card-beginner {
+    border-color: #00e5ff;
+    box-shadow: 0 10px 30px -10px rgba(0, 229, 255, 0.3);
+}
+.card-beginner:hover { box-shadow: 0 20px 40px -10px rgba(0, 229, 255, 0.6); }
+.card-beginner .table-name { color: #00e5ff; }
+
+
+.card-advanced {
+    border-color: #ff5252;
+    box-shadow: 0 10px 30px -10px rgba(255, 82, 82, 0.3);
+}
+.card-advanced:hover { box-shadow: 0 20px 40px -10px rgba(255, 82, 82, 0.6); }
+.card-advanced .table-name { color: #ff5252; }
+
+
+.card-vip {
+    border-color: #ffd700;
+    box-shadow: 0 10px 30px -10px rgba(255, 215, 0, 0.3);
+    background: linear-gradient(145deg, #3a2a0a, #1a1a1a); /* Lekko złote tło */
+}
+.card-vip:hover { box-shadow: 0 20px 40px -10px rgba(255, 215, 0, 0.6); }
+.card-vip .table-name { color: #ffd700; }
+
+
+
+.table-name {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+.table-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+    color: #ccc;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.buy-in-highlight {
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+
+.join-btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+
+.card-beginner .join-btn { background: linear-gradient(to right, #00e5ff, #0091ea); color: #000; }
+.card-advanced .join-btn { background: linear-gradient(to right, #ff5252, #d32f2f); color: #fff; }
+.card-vip .join-btn { background: linear-gradient(to right, #ffd700, #ff6f00); color: #000; }
+
+.join-btn:hover {
+    filter: brightness(1.2);
+    transform: scale(1.05);
+}
+.join-btn:active { transform: scale(0.98); }
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    font-size: 2rem;
+    color: #00e5ff;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}

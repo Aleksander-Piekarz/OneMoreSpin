@@ -566,6 +566,18 @@
   cursor: not-allowed;
 }
 
+.bet-quick-btn.negative {
+  background: linear-gradient(135deg, rgba(255, 99, 71, 0.3) 0%, rgba(255, 69, 0, 0.3) 100%);
+  border-color: rgba(255, 99, 71, 0.5);
+  color: #ff6347;
+}
+
+.bet-quick-btn.negative:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255, 99, 71, 0.5) 0%, rgba(255, 69, 0, 0.5) 100%);
+  border-color: rgba(255, 99, 71, 0.8);
+  box-shadow: 0 6px 20px rgba(255, 99, 71, 0.4);
+}
+
 .bet-input {
   width: 100%;
   background: rgba(255, 255, 255, 0.1);

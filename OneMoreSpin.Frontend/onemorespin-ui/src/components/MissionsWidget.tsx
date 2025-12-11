@@ -16,6 +16,17 @@ export const MissionsWidget: React.FC<MissionsWidgetProps> = ({ onRewardClaimed 
   const [claimingId, setClaimingId] = useState<number | null>(null);
   const [successMsg, setSuccessMsg] = useState("");
 
+  useEffect(() => {
+    if (expanded) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = 'unset';
+    }
+    return () => {
+        document.body.style.overflow = 'unset';
+    };
+  }, [expanded]);
+
   const fetchMissions = async () => {
     setLoading(true);
     setError("");
@@ -84,17 +95,18 @@ export const MissionsWidget: React.FC<MissionsWidgetProps> = ({ onRewardClaimed 
       <button
         className={`missions-toggle-btn${expanded ? " expanded" : ""}`}
         onClick={() => setExpanded((v) => !v)}
-        title="Misje / Questy"
-        style={{ position: "fixed", top: 90, right: 20, zIndex: 1000 }}
+        title="Misje"
       >
         🗺️
       </button>
       {expanded && (
-        <div className="missions-widget">
-          <div className="missions-header">
-            <span className="missions-icon">🗺️</span>
-            <h3 className="missions-title">Misje / Questy</h3>
-          </div>
+        <div className="missions-modal-overlay" onClick={() => setExpanded(false)}>
+            <div className="missions-widget" onClick={(e) => e.stopPropagation()}>
+              <div className="missions-header">
+                <span className="missions-icon">🗺️</span>
+                <h3 className="missions-title">Misje</h3>
+                <button className="missions-close-btn" onClick={() => setExpanded(false)}>×</button>
+              </div>
           {loading ? (
             <div className="missions-loading">Ładowanie...</div>
           ) : error ? (
@@ -104,42 +116,49 @@ export const MissionsWidget: React.FC<MissionsWidgetProps> = ({ onRewardClaimed 
               {missions.length === 0 && <div>Brak dostępnych misji.</div>}
               {missions.map((m) => (
                 <div key={m.MissionId} className={`mission-item${m.IsCompleted ? " completed" : ""}${m.IsClaimed ? " claimed" : ""}`}>
-                  <div className="mission-main-row">
+                  <div className="mission-left-col">
                     <div className="mission-name">{m.Name}</div>
+                    <div className="mission-desc">{m.Description}</div>
+                  </div>
+                  
+                  <div className="mission-center-col">
+                    <div className="mission-progress-row">
+                      <div className="mission-progress-bar">
+                        <div
+                          className="mission-progress-bar-inner"
+                          style={{ width: `${Math.min(100, (m.CurrentProgress / m.RequiredAmount) * 100)}%` }}
+                        ></div>
+                      </div>
+                      <div className="mission-progress-label">
+                        {m.CurrentProgress} / {m.RequiredAmount}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mission-right-col">
                     <div className="mission-reward">🎁 {m.RewardAmount} PLN</div>
-                  </div>
-                  <div className="mission-desc">{m.Description}</div>
-                  <div className="mission-progress-row">
-                    <div className="mission-progress-bar">
-                      <div
-                        className="mission-progress-bar-inner"
-                        style={{ width: `${Math.min(100, (m.CurrentProgress / m.RequiredAmount) * 100)}%` }}
-                      ></div>
+                    <div className="mission-actions">
+                      {m.IsClaimed ? (
+                        <span className="mission-claimed">Odebrano</span>
+                      ) : m.IsCompleted ? (
+                        <button
+                          className="mission-claim-btn"
+                          onClick={() => handleClaim(m.MissionId)}
+                          disabled={claimingId === m.MissionId}
+                        >
+                          {claimingId === m.MissionId ? "..." : "Odbierz"}
+                        </button>
+                      ) : (
+                        <span className="mission-incomplete">W trakcie</span>
+                      )}
                     </div>
-                    <div className="mission-progress-label">
-                      {m.CurrentProgress} / {m.RequiredAmount}
-                    </div>
-                  </div>
-                  <div className="mission-actions">
-                    {m.IsClaimed ? (
-                      <span className="mission-claimed">Odebrano</span>
-                    ) : m.IsCompleted ? (
-                      <button
-                        className="mission-claim-btn"
-                        onClick={() => handleClaim(m.MissionId)}
-                        disabled={claimingId === m.MissionId}
-                      >
-                        {claimingId === m.MissionId ? "Odbieranie..." : "Odbierz nagrodę"}
-                      </button>
-                    ) : (
-                      <span className="mission-incomplete">W trakcie</span>
-                    )}
                   </div>
                 </div>
               ))}
             </div>
           )}
           {successMsg && <div className="missions-success">{successMsg}</div>}
+            </div>
         </div>
       )}
     </>
