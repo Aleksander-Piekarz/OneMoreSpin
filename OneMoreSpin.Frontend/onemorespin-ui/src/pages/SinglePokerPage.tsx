@@ -118,41 +118,35 @@ export default function PokerGame() {
     setSelected(newSet);
   }
 
-  const resetGame = () => {
-    setSession(null);
-    setSelected(new Set());
-    setMessage(null);
-    setLoading(false);
-    
-  };
+
 
   return (
-    <div className="poker-page">
-      <div className="poker-container">
+    <div className="sp-poker-page">
+      <div className="sp-poker-container">
         {/* HEADER */}
-        <div className="poker-header">
-          <div className="header-left">
-            <button className="back-btn" onClick={() => window.history.back()}>
+        <div className="sp-poker-header">
+          <div className="sp-header-left">
+            <button className="sp-back-btn" onClick={() => window.history.back()}>
               <i className="fas fa-chevron-left"></i> Powrót
             </button>
-            <h1 className="poker-title">ROYAL POKER</h1>
+            <h1 className="sp-poker-title">ROYAL POKER</h1>
           </div>
-          <div className="balance-display">
+          <div className="sp-balance-display">
              <span>{formatNumberWithSpaces(balance)} PLN</span>
           </div>
         </div>
 
         {/* STÓŁ DO GRY */}
-        <div className="poker-table-wrapper">
-          <div className="poker-table-felt">
-            <div className="table-logo">POKER</div>
+        <div className="sp-poker-table-wrapper">
+          <div className="sp-poker-table-felt">
+            <div className="sp-table-logo">POKER</div>
 
             {/* --- SEKCJA DEALERA (GÓRA) --- */}
-            <div className="dealer-section">
+            <div className="sp-dealer-section">
               {session && isGameFinished ? (
                 <>
-                  <div className="dealer-label">Karty Krupiera</div>
-                  <div className="dealer-hand-wrapper">
+                  <div className="sp-dealer-label">Karty Krupiera</div>
+                  <div className="sp-dealer-hand-wrapper">
                     {session.dealerHand.map((card, idx) => (
                       <PokerCard 
                         key={`d-${idx}`} card={card} 
@@ -160,31 +154,31 @@ export default function PokerGame() {
                       />
                     ))}
                   </div>
-                  <div className="rank-badge dealer-rank-badge active">
+                  <div className="sp-rank-badge sp-dealer-rank-badge sp-active">
                     {formatRank(session.dealerHandRank)}
                   </div>
                 </>
               ) : (
                 /* Pusty stan ma tę samą wysokość co pełny w CSS, więc nie skacze */
-                 <div className="dealer-label" style={{opacity: 0}}>Oczekiwanie...</div>
+                 <div className="sp-dealer-label" style={{opacity: 0}}>Oczekiwanie...</div>
               )}
             </div>
 
             {/* --- INFO ŚRODEK (Zamiast absolutnego pozycjonowania, jest w flow) --- */}
-            <div className="table-center-info">
+            <div className="sp-table-center-info">
               {message ? (
-                <div className="game-message error">{message}</div>
+                <div className="sp-game-message sp-error">{message}</div>
               ) : (
                 <>
-                  {!session && <div className="game-message hint">Rozdaj karty, aby zagrać</div>}
+                  {!session && <div className="sp-game-message sp-hint">Rozdaj karty, aby zagrać</div>}
                   {session && !isGameFinished && (
-                    <div className="game-message hint">
+                    <div className="sp-game-message sp-hint">
                       {selected.size > 0 ? `Wybrano do wymiany: ${selected.size}` : 'Wybierz karty do wymiany'}
                     </div>
                   )}
                   {session && isGameFinished && (
                     /* Używamy zwykłego tekstu, nie absolute, żeby nie skakało */
-                    <div className={`result-text ${hasWon ? 'win' : 'lose'}`}>
+                    <div className={`sp-result-text ${hasWon ? 'sp-win' : 'sp-lose'}`}>
                       {hasWon ? 'WYGRANA!' : 'PRZEGRANA'}
                     </div>
                   )}
@@ -193,15 +187,15 @@ export default function PokerGame() {
             </div>
 
             {/* --- SEKCJA GRACZA (DÓŁ) --- */}
-            <div className="player-section">
+            <div className="sp-player-section">
               {/* Tutaj wyświetlamy układ gracza (Twoja prośba) */}
               {session && (
-                <div className="rank-badge player-rank-badge">
+                <div className="sp-rank-badge sp-player-rank-badge">
                   {formatRank(session.playerHandRank || 'Rozdanie')}
                 </div>
               )}
 
-              <div className="hand-display">
+              <div className="sp-hand-display">
                 {session ? (
                   session.playerHand.map((card, idx) => (
                     <PokerCard 
@@ -220,26 +214,26 @@ export default function PokerGame() {
             </div>
 
             {/* --- PANEL STEROWANIA --- */}
-            <div className="controls-bar">
+            <div className="sp-controls-bar">
               {(!session || isGameFinished) ? (
                 <>
                    {/* Grupa stawki obok przycisku startu */}
-                  <div className="bet-control-group">
-                    <button className="bet-btn-small" onClick={() => setBetAmount(Math.max(10, betAmount - 10))}>-</button>
-                    <div className="bet-info">
-                      <span className="bet-label">STAWKA</span>
-                      <span className="bet-amount">{betAmount}</span>
+                  <div className="sp-bet-control-group">
+                    <button className="sp-bet-btn-small" onClick={() => setBetAmount(Math.max(10, betAmount - 10))}>-</button>
+                    <div className="sp-bet-info">
+                      <span className="sp-bet-label">STAWKA</span>
+                      <span className="sp-bet-amount">{betAmount}</span>
                     </div>
-                    <button className="bet-btn-small" onClick={() => setBetAmount(betAmount + 10)}>+</button>
+                    <button className="sp-bet-btn-small" onClick={() => setBetAmount(betAmount + 10)}>+</button>
                   </div>
 
-                  <button className="main-btn btn-deal" onClick={startSession} disabled={loading}>
+                  <button className="sp-main-btn sp-btn-deal" onClick={startSession} disabled={loading}>
                     {loading ? 'TASOWANIE...' : 'ROZDAJ KARTY'}
                   </button>
                 </>
               ) : (
                 <>
-                  <button className="main-btn btn-action" onClick={confirmDiscard} disabled={loading}>
+                  <button className="sp-main-btn sp-btn-action" onClick={confirmDiscard} disabled={loading}>
                     {loading 
                       ? 'WYMIENIAM...' 
                       : (selected.size === 0 ? 'SPRAWDŹ' : 'WYMIEŃ KARTY')}
