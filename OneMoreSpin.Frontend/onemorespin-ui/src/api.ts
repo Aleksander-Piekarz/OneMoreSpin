@@ -49,8 +49,6 @@ export type DailyRewardStatusResponse = {
     timeUntilNextClaim?: number; // sekundy
 };
 
-
-
 export type RouletteBetVm = {
   type: string;
   value: string;
