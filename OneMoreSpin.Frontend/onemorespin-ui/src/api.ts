@@ -192,21 +192,18 @@ export const api = {
     },
   },
   poker: {
-    start(bet: number) {
-      return request<any>("/Poker/start", {
+    start(betAmount: number) {
+      return request<any>("/singlepoker/start", {
         method: "POST",
-        body: JSON.stringify({ betAmount: bet }),
+        body: JSON.stringify({ betAmount }),
       });
     },
-    draw(sessionId: number, discardIndices: number[]) {
-      return request<any>(`/Poker/${sessionId}/draw`, {
+    draw(sessionId: number, indices: number[]) {
+      return request<any>("/singlepoker/draw", {
         method: "POST",
-        body: JSON.stringify({ discardIndices }),
+        body: JSON.stringify({ sessionId, indices }),
       });
     },
-    getSession(sessionId: number) {
-      return request<any>(`/Poker/${sessionId}`);
-    }
   },
 
   blackjack: {

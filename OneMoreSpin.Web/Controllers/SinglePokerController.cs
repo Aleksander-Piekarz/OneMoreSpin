@@ -10,12 +10,12 @@ using OneMoreSpin.ViewModels.VM;
 namespace OneMoreSpin.Web.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-public class PokerController : ControllerBase
+[Route("api/singlepoker")]
+public class SinglePokerController : ControllerBase
 {
-    private readonly IPokerService _pokerService;
+    private readonly ISinglePokerService _pokerService;
 
-    public PokerController(IPokerService pokerService)
+    public SinglePokerController(ISinglePokerService pokerService)
     {
         _pokerService = pokerService;
     }
@@ -27,6 +27,8 @@ public class PokerController : ControllerBase
 
     public class DrawRequest
     {
+        public int SessionId { get; set; }
+        public List<int> Indices { get; set; } = new();
         public List<int> DiscardIndices { get; set; } = new();
     }
 
@@ -41,11 +43,14 @@ public class PokerController : ControllerBase
         return Ok(vm);
     }
 
+    [HttpPost("draw")]
     [HttpPost("{id:int}/draw")]
     [Authorize]
     public async Task<IActionResult> Draw(int id, [FromBody] DrawRequest req)
     {
-        var vm = await _pokerService.DrawAsync(id, req.DiscardIndices);
+        int sessionId = id > 0 ? id : req.SessionId;
+        var indices = req.Indices.Any() ? req.Indices : req.DiscardIndices;
+        var vm = await _pokerService.DrawAsync(sessionId, indices);
         return Ok(vm);
     }
 
