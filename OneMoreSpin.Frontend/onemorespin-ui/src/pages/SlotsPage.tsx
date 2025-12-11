@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { refreshMissions } from "../events";
+import { fireConfetti } from "../utils/confetti";
 import "../styles/SlotsPage.css";
 
 import lemonImg from "../assets/img/slots/lemon.png";
@@ -234,15 +235,20 @@ const SlotsPage: React.FC = () => {
           const totalMultiplier = result.winDetails.reduce((sum: number, detail: any) => sum + (detail.Multiplier || detail.multiplier || 0), 0);
           setWinMultiplier(totalMultiplier);
           
+          const showDelay = 300;
+          const displayDuration = 2500;
+          const fadeOutDuration = 400;
+          
           setTimeout(() => {
             setShowWin(true);
             setShowConfetti(true);
             setIsFadingOut(false);
-          }, 300);
+            fireConfetti(displayDuration + fadeOutDuration);
+          }, showDelay);
           
           setTimeout(() => {
             setIsFadingOut(true);
-          }, 1700);
+          }, showDelay + displayDuration);
           
           setTimeout(() => {
             setShowWin(false);
@@ -250,7 +256,7 @@ const SlotsPage: React.FC = () => {
             setWinningLines([]);
             setIsFadingOut(false);
             setIsShowingWin(false);
-          }, 2000);
+          }, showDelay + displayDuration + fadeOutDuration);
         } else {
           playSound('lose');
         }
@@ -301,21 +307,21 @@ const SlotsPage: React.FC = () => {
               
               <div className="bet-row">
                 <button 
-                  className="bet-quick-btn small" 
+                  className="bet-quick-btn small negative" 
                   onClick={() => adjustBet(-100)}
                   disabled={isSpinning}
                 >
                   -100
                 </button>
                 <button 
-                  className="bet-quick-btn small" 
+                  className="bet-quick-btn small negative" 
                   onClick={() => adjustBet(-50)}
                   disabled={isSpinning}
                 >
                   -50
                 </button>
                 <button 
-                  className="bet-quick-btn small" 
+                  className="bet-quick-btn small negative" 
                   onClick={() => adjustBet(-10)}
                   disabled={isSpinning}
                 >

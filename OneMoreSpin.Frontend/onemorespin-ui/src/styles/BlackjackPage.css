@@ -1,0 +1,1128 @@
+.blackjack-page {
+  min-height: 100vh;
+  height: 100vh;
+  width: 100%;
+  background: #0a0e27;
+  position: relative;
+  overflow: hidden;
+}
+
+.blackjack-page .animated-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.blackjack-page .floating-shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.15;
+  animation: floatShapes 20s infinite ease-in-out;
+}
+
+.blackjack-page .shape-1 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  top: -100px;
+  left: -100px;
+  animation-duration: 25s;
+}
+
+.blackjack-page .shape-2 {
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  top: 20%;
+  right: -50px;
+  animation-duration: 30s;
+  animation-delay: 5s;
+}
+
+.blackjack-page .shape-3 {
+  width: 350px;
+  height: 350px;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  bottom: -100px;
+  left: 50%;
+  animation-duration: 28s;
+  animation-delay: 10s;
+}
+
+.blackjack-page .shape-4 {
+  width: 250px;
+  height: 250px;
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  top: 60%;
+  left: 10%;
+  animation-duration: 22s;
+  animation-delay: 15s;
+}
+
+.blackjack-page .shape-5 {
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  bottom: 10%;
+  right: 15%;
+  animation-duration: 27s;
+  animation-delay: 8s;
+}
+
+@keyframes floatShapes {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translate(50px, 100px) rotate(90deg) scale(1.1);
+  }
+  50% {
+    transform: translate(-30px, 50px) rotate(180deg) scale(0.9);
+  }
+  75% {
+    transform: translate(80px, -50px) rotate(270deg) scale(1.05);
+  }
+}
+
+.blackjack-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 25px 40px;
+  background: rgba(10, 14, 39, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 100;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.4) 0%, rgba(118, 75, 162, 0.4) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50px;
+  padding: 12px 28px;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  position: relative;
+  overflow: hidden;
+}
+
+.back-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.back-btn:hover::before {
+  left: 100%;
+}
+
+.back-btn:hover {
+  transform: translateX(-5px);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 30px rgba(102, 126, 234, 0.6);
+}
+
+.back-btn i {
+  font-size: 18px;
+}
+
+.blackjack-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  font-size: 48px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 6px;
+  margin: 0;
+  display: flex;
+  gap: 15px;
+}
+
+.blackjack-title .title-word {
+  display: inline-block;
+  animation: titleWave 3s ease-in-out infinite;
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(102, 126, 234, 0.6),
+    0 0 30px rgba(118, 75, 162, 0.4);
+}
+
+.blackjack-title .title-word:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.blackjack-title .title-word:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+@keyframes titleWave {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.05);
+  }
+}
+
+.header-right-cluster {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.balance-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(67, 233, 123, 0.3) 0%, rgba(56, 249, 215, 0.3) 100%);
+  border: 2px solid rgba(67, 233, 123, 0.6);
+  border-radius: 50px;
+  padding: 12px 28px;
+  color: #43e97b;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 1px;
+  box-shadow: 0 0 20px rgba(67, 233, 123, 0.4);
+  animation: balancePulse 2s ease-in-out infinite;
+}
+
+@keyframes balancePulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(67, 233, 123, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(67, 233, 123, 0.6);
+  }
+}
+
+.balance-display i {
+  font-size: 24px;
+  animation: coinSpin 3s linear infinite;
+}
+
+@keyframes coinSpin {
+  0%, 100% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(180deg);
+  }
+}
+
+.blackjack-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 160px);
+  padding: 30px 20px;
+  position: relative;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.blackjack-container {
+  max-width: 1300px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 260px;
+  max-width: 280px;
+}
+
+.right-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  height: 100%;
+}
+
+.bet-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.25) 0%, rgba(118, 75, 162, 0.25) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.4),
+    inset 0 0 30px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+.game-info {
+  background: linear-gradient(135deg, rgba(67, 233, 123, 0.15) 0%, rgba(56, 249, 215, 0.15) 100%);
+  border: 2px solid rgba(67, 233, 123, 0.4);
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 
+    0 5px 20px rgba(0, 0, 0, 0.3),
+    inset 0 0 20px rgba(67, 233, 123, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.info-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+  text-align: center;
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+}
+
+.info-value {
+  color: #43e97b;
+  font-size: 24px;
+  font-weight: 900;
+  text-align: center;
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  text-shadow: 0 0 20px rgba(67, 233, 123, 0.6);
+  letter-spacing: 2px;
+}
+
+.bet-label {
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 6px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+}
+
+.bet-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.bet-quick-btn {
+  flex: 1;
+  padding: 10px 8px;
+  background: linear-gradient(135deg, rgba(67, 233, 123, 0.3) 0%, rgba(56, 249, 215, 0.3) 100%);
+  border: 2px solid rgba(67, 233, 123, 0.5);
+  border-radius: 12px;
+  color: #43e97b;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+}
+
+.bet-quick-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(67, 233, 123, 0.5) 0%, rgba(56, 249, 215, 0.5) 100%);
+  border-color: rgba(67, 233, 123, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(67, 233, 123, 0.4);
+}
+
+.bet-quick-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.bet-quick-btn.negative {
+  background: linear-gradient(135deg, rgba(255, 99, 71, 0.3) 0%, rgba(255, 69, 0, 0.3) 100%);
+  border-color: rgba(255, 99, 71, 0.5);
+  color: #ff6347;
+}
+
+.bet-quick-btn.negative:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255, 99, 71, 0.5) 0%, rgba(255, 69, 0, 0.5) 100%);
+  border-color: rgba(255, 99, 71, 0.8);
+  box-shadow: 0 6px 20px rgba(255, 99, 71, 0.4);
+}
+
+.bet-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(10, 14, 39, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+}
+
+.bet-input:focus {
+  outline: none;
+  border-color: #43e97b;
+  box-shadow: 
+    inset 0 2px 10px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(67, 233, 123, 0.5);
+}
+
+.bet-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.game-table {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 30px;
+  padding: 25px;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 50px rgba(102, 126, 234, 0.3),
+    inset 0 0 50px rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: visible;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  max-width: 800px;
+  height: 460px;
+}
+
+.dealer-section,
+.player-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: rgba(10, 14, 39, 0.5);
+  border-radius: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  height: 190px;
+}
+
+.section-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.section-label .score {
+  color: #43e97b;
+  font-size: 26px;
+  text-shadow: 0 0 20px rgba(67, 233, 123, 0.6);
+}
+
+.card-hand {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  height: 120px;
+  overflow: visible;
+}
+
+.playing-card {
+  width: 100px;
+  height: 140px;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+  opacity: 1;
+}
+
+.playing-card.dealing {
+  animation: cardDeal 0.5s ease-out forwards;
+}
+
+@keyframes cardDeal {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px) rotateX(-90deg) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateX(0) scale(1);
+  }
+}
+
+.playing-card:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+  padding: 10px;
+}
+
+.card-rank {
+  font-size: 38px;
+  font-weight: 900;
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  line-height: 1;
+}
+
+.card-suit {
+  font-size: 62px;
+  line-height: 1;
+}
+
+.card-rank.red,
+.card-suit.red {
+  color: #e53e3e;
+}
+
+.card-rank.black,
+.card-suit.black {
+  color: #1a202c;
+}
+
+.card-back {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-pattern {
+  width: 80%;
+  height: 80%;
+  background-image: 
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 0px, rgba(255, 255, 255, 0.15) 10px, transparent 10px, transparent 20px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.15) 0px, rgba(255, 255, 255, 0.15) 10px, transparent 10px, transparent 20px);
+  border-radius: 8px;
+}
+
+.table-center {
+  display: none;
+}
+
+.chip-stack {
+  background: linear-gradient(135deg, rgba(67, 233, 123, 0.3) 0%, rgba(56, 249, 215, 0.3) 100%);
+  border: 3px solid rgba(67, 233, 123, 0.7);
+  border-radius: 16px;
+  padding: 10px 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 0 30px rgba(67, 233, 123, 0.5),
+    0 8px 40px rgba(0, 0, 0, 0.6);
+  position: relative;
+  backdrop-filter: blur(15px);
+}
+
+.bet-amount {
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 2px;
+  text-shadow: 
+    0 0 20px rgba(67, 233, 123, 0.8),
+    0 2px 10px rgba(0, 0, 0, 0.9);
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+}
+
+.max-bet-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(250, 112, 154, 0.4) 0%, rgba(254, 225, 64, 0.4) 100%);
+  border: 2px solid rgba(250, 112, 154, 0.7);
+  border-radius: 15px;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  text-transform: uppercase;
+  box-shadow: 0 5px 20px rgba(250, 112, 154, 0.4);
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.max-bet-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s;
+}
+
+.max-bet-btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.max-bet-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(250, 112, 154, 0.6) 0%, rgba(254, 225, 64, 0.6) 100%);
+  transform: scale(1.03);
+  box-shadow: 0 8px 30px rgba(250, 112, 154, 0.6);
+}
+
+.max-bet-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.action-btn {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 15px;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.action-btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.action-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.hit-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+}
+
+.hit-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.7);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.stand-btn {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 5px 20px rgba(240, 147, 251, 0.5);
+}
+
+.stand-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(240, 147, 251, 0.7);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.double-btn {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  box-shadow: 0 5px 20px rgba(250, 112, 154, 0.5);
+}
+
+.double-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(250, 112, 154, 0.7);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.start-game-btn,
+.deal-btn,
+.new-game-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  border: 2px solid rgba(67, 233, 123, 0.6);
+  border-radius: 15px;
+  color: #0a0e27;
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: 3px;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  text-transform: uppercase;
+  box-shadow: 0 6px 30px rgba(67, 233, 123, 0.5);
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.start-game-btn::before,
+.deal-btn::before,
+.new-game-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s;
+}
+
+.start-game-btn:hover:not(:disabled)::before,
+.deal-btn:hover:not(:disabled)::before,
+.new-game-btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.start-game-btn:hover:not(:disabled),
+.deal-btn:hover:not(:disabled),
+.new-game-btn:hover:not(:disabled) {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 10px 40px rgba(67, 233, 123, 0.7);
+}
+
+.start-game-btn:disabled,
+.deal-btn:disabled,
+.new-game-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.error-message {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 18px 30px;
+  background: linear-gradient(135deg, rgba(245, 87, 108, 0.95) 0%, rgba(240, 147, 251, 0.95) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 15px;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 16px;
+  text-align: center;
+  animation: errorShake 0.5s ease-in-out, fadeInSimple 0.3s ease;
+  box-shadow: 0 10px 40px rgba(245, 87, 108, 0.6);
+  z-index: 1000;
+  max-width: 500px;
+}
+
+.loss-notification {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 25px 50px;
+  background: linear-gradient(135deg, rgba(245, 87, 108, 0.95) 0%, rgba(240, 147, 251, 0.95) 100%);
+  border: 3px solid rgba(255, 255, 255, 0.6);
+  border-radius: 20px;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 48px;
+  text-align: center;
+  animation: lossShake 0.5s ease-in-out, fadeInSimple 0.3s ease;
+  box-shadow: 0 20px 60px rgba(245, 87, 108, 0.8);
+  z-index: 9999;
+  backdrop-filter: blur(15px);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  letter-spacing: 3px;
+}
+
+.loss-notification.fade-out {
+  animation: fadeOutSimple 0.4s ease forwards;
+}
+
+.loss-notification i {
+  font-size: 52px;
+  animation: iconPulse 0.6s ease-in-out;
+}
+
+@keyframes lossShake {
+  0%, 100% {
+    transform: translate(-50%, -50%);
+  }
+  25% {
+    transform: translate(-50%, -50%) rotate(-3deg);
+  }
+  75% {
+    transform: translate(-50%, -50%) rotate(3deg);
+  }
+}
+
+@keyframes iconPulse {
+  0% {
+    transform: scale(0.5);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.error-message i {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+@keyframes errorShake {
+  0%, 100% {
+    transform: translateX(-50%);
+  }
+  25% {
+    transform: translateX(calc(-50% - 10px));
+  }
+  75% {
+    transform: translateX(calc(-50% + 10px));
+  }
+}
+
+/* === RESULT OVERLAY - WIN NOTIFICATION === */
+.blackjack-page .result-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeInOverlay 0.4s ease-out forwards;
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.blackjack-page .result-overlay.fade-out {
+  animation: fadeOutOverlay 0.5s ease-in forwards;
+}
+
+@keyframes fadeOutOverlay {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* === WIN BANNER === */
+.blackjack-page .result-banner.win {
+  background: linear-gradient(135deg, rgba(67, 233, 123, 0.95) 0%, rgba(56, 249, 215, 0.95) 100%);
+  border: 5px solid #ffffff;
+  border-radius: 40px;
+  padding: 60px 100px;
+  text-align: center;
+  box-shadow: 
+    0 30px 80px rgba(0, 0, 0, 0.8),
+    0 0 100px rgba(67, 233, 123, 0.8);
+  animation: winBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes winBounce {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.blackjack-page .result-banner.win .result-text {
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  font-size: 80px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 10px;
+  margin: 0 0 20px 0;
+  text-shadow: 
+    0 0 20px rgba(255, 255, 255, 1),
+    0 0 40px rgba(67, 233, 123, 0.8),
+    0 5px 15px rgba(0, 0, 0, 0.5);
+  animation: textGlowWin 1s ease-in-out infinite alternate;
+}
+
+@keyframes textGlowWin {
+  from {
+    text-shadow: 
+      0 0 20px rgba(255, 255, 255, 1),
+      0 0 40px rgba(67, 233, 123, 0.8),
+      0 5px 15px rgba(0, 0, 0, 0.5);
+  }
+  to {
+    text-shadow: 
+      0 0 30px rgba(255, 255, 255, 1),
+      0 0 60px rgba(67, 233, 123, 1),
+      0 5px 20px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.blackjack-page .result-banner.win .result-amount {
+  font-size: 50px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+  letter-spacing: 3px;
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+}
+
+/* === LOSS/PUSH OVERLAYS === */
+.blackjack-page .result-banner {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.25) 0%, rgba(118, 75, 162, 0.25) 100%);
+  border: 5px solid rgba(255, 255, 255, 0.6);
+  border-radius: 40px;
+  padding: 60px 100px;
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.9);
+  text-align: center;
+  display: block;
+}
+
+.blackjack-page .result-banner h2,
+.blackjack-page .result-banner .result-text {
+  font-size: 80px;
+  font-weight: 900;
+  margin: 0 0 20px 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 10px;
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  text-align: center;
+  line-height: 1;
+  display: block;
+}
+
+.blackjack-page .result-banner p,
+.blackjack-page .result-banner .result-amount {
+  font-size: 50px;
+  color: #ffffff;
+  font-weight: 800;
+  margin: 0 !important;
+  text-align: center;
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+  letter-spacing: 3px;
+  display: block;
+}
+
+.blackjack-page .result-banner.lose {
+  background: linear-gradient(135deg, rgba(245, 87, 108, 0.95) 0%, rgba(240, 147, 251, 0.95) 100%);
+  border-color: #ffffff;
+  box-shadow: 
+    0 30px 80px rgba(0, 0, 0, 0.8),
+    0 0 100px rgba(245, 87, 108, 0.8);
+  animation: winBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.blackjack-page .result-banner.push {
+  background: linear-gradient(135deg, rgba(255, 216, 155, 0.95) 0%, rgba(255, 159, 67, 0.95) 100%);
+  border-color: #ffffff;
+  box-shadow: 
+    0 30px 80px rgba(0, 0, 0, 0.8),
+    0 0 100px rgba(255, 216, 155, 0.8);
+  animation: winBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.blackjack-page .result-banner.lose .result-text {
+  color: #ffffff;
+  text-shadow: 
+    0 0 20px rgba(255, 255, 255, 1),
+    0 0 40px rgba(245, 87, 108, 0.8),
+    0 5px 15px rgba(0, 0, 0, 0.5);
+  animation: textGlowWin 1s ease-in-out infinite alternate;
+}
+
+.blackjack-page .result-banner.push .result-text {
+  color: #ffffff;
+  text-shadow: 
+    0 0 20px rgba(255, 255, 255, 1),
+    0 0 40px rgba(255, 216, 155, 0.8),
+    0 5px 15px rgba(0, 0, 0, 0.5);
+  animation: textGlowWin 1s ease-in-out infinite alternate;
+}
+
+/* === CONFETTI === */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9998;
+  overflow: hidden;
+  animation: fadeInSimple 0.3s ease;
+}
+
+.confetti-container.fade-out {
+  animation: fadeOutSimple 0.3s ease forwards;
+}
+
+@keyframes fadeInSimple {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOutSimple {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  opacity: 0;
+  animation: confettiFall 4s linear forwards;
+}
+
+@keyframes confettiFall {
+  0% {
+    top: -10%;
+    opacity: 1;
+  }
+  100% {
+    top: 110%;
+    opacity: 0;
+  }
+}
+
+@media (max-width: 1200px) {
+  .blackjack-container {
+    gap: 20px;
+  }
+  
+  .left-panel {
+    min-width: 220px;
+    max-width: 240px;
+  }
+  
+  .right-panel {
+    min-width: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .blackjack-title {
+    font-size: 36px;
+  }
+  
+  .blackjack-container {
+    flex-direction: column;
+  }
+  
+  .left-panel,
+  .right-panel {
+    max-width: 100%;
+    width: 100%;
+  }
+  
+  .action-buttons {
+    flex-direction: row;
+  }
+  
+  .result-text {
+    font-size: 48px;
+  }
+  
+  .result-amount {
+    font-size: 32px;
+  }
+}

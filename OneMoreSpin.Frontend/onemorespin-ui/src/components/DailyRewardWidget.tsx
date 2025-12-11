@@ -19,6 +19,17 @@ const DailyRewardWidget: React.FC<DailyRewardWidgetProps> = ({ user, onRewardCla
     const [errorMsg, setErrorMsg] = useState('');
     const [isExpanded, setIsExpanded] = useState(false);
 
+    useEffect(() => {
+        if (isExpanded) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isExpanded]);
+
     const fetchStatus = async () => {
         try {
             const data = await api.reward.getStatus();
@@ -113,12 +124,14 @@ const DailyRewardWidget: React.FC<DailyRewardWidgetProps> = ({ user, onRewardCla
                 🎁
             </button>
             {isExpanded && (
-                <div className="daily-reward-widget">
-                    <div className="drw-header">
-                        <span className="drw-icon">🎁</span>
-                        <h3 className="drw-title">Dzienna Nagroda</h3>
-                    </div>
-                    <div className="drw-info-row">
+                <div className="drw-modal-overlay" onClick={() => setIsExpanded(false)}>
+                    <div className="daily-reward-widget" onClick={(e) => e.stopPropagation()}>
+                        <div className="drw-header">
+                            <span className="drw-icon">🎁</span>
+                            <h3 className="drw-title">Dzienna Nagroda</h3>
+                            <button className="drw-close-btn" onClick={() => setIsExpanded(false)}>×</button>
+                        </div>
+                        <div className="drw-info-row">
                         <div className="drw-info-item">
                             <div className="drw-info-label">Dziś odbierzesz:</div>
                             <div className="drw-info-value">{alreadyClaimed ? '✓ Odebrano' : `${todayReward} PLN`}</div>
@@ -171,6 +184,7 @@ const DailyRewardWidget: React.FC<DailyRewardWidgetProps> = ({ user, onRewardCla
                         </div>
                     )}
                 </div>
+            </div>
             )}
         </>
     );

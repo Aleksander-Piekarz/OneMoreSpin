@@ -72,7 +72,7 @@ const HomePage: React.FC = () => {
       iconImage: blackjackIcon,
       gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
       particles: ["♠️", "♥️", "♦️", "♣️", "🃏", "🎴"],
-      onClick: () => console.log("Blackjack")
+      onClick: () => navigate("/blackjack")
     },
     { 
       id: 4, 
