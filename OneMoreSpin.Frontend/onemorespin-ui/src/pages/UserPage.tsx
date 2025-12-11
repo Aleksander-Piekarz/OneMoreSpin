@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api';
+import { refreshMissions } from '../events';
+import DailyRewardWidget from '../components/DailyRewardWidget';
+import MissionsWidget from '../components/MissionsWidget';
 import '../styles/UserPage.css';
 
 // Ikony
@@ -17,6 +20,8 @@ type MeUser = {
     surname: string;
     isVip: boolean;
     balance: number;
+    dailyStreak: number;
+    lastRewardClaimedDate?: string;
 };
 
 type PaymentHistoryItem = {
@@ -82,6 +87,9 @@ function UserProfile() {
     const [games, setGames] = useState<GameHistoryItemVm[]>([]);
     const [gameHistoryLoading, setGameHistoryLoading] = useState(true);
     const [gameHistoryError, setGameHistoryError] = useState<string | null>(null);
+
+     const [visibleTransactions, setVisibleTransactions] = useState(10);
+    const [visibleGames, setVisibleGames] = useState(10);
     
     // --- EFEKTY ---
 
@@ -175,6 +183,18 @@ function UserProfile() {
     const vipText = me?.isVip ? 'VIP' : 'Standard';
     const statusText = 'Aktywne';
     
+    const handleRewardClaimed = async () => {
+        try {
+            const user = await api.auth.me();
+            setMe(user as MeUser);
+            // Odśwież historię transakcji
+            api.payment.getHistory().then(setTransactions).catch(() => {});
+            refreshMissions();
+        } catch {
+            console.error('Nie udało się odświeżyć danych');
+        }
+    };
+    
     if (error) {
         return <div className="userpage-container"><div>Nie udało się pobrać profilu: {error}</div></div>;
     }
@@ -193,6 +213,10 @@ function UserProfile() {
                 <div className="floating-shape" style={{background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', width: 250, height: 250, top: '60%', left: '10%', position: 'absolute', animationDuration: '22s', animationDelay: '15s'}}></div>
                 <div className="floating-shape" style={{background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', width: 300, height: 300, bottom: '10%', right: '15%', position: 'absolute', animationDuration: '27s', animationDelay: '8s'}}></div>
             </div>
+            
+
+            <DailyRewardWidget user={me} onRewardClaimed={handleRewardClaimed} />
+            <MissionsWidget onRewardClaimed={handleRewardClaimed} />
             
             <button className="userpage-back-btn" onClick={() => navigate('/home')}>
                 Powrót
@@ -230,7 +254,6 @@ function UserProfile() {
                         <CardHeader icon={<WalletIcon />} title="Mój Portfel" />
                         <div className="userpage-balance-label">Aktualne Saldo</div>
                         <div className="userpage-balance">{balanceText}</div>
-                        <div className="userpage-balance-info">+100 Monet za jutrzejsze logowanie!</div>
                         <button className="userpage-btn" onClick={() => setShowDepositModal(true)}>WPŁAĆ</button>
                         <button className="userpage-btn" onClick={() => setShowWithdrawalModal(true)}>WYPŁAĆ</button>
                     </div>
@@ -253,6 +276,7 @@ function UserProfile() {
                         </div>
                         <div>
                             {activeTab==='transakcje' && (
+                                <>
                                 <table className="userpage-table">
                                     <thead>
                                         <tr>
@@ -269,7 +293,7 @@ function UserProfile() {
                                         ) : transactions.length === 0 ? (
                                             <tr><td colSpan={3} style={{ textAlign: 'center' }}>Brak historii transakcji.</td></tr>
                                         ) : (
-                                            transactions.map(tx => (
+                                            transactions.slice(0, visibleTransactions).map(tx => (
                                                 <tr key={tx.id}>
                                                     <td>{new Date(tx.createdAt).toLocaleString('pl-PL')}</td>
                                                     <td>{tx.transactionType}</td>
@@ -281,8 +305,19 @@ function UserProfile() {
                                         )}
                                     </tbody>
                                 </table>
+                                {!historyLoading && !historyError && transactions.length > visibleTransactions && (
+                                        <button 
+                                            className="userpage-btn" 
+                                            onClick={() => setVisibleTransactions(prev => prev + 10)}
+                                            style={{ marginTop: '15px' }}
+                                        >
+                                            Pokaż więcej
+                                        </button>
+                                    )}
+                                </>
                             )}
                             {activeTab==='gry' && (
+                                <>
                                 <table className="userpage-table">
                                     <thead>
                                         <tr>
@@ -301,13 +336,13 @@ function UserProfile() {
                                         ) : games.length === 0 ? (
                                             <tr><td colSpan={5} style={{ textAlign: 'center' }}>Brak historii gier.</td></tr>
                                         ) : (
-                                            games.map((game, index) => (
+                                            games.slice(0, visibleGames).map((game, index) => (
                                                 <tr key={index}>
                                                     <td>{new Date(game.dateOfGame).toLocaleString('pl-PL')}</td>
                                                     <td>{game.gameName}</td>
                                                     <td>{game.outcome}</td>
                                                     <td>{game.stake.toFixed(2)} PLN</td>
-                                                    <td style={{ color: game.moneyWon > 0 ? '#4caf50' : 'inherit' }}>
+                                                    <td style={{ color: game.moneyWon > 0 ? '#4caf50' : '#f15050' }}>
                                                         {game.moneyWon.toFixed(2)} PLN
                                                     </td>
                                                 </tr>
@@ -315,6 +350,16 @@ function UserProfile() {
                                         )}
                                     </tbody>
                                 </table>
+                                  {!gameHistoryLoading && !gameHistoryError && games.length > visibleGames && (
+                                        <button 
+                                            className="userpage-btn" 
+                                            onClick={() => setVisibleGames(prev => prev + 10)}
+                                            style={{ marginTop: '15px' }}
+                                        >
+                                            Pokaż więcej
+                                        </button>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>
@@ -411,6 +456,7 @@ function UserProfile() {
                                 setToast(`Wypłacono ${withdrawalAmount.toFixed(2)} PLN. Saldo zaktualizowane!`);
                                 // Odśwież historię transakcji
                                 api.payment.getHistory().then(setTransactions);
+                                refreshMissions();
                                 setTimeout(() => {
                                     setShowWithdrawalModal(false);
                                     setIsWithdrawing(false);

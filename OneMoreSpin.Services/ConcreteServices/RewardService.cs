@@ -22,6 +22,60 @@ namespace OneMoreSpin.Services.ConcreteServices
         )
             : base(dbContext, mapper, logger) { }
 
+        private (bool canClaim, int nextStreak, int currentStreak, TimeSpan? timeUntilNext) CalculateRewardEligibility(
+            User user,
+            DateTime currentTime,
+            DateTime currentDate)
+        {
+            bool canClaim = true;
+            TimeSpan? timeUntilNext = null;
+            int currentStreak = user.DailyStreak;
+            int nextStreak = 1;
+
+            if (!user.LastRewardClaimedDate.HasValue)
+            {
+                // Pierwsze odebranie w historii
+                return (true, 1, 0, null);
+            }
+
+            var lastClaimDate = user.LastRewardClaimedDate.Value.Date;
+            var daysDifference = (currentDate - lastClaimDate).Days;
+
+            if (daysDifference == 0)
+            {
+                // blok jesli juz odebral
+                canClaim = false;
+                var nextMidnight = currentDate.AddDays(1);
+                timeUntilNext = nextMidnight - currentTime;
+
+                // Następny streak to obecny + 1
+                nextStreak = user.DailyStreak + 1;
+                if (nextStreak > MaxStreakDays)
+                {
+                    nextStreak = 1;
+                }
+            }
+            else if (daysDifference == 1)
+            {
+                // Wczoraj odebrał wiec moze odebrac
+                canClaim = true;
+                nextStreak = user.DailyStreak + 1;
+                if (nextStreak > MaxStreakDays)
+                {
+                    nextStreak = 1;
+                }
+            }
+            else 
+            {
+                // Przerwał serię - reset
+                canClaim = true;
+                currentStreak = 0;
+                nextStreak = 1;
+            }
+
+            return (canClaim, nextStreak, currentStreak, timeUntilNext);
+        }
+
         public async Task<ClaimRewardResultVm> ClaimDailyRewardAsync(string userId)
         {
             if (!int.TryParse(userId, out int parsedUserId))
@@ -37,36 +91,37 @@ namespace OneMoreSpin.Services.ConcreteServices
             }
 
             var currentTime = DateTime.UtcNow;
+            var currentDate = currentTime.Date;
 
-            if (user.LastRewardClaimedDate.HasValue)
+            var (canClaim, nextStreak, currentStreak, timeUntilNext) = 
+                CalculateRewardEligibility(user, currentTime, currentDate);
+
+            // Jeśli nie może odebrać
+            if (!canClaim)
             {
-                var timeSinceLastClaim = currentTime - user.LastRewardClaimedDate.Value;
-
-                if (timeSinceLastClaim.TotalHours < 24)
+                return new ClaimRewardResultVm
                 {
-                    var timeRemaining = TimeSpan.FromHours(24) - timeSinceLastClaim;
-                    return new ClaimRewardResultVm
-                    {
-                        Success = false,
-                        NextClaimAvailableIn = timeRemaining,
-                    };
-                }
-
-                // Jeśli minęło 24-48h, kontynuuj serię. W przeciwnym razie (ponad 48h) seria jest resetowana do 1.
-                user.DailyStreak = (timeSinceLastClaim.TotalHours <= 48) ? user.DailyStreak + 1 : 1;
+                    Success = false,
+                    DailyStreak = user.DailyStreak,
+                    NextClaimAvailableIn = timeUntilNext,
+                };
             }
-            else
+
+            // Jeśli reset streak 
+            if (currentStreak == 0 && user.DailyStreak > 0)
             {
-                // Pierwsze odebranie nagrody w historii
-                user.DailyStreak = 1;
+                user.DailyStreak = 0;
+                await DbContext.SaveChangesAsync();
+
+                Logger.LogInformation(
+                    $"Użytkownik {userId} przerwał serię. Streak zresetowany."
+                );
             }
 
-            // Jeśli seria przekroczy maksimum, zresetuj ją do 1 (zapętlenie)
-            if (user.DailyStreak > MaxStreakDays)
-            {
-                user.DailyStreak = 1;
-            }
+            // Zaktualizuj streak
+            user.DailyStreak = nextStreak;
 
+            // Oblicz nagrodę
             decimal rewardAmount = BaseRewardAmount + (BaseRewardAmount * (user.DailyStreak - 1));
 
             user.Balance += rewardAmount;
@@ -92,6 +147,53 @@ namespace OneMoreSpin.Services.ConcreteServices
                 Success = true,
                 Amount = rewardAmount,
                 DailyStreak = user.DailyStreak,
+            };
+        }
+
+        public async Task<DailyRewardStatusVm> GetDailyRewardStatusAsync(string userId)
+        {
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return new DailyRewardStatusVm 
+                { 
+                    CanClaim = false,
+                    CurrentStreak = 0,
+                    NextRewardStreak = 1,
+                    NextRewardAmount = BaseRewardAmount
+                };
+            }
+
+            var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == parsedUserId);
+
+            if (user == null)
+            {
+                return new DailyRewardStatusVm 
+                { 
+                    CanClaim = false,
+                    CurrentStreak = 0,
+                    NextRewardStreak = 1,
+                    NextRewardAmount = BaseRewardAmount
+                };
+            }
+
+            var currentTime = DateTime.UtcNow;
+            var currentDate = currentTime.Date;
+
+            // Użyj wspólnej logiki
+            var (canClaim, nextStreak, currentStreak, timeUntilNext) = 
+                CalculateRewardEligibility(user, currentTime, currentDate);
+
+            // Oblicz kwotę następnej nagrody
+            decimal nextRewardAmount = BaseRewardAmount + (BaseRewardAmount * (nextStreak - 1));
+
+            return new DailyRewardStatusVm
+            {
+                CanClaim = canClaim,
+                CurrentStreak = currentStreak,
+                NextRewardStreak = nextStreak,
+                NextRewardAmount = nextRewardAmount,
+                LastClaimedDate = user.LastRewardClaimedDate,
+                TimeUntilNextClaim = timeUntilNext
             };
         }
     }

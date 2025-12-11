@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
+import { refreshMissions } from "../events";
+import { fireConfetti } from "../utils/confetti";
 import "../styles/SlotsPage.css";
 
-import diamondImg from "../assets/img/slots/diamond.png";
-import sevenImg from "../assets/img/slots/seven.png";
+import lemonImg from "../assets/img/slots/lemon.png";
+import cherriesImg from "../assets/img/slots/cherries.png";
+import grapesImg from "../assets/img/slots/grapes.png";
 import bellImg from "../assets/img/slots/bell.png";
-import AImg from "../assets/img/slots/A.png";
-import KImg from "../assets/img/slots/K.png";
-import QImg from "../assets/img/slots/Q.png";
-import JImg from "../assets/img/slots/J.png";
+import cloverImg from "../assets/img/slots/clover.png";
+import sevenImg from "../assets/img/slots/seven.png";
+import diamondImg from "../assets/img/slots/diamond.png";
 
-import leverSound from "../assets/sounds/lever-pull.mp3";
-import winSound from "../assets/sounds/win.mp3";
-import loseSound from "../assets/sounds/lose.mp3";
+import leverSoundDefault from "../assets/sounds/lever-pull-default.mp3";
+import winSoundDefault from "../assets/sounds/win-default.mp3";
+import loseSoundDefault from "../assets/sounds/lose-default.mp3";
 
 const SlotsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,20 +29,65 @@ const SlotsPage: React.FC = () => {
   ]);
   const [showWin, setShowWin] = useState(false);
   const [winAmount, setWinAmount] = useState(0);
+  const [winMultiplier, setWinMultiplier] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [error, setError] = useState<string>("");
   const [winningLines, setWinningLines] = useState<number[][]>([]);
+  const [autoPlay, setAutoPlay] = useState(false);
+  const [autoSpinCount, setAutoSpinCount] = useState<number>(Infinity);
+  const [remainingSpins, setRemainingSpins] = useState<number>(Infinity);
+  const [isShowingWin, setIsShowingWin] = useState(false);
+
+
+  const leverAudioRef = React.useRef<HTMLAudioElement>(new Audio(leverSoundDefault));
+  const winAudioRef = React.useRef<HTMLAudioElement>(new Audio(winSoundDefault));
+  const loseAudioRef = React.useRef<HTMLAudioElement>(new Audio(loseSoundDefault));
 
   const symbolMap: { [key: string]: string } = {
-    "J": JImg, 
-    "Q": QImg, 
-    "K": KImg, 
-    "A": AImg, 
-    "🔔": bellImg, 
-    "💎": diamondImg, 
-    "7️⃣": sevenImg
+    "LEMON": lemonImg,
+    "CHERRIES": cherriesImg,
+    "GRAPES": grapesImg,
+    "BELL": bellImg,
+    "CLOVER": cloverImg,
+    "SEVEN": sevenImg,
+    "DIAMOND": diamondImg
   };
+
+  const playSound = (type: 'lever' | 'win' | 'lose') => {
+    const audioRef = type === 'lever' ? leverAudioRef : type === 'win' ? winAudioRef : loseAudioRef;
+    
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(err => console.error('Error playing sound:', err));
+    }
+  };
+
+  useEffect(() => {
+    const preloadAudio = () => {
+      leverAudioRef.current.preload = 'auto';
+      winAudioRef.current.preload = 'auto';
+      loseAudioRef.current.preload = 'auto';
+      
+      leverAudioRef.current.load();
+      winAudioRef.current.load();
+      loseAudioRef.current.load();
+    };
+    
+    preloadAudio();
+  }, []);
+
+  useEffect(() => {
+    const preloadImages = () => {
+      Object.values(symbolMap).forEach(src => {
+        const img = new Image();
+        img.src = src;
+      });
+    };
+    
+    preloadImages();
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
@@ -63,6 +110,21 @@ const SlotsPage: React.FC = () => {
     fetchBalance();
   }, [navigate]);
 
+  useEffect(() => {
+    if (autoPlay && !isSpinning && !isShowingWin && bet > 0 && bet <= balance && remainingSpins > 0) {
+      const timer = setTimeout(() => {
+        handleSpin();
+        if (remainingSpins !== Infinity) {
+          setRemainingSpins(prev => prev - 1);
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (autoPlay && remainingSpins === 0) {
+      setAutoPlay(false);
+      setRemainingSpins(autoSpinCount);
+    }
+  }, [autoPlay, isSpinning, isShowingWin, balance, bet, remainingSpins]);
+
   const handleBetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value) || 0;
     if (value >= 0) {
@@ -77,13 +139,29 @@ const SlotsPage: React.FC = () => {
     }
   };
 
-  // Definicja linii wypłat - musi być identyczna jak w backendzie
+  const toggleAutoPlay = () => {
+    if (autoPlay) {
+      setAutoPlay(false);
+      setRemainingSpins(autoSpinCount);
+    } else {
+      setAutoPlay(true);
+      setRemainingSpins(autoSpinCount);
+    }
+  };
+
+  const handleAutoSpinCountChange = (count: number) => {
+    setAutoSpinCount(count);
+    if (!autoPlay) {
+      setRemainingSpins(count);
+    }
+  };
+
   const paylines: number[][][] = [
-    [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4]], // Środkowa
-    [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]], // Górna
-    [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4]], // Dolna
-    [[0, 0], [1, 1], [2, 2], [1, 3], [0, 4]], // V odwrócone
-    [[2, 0], [1, 1], [0, 2], [1, 3], [2, 4]], // V normalne
+    [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4]],
+    [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]],
+    [[2, 0], [2, 1], [2, 2], [2, 3], [2, 4]],
+    [[0, 0], [1, 1], [2, 2], [1, 3], [0, 4]],
+    [[2, 0], [1, 1], [0, 2], [1, 3], [2, 4]],
     [[1, 0], [0, 1], [0, 2], [0, 3], [1, 4]],
     [[1, 0], [2, 1], [2, 2], [2, 3], [1, 4]],
     [[0, 0], [0, 1], [1, 2], [2, 3], [2, 4]],
@@ -96,7 +174,6 @@ const SlotsPage: React.FC = () => {
 
     winDetails.forEach(detail => {
       const line = paylines[detail.paylineIndex];
-      // Podświetl tylko zwycięskie symbole na linii
       for (let i = 0; i < detail.count; i++) {
         const [row, col] = line[i];
         winningCells.add(`${row},${col}`);
@@ -107,9 +184,9 @@ const SlotsPage: React.FC = () => {
   };
 
   const handleSpin = async () => {
-    if (isSpinning) return;
+    if (isSpinning || isShowingWin) return;
 
-    new Audio(leverSound).play();
+    playSound('lever');
 
     if (bet <= 0) {
       setError("Wpisz kwotę większą niż 0");
@@ -128,7 +205,7 @@ const SlotsPage: React.FC = () => {
     setShowConfetti(false);
     setWinningLines([]);
 
-    const spinDuration = 2000;
+    const spinDuration = 1000;
     const spinInterval = setInterval(() => {
       const randomGrid = Array(3).fill(null).map(() =>
         Array(5).fill(null).map(() => {
@@ -147,31 +224,41 @@ const SlotsPage: React.FC = () => {
         setGrid(result.grid);
         setBalance(result.balance);
         setIsSpinning(false);
+        refreshMissions();
 
         if (result.isWin && result.winDetails?.length > 0) {
-          new Audio(winSound).play();
+          playSound('win');
+          setIsShowingWin(true);
           const lines = detectWinningLines(result.winDetails);
           setWinningLines(lines);
           setWinAmount(result.win);
+          const totalMultiplier = result.winDetails.reduce((sum: number, detail: any) => sum + (detail.Multiplier || detail.multiplier || 0), 0);
+          setWinMultiplier(totalMultiplier);
+          
+          const showDelay = 300;
+          const displayDuration = 2500;
+          const fadeOutDuration = 400;
           
           setTimeout(() => {
             setShowWin(true);
             setShowConfetti(true);
             setIsFadingOut(false);
-          }, 1500);
+            fireConfetti(displayDuration + fadeOutDuration);
+          }, showDelay);
           
           setTimeout(() => {
             setIsFadingOut(true);
-          }, 5200);
+          }, showDelay + displayDuration);
           
           setTimeout(() => {
             setShowWin(false);
             setShowConfetti(false);
             setWinningLines([]);
             setIsFadingOut(false);
-          }, 6000);
+            setIsShowingWin(false);
+          }, showDelay + displayDuration + fadeOutDuration);
         } else {
-          new Audio(loseSound).play();
+          playSound('lose');
         }
       }, spinDuration);
 
@@ -204,9 +291,11 @@ const SlotsPage: React.FC = () => {
           <span className="title-word">MACHINE</span>
         </h1>
 
-        <div className="balance-display">
-          <i className="fas fa-coins"></i>
-          <span>{balance.toLocaleString()} PLN</span>
+        <div className="header-right-cluster">
+          <div className="balance-display">
+            <i className="fas fa-coins"></i>
+            <span>{balance.toLocaleString()} PLN</span>
+          </div>
         </div>
       </header>
 
@@ -218,21 +307,21 @@ const SlotsPage: React.FC = () => {
               
               <div className="bet-row">
                 <button 
-                  className="bet-quick-btn small" 
+                  className="bet-quick-btn small negative" 
                   onClick={() => adjustBet(-100)}
                   disabled={isSpinning}
                 >
                   -100
                 </button>
                 <button 
-                  className="bet-quick-btn small" 
+                  className="bet-quick-btn small negative" 
                   onClick={() => adjustBet(-50)}
                   disabled={isSpinning}
                 >
                   -50
                 </button>
                 <button 
-                  className="bet-quick-btn small" 
+                  className="bet-quick-btn small negative" 
                   onClick={() => adjustBet(-10)}
                   disabled={isSpinning}
                 >
@@ -282,6 +371,60 @@ const SlotsPage: React.FC = () => {
               >
                 MAX BET
               </button>
+
+              <div className="auto-play-section">
+                <label className="auto-play-label">AUTO SPIN</label>
+                
+                <div className="auto-spin-options">
+                  <button
+                    className={`auto-spin-option ${autoSpinCount === 5 ? 'selected' : ''}`}
+                    onClick={() => handleAutoSpinCountChange(5)}
+                    disabled={autoPlay}
+                  >
+                    5
+                  </button>
+                  <button
+                    className={`auto-spin-option ${autoSpinCount === 10 ? 'selected' : ''}`}
+                    onClick={() => handleAutoSpinCountChange(10)}
+                    disabled={autoPlay}
+                  >
+                    10
+                  </button>
+                  <button
+                    className={`auto-spin-option ${autoSpinCount === 20 ? 'selected' : ''}`}
+                    onClick={() => handleAutoSpinCountChange(20)}
+                    disabled={autoPlay}
+                  >
+                    20
+                  </button>
+                  <button
+                    className={`auto-spin-option ${autoSpinCount === 50 ? 'selected' : ''}`}
+                    onClick={() => handleAutoSpinCountChange(50)}
+                    disabled={autoPlay}
+                  >
+                    50
+                  </button>
+                  <button
+                    className={`auto-spin-option ${autoSpinCount === Infinity ? 'selected' : ''}`}
+                    onClick={() => handleAutoSpinCountChange(Infinity)}
+                    disabled={autoPlay}
+                  >
+                    <i className="fas fa-infinity"></i>
+                  </button>
+                </div>
+
+                <button 
+                  className={`auto-play-btn ${autoPlay ? 'active' : ''}`}
+                  onClick={toggleAutoPlay}
+                >
+                  <i className={`fas ${autoPlay ? 'fa-stop' : 'fa-play'}`}></i>
+                  <span>
+                    {autoPlay 
+                      ? `STOP (${remainingSpins === Infinity ? '∞' : remainingSpins})` 
+                      : 'START AUTO'}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -327,7 +470,7 @@ const SlotsPage: React.FC = () => {
               <button 
                 className={`lever-btn ${isSpinning ? 'pulling' : ''}`}
                 onClick={handleSpin}
-                disabled={isSpinning}
+                disabled={isSpinning || autoPlay}
               >
                 <div className="lever-handle">
                   <div className="lever-ball">
@@ -357,6 +500,7 @@ const SlotsPage: React.FC = () => {
             <div className="win-banner">
               <h2 className="win-text">WYGRANA!</h2>
               <p className="win-amount">+{winAmount.toLocaleString()} PLN</p>
+              <p className="win-multiplier">Mnożnik: {winMultiplier.toFixed(1)}x</p>
             </div>
           </div>
         )}

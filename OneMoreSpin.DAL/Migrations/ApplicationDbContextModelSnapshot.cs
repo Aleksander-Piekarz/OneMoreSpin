@@ -463,12 +463,6 @@ namespace OneMoreSpin.DAL.Migrations
                     b.Property<decimal>("Stake")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal>("Score")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Stake")
-                        .HasColumnType("numeric");
-
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 

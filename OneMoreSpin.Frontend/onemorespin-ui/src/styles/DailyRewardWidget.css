@@ -1,0 +1,646 @@
+/* Przycisk toggle - zawsze widoczny w prawym górnym rogu */
+.drw-toggle-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #FFD700, #FFA500, #FF8C00);
+    border: none;
+    border-radius: 50%;
+    font-size: 30px;
+    cursor: pointer;
+    z-index: 900;
+    box-shadow: 
+        0 0 30px rgba(255, 215, 0, 0.6),
+        0 8px 25px rgba(255, 140, 0, 0.4),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: togglePulse 3s ease-in-out infinite;
+}
+
+@keyframes togglePulse {
+    0%, 100% { 
+        box-shadow: 
+            0 0 30px rgba(255, 215, 0, 0.6),
+            0 8px 25px rgba(255, 140, 0, 0.4);
+    }
+    50% { 
+        box-shadow: 
+            0 0 50px rgba(255, 215, 0, 0.9),
+            0 12px 35px rgba(255, 140, 0, 0.6);
+    }
+}
+
+.drw-toggle-btn:hover {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 
+        0 0 50px rgba(255, 215, 0, 0.9),
+        0 12px 35px rgba(255, 140, 0, 0.6);
+}
+
+.drw-toggle-btn.expanded {
+    opacity: 0.9;
+}
+
+.drw-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn 0.3s ease;
+}
+
+.daily-reward-widget {
+    position: relative;
+    background: linear-gradient(135deg, 
+        rgba(15, 15, 35, 0.95) 0%, 
+        rgba(25, 25, 55, 0.95) 100%);
+    backdrop-filter: blur(30px) saturate(180%);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 20px;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 35px;
+    box-shadow: 
+        0 0 60px rgba(255, 215, 0, 0.2),
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    z-index: 2001;
+    animation: slideUp 0.3s ease;
+    max-width: 90%;
+    width: auto;
+}
+
+.drw-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 10;
+}
+
+.drw-close-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    transform: rotate(90deg) scale(1.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Removed slideInRight animation as it is no longer used */
+
+
+.drw-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+    width: 100%;
+    justify-content: center;
+}
+
+.drw-icon {
+    font-size: 32px;
+    animation: bounce 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(5deg); }
+}
+
+.drw-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #FFD700, #FFA500, #FFD700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.4));
+}
+
+/* Poziomy layout dla info o nagrodach */
+.drw-info-row {
+    display: flex;
+    gap: 15px;
+}
+
+.drw-info-item {
+    background: linear-gradient(135deg, 
+        rgba(255, 215, 0, 0.05) 0%, 
+        rgba(255, 165, 0, 0.05) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 12px;
+    padding: 16px 24px;
+    text-align: center;
+    min-width: 140px;
+    transition: all 0.3s ease;
+}
+
+.drw-info-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+    border-color: rgba(255, 215, 0, 0.5);
+}
+
+.drw-info-label {
+    font-size: 16px;
+    color: rgba(255, 215, 0, 0.7);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+}
+
+.drw-info-value {
+    font-size: 28px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 2px 6px rgba(255, 215, 0, 0.5));
+}
+
+.drw-days {
+    display: flex;
+    gap: 8px;
+    padding: 0 15px;
+}
+
+.drw-day {
+    position: relative;
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.03) 0%, 
+        rgba(255, 255, 255, 0.01) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: help;
+    min-width: 60px;
+    overflow: hidden;
+}
+
+.drw-day::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.05));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.drw-day:hover::before {
+    opacity: 1;
+}
+
+.drw-day:hover {
+    transform: translateY(-4px) scale(1.05);
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+/* Dzień ukończony (zielony gradient) */
+.drw-day.completed {
+    background: linear-gradient(135deg, #00d4aa, #00b894);
+    border-color: #00d4aa;
+    box-shadow: 
+        0 0 20px rgba(0, 212, 170, 0.4),
+        0 4px 15px rgba(0, 212, 170, 0.3);
+}
+
+.drw-day.completed::after {
+    content: '✓';
+    position: absolute;
+    top: 2px;
+    right: 4px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 900;
+}
+
+/* Aktualny dzień (złoty gradient, świecący) */
+.drw-day.current {
+    background: linear-gradient(135deg, #FFD700, #FFA500, #FF8C00);
+    border-color: #FFD700;
+    box-shadow: 
+        0 0 30px rgba(255, 215, 0, 0.8),
+        0 6px 25px rgba(255, 165, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    animation: currentDayPulse 2s ease-in-out infinite;
+    transform: scale(1.1);
+}
+
+@keyframes currentDayPulse {
+    0%, 100% { 
+        box-shadow: 
+            0 0 30px rgba(255, 215, 0, 0.8),
+            0 6px 25px rgba(255, 165, 0, 0.6);
+    }
+    50% { 
+        box-shadow: 
+            0 0 50px rgba(255, 215, 0, 1),
+            0 8px 35px rgba(255, 165, 0, 0.8);
+    }
+}
+
+.drw-day-num {
+    font-size: 18px;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.6);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.drw-day.completed .drw-day-num,
+.drw-day.current .drw-day-num {
+    color: #ffffff;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.drw-day-amt {
+    font-size: 16px;
+    margin-top: 4px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.drw-day.completed .drw-day-amt,
+.drw-day.current .drw-day-amt {
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 800;
+}
+
+.drw-next {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, 
+        rgba(255, 215, 0, 0.08) 0%, 
+        rgba(255, 165, 0, 0.08) 100%);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.8);
+    white-space: nowrap;
+}
+.drw-next strong {
+    font-size: 18px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-left: 6px;
+    font-family: 'Courier New', monospace;
+    display: inline-block;
+    min-width: 64px;
+    text-align: center;
+}
+
+.drw-claim-btn {
+    position: relative;
+    background: linear-gradient(135deg, #FFD700, #FFA500, #FF8C00);
+    border: none;
+    border-radius: 14px;
+    padding: 18px 40px;
+    font-size: 18px;
+    font-weight: 900;
+    color: #000;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 
+        0 0 30px rgba(255, 215, 0, 0.5),
+        0 8px 25px rgba(255, 140, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    overflow: hidden;
+}
+
+.drw-claim-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.4), 
+        transparent);
+    transition: left 0.5s ease;
+}
+
+.drw-claim-btn:hover::before {
+    left: 100%;
+}
+
+.drw-claim-btn:hover:not(:disabled) {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 
+        0 0 50px rgba(255, 215, 0, 0.8),
+        0 12px 35px rgba(255, 140, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.drw-claim-btn:active:not(:disabled) {
+    transform: translateY(-1px) scale(1.02);
+}
+
+.drw-claim-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    filter: grayscale(0.6);
+}
+
+.drw-claim-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 20px rgba(255, 215, 0, 0.5),
+        0 0 30px rgba(255, 215, 0, 0.3);
+}
+
+.drw-claim-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.drw-claim-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.drw-timer {
+    background: linear-gradient(135deg, 
+        rgba(244, 67, 54, 0.1) 0%, 
+        rgba(244, 67, 54, 0.05) 100%);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    padding: 10px 16px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.drw-timer-label {
+    font-size: 10px;
+    color: rgba(255, 100, 100, 0.8);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.drw-timer-value {
+    font-size: 20px;
+    font-weight: 900;
+    font-family: 'Courier New', monospace;
+    color: #ff6b6b;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+}
+
+.drw-success {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        rgba(0, 0, 0, 0.98) 0%, 
+        rgba(15, 15, 35, 0.98) 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.4s ease;
+    backdrop-filter: blur(10px);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.drw-success-content {
+    text-align: center;
+    animation: successZoom 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes successZoom {
+    0% {
+        transform: scale(0.3) rotate(-10deg);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.drw-success-icon {
+    font-size: 72px;
+    margin-bottom: 16px;
+    animation: successRotate 0.8s ease;
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+}
+
+@keyframes successRotate {
+    0% { transform: rotate(0deg) scale(0.5); }
+    50% { transform: rotate(180deg) scale(1.2); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+.drw-success-text {
+    font-size: 22px;
+    font-weight: 900;
+    color: #ffffff;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.drw-success-amount {
+    font-size: 36px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #FFD700, #FFA500, #FFD700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 4px 15px rgba(255, 215, 0, 0.8));
+    animation: amountGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes amountGlow {
+    0%, 100% { 
+        filter: drop-shadow(0 4px 15px rgba(255, 215, 0, 0.8));
+    }
+    50% { 
+        filter: drop-shadow(0 6px 25px rgba(255, 215, 0, 1));
+    }
+}
+
+/* Responsywność */
+@media (max-width: 1400px) {
+    .daily-reward-widget {
+        gap: 20px;
+        padding: 18px 25px;
+    }
+    
+    .drw-days {
+        gap: 6px;
+    }
+    
+    .drw-day {
+        min-width: 55px;
+        padding: 8px 6px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .drw-toggle-btn {
+        width: 55px;
+        height: 55px;
+        font-size: 26px;
+    }
+
+    .daily-reward-widget {
+        flex-wrap: wrap;
+        gap: 15px;
+        padding: 16px 20px;
+        max-width: calc(100vw - 40px);
+        top: 85px;
+    }
+    
+    .drw-header {
+        border-right: none;
+        border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+        padding-right: 0;
+        padding-bottom: 12px;
+        width: 100%;
+    }
+    
+    .drw-days {
+        gap: 5px;
+        padding: 0;
+    }
+    
+    .drw-day {
+        min-width: 50px;
+    }
+}
+
+@media (max-width: 768px) {
+    .drw-toggle-btn {
+        top: 15px;
+        right: 15px;
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
+
+    .daily-reward-widget {
+        position: fixed;
+        top: 75px;
+        right: 15px;
+        left: 15px;
+        flex-direction: column;
+    }
+    
+    .drw-info-row {
+        width: 100%;
+    }
+    
+    .drw-days {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .drw-toggle-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 22px;
+        top: 12px;
+        right: 12px;
+    }
+
+    .daily-reward-widget {
+        padding: 12px 16px;
+        gap: 12px;
+        top: 65px;
+        right: 12px;
+        left: 12px;
+    }
+
+    .drw-days {
+        gap: 4px;
+    }
+
+    .drw-day {
+        min-width: 45px;
+        padding: 6px 4px;
+    }
+
+    .drw-day-num {
+        font-size: 12px;
+    }
+
+    .drw-day-amt {
+        font-size: 9px;
+    }
+    
+    .drw-info-item {
+        min-width: 100px;
+        padding: 10px 14px;
+    }
+    
+    .drw-claim-btn {
+        padding: 12px 24px;
+        font-size: 13px;
+    }
+}

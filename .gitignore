@@ -4,5 +4,5 @@ obj/
 .fake
 node_modules/
 przydatne_komendy.txt
-.github/
+
 .vs

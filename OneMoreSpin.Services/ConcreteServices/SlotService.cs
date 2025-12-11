@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -18,77 +17,90 @@ namespace OneMoreSpin.Services.ConcreteServices
         private const int Rows = 3;
         private const int Cols = 5;
 
-        private static readonly string[] Symbols = { "J", "Q", "K", "A", "🔔", "💎", "7️⃣" };
         private readonly Random _rng = new();
         private readonly IMissionService _missionService;
 
+        // Tabela wypłat
         private static readonly Dictionary<string, Dictionary<int, decimal>> PayoutTable = new()
         {
             {
-                "J",
-                new Dictionary<int, decimal>
-                {
-                    { 3, 0.3m },
-                    { 4, 0.6m },
-                    { 5, 1.2m },
-                }
-            },
-            {
-                "Q",
-                new Dictionary<int, decimal>
-                {
-                    { 3, 0.4m },
-                    { 4, 0.8m },
-                    { 5, 1.6m },
-                }
-            },
-            {
-                "K",
+                "LEMON",
                 new Dictionary<int, decimal>
                 {
                     { 3, 0.5m },
-                    { 4, 1.0m },
-                    { 5, 2.0m },
+                    { 4, 2.0m },
+                    { 5, 5.0m },
                 }
             },
             {
-                "A",
-                new Dictionary<int, decimal>
-                {
-                    { 3, 0.6m },
-                    { 4, 1.2m },
-                    { 5, 2.4m },
-                }
-            },
-            {
-                "🔔",
+                "CHERRIES",
                 new Dictionary<int, decimal>
                 {
                     { 3, 1.0m },
-                    { 4, 2.0m },
-                    { 5, 4.0m },
+                    { 4, 3.0m },
+                    { 5, 10.0m },
                 }
             },
             {
-                "💎",
+                "GRAPES",
                 new Dictionary<int, decimal>
                 {
-                    { 3, 2.5m },
-                    { 4, 10.0m },
-                    { 5, 25.0m },
+                    { 3, 2.0m },
+                    { 4, 6.0m },
+                    { 5, 20.0m },
                 }
             },
             {
-                "7️⃣",
+                "BELL",
+                new Dictionary<int, decimal>
+                {
+                    { 3, 3.0m },
+                    { 4, 10.0m },
+                    { 5, 40.0m },
+                }
+            },
+            {
+                "CLOVER",
                 new Dictionary<int, decimal>
                 {
                     { 3, 5.0m },
-                    { 4, 25.0m },
-                    { 5, 100.0m },
+                    { 4, 15.0m },
+                    { 5, 60.0m },
+                }
+            },
+            {
+                "DIAMOND",
+                new Dictionary<int, decimal>
+                {
+                    { 3, 10.0m },
+                    { 4, 30.0m },
+                    { 5, 150.0m },
+                }
+            },
+            {
+                "SEVEN",
+                new Dictionary<int, decimal>
+                {
+                    { 3, 20.0m },
+                    { 4, 100.0m },
+                    { 5, 500.0m },
                 }
             },
         };
 
+        // --- WOREK Z WAGAMI (ODDS) ---
+        private static readonly Dictionary<string, int> SymbolWeights = new()
+        {
+            { "LEMON", 40 },
+            { "CHERRIES", 30 },
+            { "GRAPES", 25 },
+            { "BELL", 20 },
+            { "CLOVER", 15 },
+            { "DIAMOND", 10 },
+            { "SEVEN", 8 },
+        };
+
+        // Linie wygrywające
         private static readonly List<List<(int row, int col)>> Paylines = new()
         {
             new() { (1, 0), (1, 1), (1, 2), (1, 3), (1, 4) },
@@ -117,32 +129,38 @@ namespace OneMoreSpin.Services.ConcreteServices
         public async Task<SpinResultVm> SpinAsync(string userId, decimal bet)
         {
             if (!int.TryParse(userId, out int parsedUserId))
-            {
                 throw new ArgumentException("Nieprawidłowy format ID użytkownika");
-            }
 
             var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == parsedUserId);
             if (user == null)
-            {
                 throw new KeyNotFoundException("Nie znaleziono użytkownika");
-            }
 
             if (user.Balance < bet)
-            {
                 throw new InvalidOperationException("Niewystarczające środki");
-            }
+
             user.Balance -= bet;
 
+            // --- GENEROWANIE SIATKI (Weighted Random) ---
+            // Nie używamy reelsów/taśm. Każde pole losuje z worka niezależnie.
+
+            // Obliczamy sumę wag raz (można to przenieść do static constructora dla optymalizacji, ale tu jest czytelniej)
+            int totalWeight = SymbolWeights.Values.Sum();
+
             var grid = new List<List<string>>();
+
+            // Generujemy wiersz po wierszu
             for (int r = 0; r < Rows; r++)
             {
-                var row = new List<string>();
+                var rowList = new List<string>();
                 for (int c = 0; c < Cols; c++)
                 {
-                    row.Add(Symbols[_rng.Next(Symbols.Length)]);
+                    // Losowanie ważone dla pojedynczej komórki
+                    string randomSymbol = GetRandomWeightedSymbol(totalWeight);
+                    rowList.Add(randomSymbol);
                 }
-                grid.Add(row);
+                grid.Add(rowList);
             }
+            // --- KONIEC GENEROWANIA ---
 
             var (totalWin, winDetails) = CalculateWins(grid, bet);
 
@@ -154,21 +172,24 @@ namespace OneMoreSpin.Services.ConcreteServices
             var gameHistoryEntry = new UserScore
             {
                 UserId = parsedUserId,
-                GameId = 3, // TODO: Hardcoded ID, consider making it dynamic
+                GameId = 3,
                 Stake = bet,
                 MoneyWon = totalWin,
                 Score = totalWin > 0 ? "Wygrana" : "Przegrana",
                 DateOfGame = DateTime.UtcNow,
             };
             await DbContext.UserScores.AddAsync(gameHistoryEntry);
-            var isWin = true ? totalWin > 0 : false;
-            // --- INTEGRACJA Z MISJAMI ---
+
+            // --- MISJE ---
+            var isWin = totalWin > 0;
             var slotGame = await DbContext.Games.FirstOrDefaultAsync(g => g.Name == "Slots");
-            await _missionService.UpdateAllGamesPlayedProgressAsync(userId, slotGame.Id);
+            if (slotGame != null)
+            {
+                await _missionService.UpdateAllGamesPlayedProgressAsync(userId, slotGame.Id);
+            }
             await _missionService.UpdateMakeSpinsProgressAsync(userId);
             await _missionService.UpdateWinInARowProgressAsync(userId, isWin);
             await _missionService.UpdateWinTotalAmountProgressAsync(userId, totalWin);
-            // --- KONIEC INTEGRACJI ---
 
             await DbContext.SaveChangesAsync();
 
@@ -180,6 +201,25 @@ namespace OneMoreSpin.Services.ConcreteServices
                 Balance = user.Balance,
                 WinDetails = winDetails,
             };
+        }
+
+        // Metoda pomocnicza do losowania z wagami
+        private string GetRandomWeightedSymbol(int totalWeight)
+        {
+            int randomNumber = _rng.Next(0, totalWeight);
+            int currentWeightSum = 0;
+
+            foreach (var kvp in SymbolWeights)
+            {
+                currentWeightSum += kvp.Value;
+                if (randomNumber < currentWeightSum)
+                {
+                    return kvp.Key;
+                }
+            }
+
+            // Zabezpieczenie (teoretycznie nieosiągalne przy poprawnej logice)
+            return SymbolWeights.Keys.Last();
         }
 
         private (decimal totalWin, List<WinDetailVm> winDetails) CalculateWins(
@@ -195,8 +235,10 @@ namespace OneMoreSpin.Services.ConcreteServices
             {
                 string firstSymbol = grid[payline[0].row][payline[0].col];
                 int count = 1;
+
                 for (int i = 1; i < payline.Count; i++)
                 {
+                    // Sprawdzamy kolejne symbole w linii
                     if (grid[payline[i].row][payline[i].col] == firstSymbol)
                     {
                         count++;
@@ -215,7 +257,12 @@ namespace OneMoreSpin.Services.ConcreteServices
                         {
                             totalWin += bet * multiplier;
                             winDetails.Add(
-                                new WinDetailVm { PaylineIndex = paylineIndex, Count = count }
+                                new WinDetailVm
+                                {
+                                    PaylineIndex = paylineIndex,
+                                    Count = count,
+                                    Multiplier = multiplier,
+                                }
                             );
                         }
                     }

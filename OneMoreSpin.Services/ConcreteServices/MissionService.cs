@@ -190,11 +190,6 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             DbContext.Payments.Add(payment);
             await DbContext.SaveChangesAsync();
-
-            Logger.LogInformation(
-                $"Użytkownik {userId} odebrał nagrodę {userMission.Mission.RewardAmount} za misję '{userMission.Mission.Name}'."
-            );
-
             return true;
         }
 

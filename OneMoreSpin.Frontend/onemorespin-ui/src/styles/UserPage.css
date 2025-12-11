@@ -24,10 +24,10 @@
     border-radius: 50%;
     filter: blur(60px);
     opacity: 0.15;
-    animation: float 20s infinite ease-in-out;
+    animation: floatUserPage 20s infinite ease-in-out;
 }
 
-@keyframes float {
+@keyframes floatUserPage {
     0%, 100% {
         transform: translate(0, 0) rotate(0deg) scale(1);
     }
@@ -433,11 +433,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
-    animation: fadeIn 0.3s ease;
+    z-index: 10000;
+    animation: fadeInModal 0.3s ease forwards;
 }
 
-@keyframes fadeIn {
+@keyframes fadeInModal {
     from {
         opacity: 0;
     }
@@ -453,18 +453,20 @@
     padding: 40px;
     max-width: 500px;
     width: 90%;
+    margin: auto;
     box-shadow: 0 20px 80px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(20px) saturate(180%);
-    animation: slideUp 0.3s ease;
+    animation: modalPopIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transform-origin: center;
 }
 
-@keyframes slideUp {
-    from {
-        transform: translateY(50px);
+@keyframes modalPopIn {
+    0% {
+        transform: scale(0.8) translateY(20px);
         opacity: 0;
     }
-    to {
-        transform: translateY(0);
+    100% {
+        transform: scale(1) translateY(0);
         opacity: 1;
     }
 }
@@ -492,10 +494,12 @@
     margin-bottom: 8px;
     letter-spacing: 1px;
     text-transform: uppercase;
+    text-align: center;
 }
 
 .modal-form-group input {
     width: 100%;
+    max-width: 300px;
     padding: 14px 16px;
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid rgba(255, 255, 255, 0.1);
@@ -504,6 +508,21 @@
     font-size: 16px;
     transition: all 0.3s ease;
     outline: none;
+    margin: 0 auto;
+    display: block;
+    text-align: center;
+}
+
+/* Hide number input spinner arrows */
+.modal-form-group input[type="number"]::-webkit-outer-spin-button,
+.modal-form-group input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.modal-form-group input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .modal-form-group input:focus {

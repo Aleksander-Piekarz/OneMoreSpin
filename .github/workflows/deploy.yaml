@@ -1,0 +1,32 @@
+name: Deploy Fullstack (Windows)
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      # 1. Pobieramy kod z GitHuba na Twój komputer
+      - name: Pobierz kod
+        uses: actions/checkout@v4
+
+      # 2. Aktualizujemy biblioteki we Frontendzie
+      - name: Frontend - Instalacja
+        working-directory: ./OneMoreSpin.Frontend/onemorespin-ui
+        run: npm install
+
+      # 3. Budujemy Backend (To ważne! To odświeża plik .exe, który uruchamia PM2)
+      - name: Backend - Build
+        working-directory: ./OneMoreSpin.Web
+        run: |
+          dotnet restore
+          dotnet build
+
+      # 4. Restartujemy PM2, żeby załadował nową wersję
+      - name: Restart Aplikacji
+        run: |
+          pm2 restart frontend
+          pm2 restart backend

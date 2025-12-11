@@ -6,5 +6,6 @@ namespace OneMoreSpin.Services.Interfaces
     public interface IRewardService
     {
         Task<ClaimRewardResultVm> ClaimDailyRewardAsync(string userId);
+        Task<DailyRewardStatusVm> GetDailyRewardStatusAsync(string userId);
     }
 }
