@@ -176,7 +176,7 @@ public class Program
                 p =>
                     p.AllowAnyOrigin() // <-- To pozwala łączyć się z każdego IP
                     .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    .AllowAnyMethod()
             );
         });
 
