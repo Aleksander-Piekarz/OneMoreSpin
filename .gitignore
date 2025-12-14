@@ -4,5 +4,7 @@ obj/
 .fake
 node_modules/
 przydatne_komendy.txt
-
+ecosystem.config.cjs
+ecosystem.config.js
+stripe.config.cjs
 .vs

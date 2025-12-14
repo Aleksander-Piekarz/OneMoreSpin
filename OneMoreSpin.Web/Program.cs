@@ -161,7 +161,6 @@ public class Program
         builder.Services.AddScoped<IPaymentService, PaymentService>();
         builder.Services.AddScoped<IRewardService, RewardService>();
         builder.Services.AddScoped<IMissionService, MissionService>();
-        builder.Services.AddScoped<IPokerService, PokerService>();
         builder.Services.AddScoped<ISlotService, SlotService>();
             builder.Services.AddScoped<IRouletteService, RouletteService>();
         builder.Services.AddScoped<IBlackjackService, BlackjackService>();
@@ -174,9 +173,10 @@ public class Program
             opt.AddPolicy(
                 "SpaDev",
                 p =>
-                    p.AllowAnyOrigin() // <-- To pozwala łączyć się z każdego IP
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
+                   p.SetIsOriginAllowed(origin => true)
+                 .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials() 
             );
         });
 
