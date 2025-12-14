@@ -7,7 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace OneMoreSpin.Services.Hubs // Upewnij się, że namespace jest poprawny
+namespace OneMoreSpin.Services.Hubs 
 {
     [Authorize]
     public class PokerHub : Hub
@@ -19,15 +19,15 @@ namespace OneMoreSpin.Services.Hubs // Upewnij się, że namespace jest poprawny
             _pokerService = pokerService;
         }
 
-        // --- OBSŁUGA ROZŁĄCZENIA ---
+        
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            // Wołamy serwis, żeby posprzątał po graczu
+            
             _pokerService.LeaveTable(Context.ConnectionId);
             
             await base.OnDisconnectedAsync(exception);
         }
-        // ---------------------------
+        
 
         public async Task JoinTable(string tableId)
         {
@@ -67,7 +67,7 @@ namespace OneMoreSpin.Services.Hubs // Upewnij się, że namespace jest poprawny
 
      public async Task<List<TableInfoDto>> GetTables()
         {
-            // Pobieramy listę stołów z serwisu
+            
             return _pokerService.GetLobbyInfo();
         }
         public async Task MakeMove(string tableId, string action, decimal amount)

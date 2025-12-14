@@ -3,6 +3,8 @@ obj/
 .env
 .fake
 node_modules/
-przydatne.md
-
+przydatne_komendy.txt
+ecosystem.config.cjs
+ecosystem.config.js
+stripe.config.cjs
 .vs

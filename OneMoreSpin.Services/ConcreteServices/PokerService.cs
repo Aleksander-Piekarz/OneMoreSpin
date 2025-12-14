@@ -25,7 +25,7 @@ namespace OneMoreSpin.Services.ConcreteServices
             _scopeFactory = scopeFactory;
             _hubContext = hubContext;
             
-            // --- TWORZYMY 3 STOŁY DO LOBBY ---
+            
             CreateTable("stol-1", "Stół Początkujący (100$)", 100);
             CreateTable("stol-2", "Stół Zaawansowany (1000$)", 1000);
             CreateTable("stol-vip", "VIP ROOM (5000$)", 5000);
@@ -55,106 +55,194 @@ namespace OneMoreSpin.Services.ConcreteServices
             return table;
         }
 
-        public void JoinTable(string tableId, string connectionId, string userId, decimal chipsIgnored = 0)
+       public void JoinTable(string tableId, string connectionId, string userId, decimal chipsIgnored = 0)
+{
+    var table = GetTable(tableId);
+    if (table == null) return;
+
+    
+    decimal playerChips = 0;
+    string dbUsername = "Nieznany";
+
+    using (var scope = _scopeFactory.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        if (int.TryParse(userId, out int idAsInt))
         {
-            var table = GetTable(tableId);
-            if (table == null) return;
-
-            decimal playerChips = 1000;
-            string dbUsername = "Nieznany";
-
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                // Logika szukania usera (taka jak wcześniej)
-                if (int.TryParse(userId, out int idAsInt)) {
-                    var user = db.Users.FirstOrDefault(u => u.Id == idAsInt);
-                    if (user != null) { playerChips = user.Balance; dbUsername = user.UserName; }
-                    else { dbUsername = $"Guest_{idAsInt}"; }
-                } else {
-                    var user = db.Users.FirstOrDefault(u => u.UserName == userId);
-                    if (user != null) { playerChips = user.Balance; dbUsername = user.UserName; }
-                    else { dbUsername = userId ?? "Guest"; }
-                }
-            }
-
-            lock (table)
-            {
-                var existing = table.Players.FirstOrDefault(p => p.UserId == userId);
-                if (existing != null) {
-                    existing.ConnectionId = connectionId;
-                    existing.Username = dbUsername;
-                } else {
-                    var newPlayer = new PokerPlayer(connectionId, dbUsername, playerChips);
-                    newPlayer.UserId = userId; 
-                    table.Players.Add(newPlayer);
-                }
-                _playerTables.TryAdd(connectionId, tableId);
-            }
+            var user = db.Users.FirstOrDefault(u => u.Id == idAsInt);
+            if (user != null) { playerChips = user.Balance; dbUsername = user.UserName; }
+            else { dbUsername = $"Guest_{idAsInt}"; }
         }
+        else
+        {
+            var user = db.Users.FirstOrDefault(u => u.UserName == userId);
+            if (user != null) { playerChips = user.Balance; dbUsername = user.UserName; }
+            else { dbUsername = userId ?? "Guest"; }
+        }
+    }
+
+    
+    Console.WriteLine($"[JOIN] User: {dbUsername}, Pobrane żetony z bazy: {playerChips}");
+
+    lock (table)
+    {
+        var existing = table.Players.FirstOrDefault(p => p.UserId == userId);
+
+        if (existing != null)
+        {
+            existing.ConnectionId = connectionId;
+            existing.Username = dbUsername;
+            
+            existing.Chips = playerChips; 
+        }
+        else
+        {
+            
+            var takenSeats = table.Players.Select(p => p.SeatIndex).ToList();
+            int freeSeat = -1;
+            
+            
+            for (int i = 0; i < 6; i++) 
+            {
+                if (!takenSeats.Contains(i)) 
+                {
+                    freeSeat = i;
+                    break;
+                }
+            }
+
+            if (freeSeat == -1) {
+                Console.WriteLine("[JOIN] Stół pełny! Nie można usiąść.");
+                return;
+            }
+
+            var newPlayer = new PokerPlayer(connectionId, dbUsername, playerChips);
+            newPlayer.UserId = userId;
+            newPlayer.SeatIndex = freeSeat; 
+            if (table.GameInProgress)
+            {
+                newPlayer.IsFolded = true; 
+                
+                _hubContext.Clients.Client(connectionId).SendAsync("ActionLog", "⏳ Gra w toku. Poczekaj na nowe rozdanie.");
+            }
+
+            table.Players.Add(newPlayer);
+            Console.WriteLine($"[JOIN] Dodano {dbUsername} na miejsce {freeSeat}.");
+        }
+        
+        _playerTables.TryAdd(connectionId, tableId);
+    }
+}
 
         public void LeaveTable(string connectionId)
+{
+    
+    if (!_playerTables.TryRemove(connectionId, out string tableId)) return;
+
+    var table = GetTable(tableId);
+    if (table == null) return;
+
+    lock (table)
+    {
+        var player = table.Players.FirstOrDefault(p => p.ConnectionId == connectionId);
+        if (player == null) return;
+
+        
+        _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"🚪 {player.Username} opuścił stół.");
+
+        
+        if (table.GameInProgress)
         {
-            if (!_playerTables.TryRemove(connectionId, out string tableId)) return;
-            var table = GetTable(tableId);
-            if (table == null) return;
-
-            lock (table)
+            
+            
+            
+            
+            if (!player.IsFolded)
             {
-                var player = table.Players.FirstOrDefault(p => p.ConnectionId == connectionId);
-                if (player == null) return;
-
-                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"🚪 {player.Username} opuścił stół.");
-                _hubContext.Clients.Group(tableId).SendAsync("PlayerLeft", player.Username);
-
-                if (table.GameInProgress && !player.IsFolded) {
-                    player.IsFolded = true;
-                    if (table.Players[table.CurrentPlayerIndex].ConnectionId == connectionId) MoveTurnToNextPlayer(table);
-                    if (table.GameInProgress) CheckIfRoundEnded(table);
-                } else {
-                    table.Players.Remove(player);
+                player.IsFolded = true;
+                
+                
+                if (table.Players[table.CurrentPlayerIndex].ConnectionId == connectionId)
+                {
+                    MoveTurnToNextPlayer(table);
                 }
-                _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
+                
+                
+                CheckIfRoundEnded(table);
             }
         }
+        else
+        {
+            
+            
+            table.Players.Remove(player);
+            Console.WriteLine($"[LEAVE] Usunięto gracza {player.Username} ze stołu (Gra nieaktywna).");
+        }
+
+        
+        
+        _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
+        
+        
+        _hubContext.Clients.Group(tableId).SendAsync("PlayerLeft", player.Username);
+    }
+}
 
         public void StartNewHand(string tableId)
+{
+    var table = GetTable(tableId);
+    if (table == null) return;
+
+    lock (table)
+    {
+        Console.WriteLine($"[START] Próba startu gry na stole {tableId}. Graczy: {table.Players.Count}");
+
+        
+        foreach (var p in table.Players)
         {
-            var table = GetTable(tableId);
-            if (table == null) return;
-
-            lock (table)
-            {
-                // Usuwamy graczy bez pieniędzy przed startem
-                table.Players.RemoveAll(p => p.Chips <= 0);
-
-                if (table.Players.Count < 2) return;
-
-                table.Deck = GenerateDeck();
-                ShuffleDeck(table.Deck);
-                table.CommunityCards.Clear();
-                table.Pot = 0;
-                table.Stage = "PreFlop";
-                table.GameInProgress = true;
-                table.CurrentMinBet = 0;
-                table.ActionsTakenInRound = 0;
-
-                foreach (var p in table.Players)
-                {
-                    p.Hand.Clear();
-                    p.IsFolded = false;
-                    p.CurrentBet = 0;
-                    p.Hand.Add(DrawCard(table.Deck));
-                    p.Hand.Add(DrawCard(table.Deck));
-                }
-
-                table.DealerIndex = (table.DealerIndex + 1) % table.Players.Count;
-                table.CurrentPlayerIndex = (table.DealerIndex + 1) % table.Players.Count;
-                
-                // Dealer jest małym blindem w Heads-Up, ale tu upraszczamy: startuje osoba po dealerze
-                // Upewniamy się, że nie startuje osoba która jest Sit-out (chociaż usunęliśmy pustych)
-            }
+            Console.WriteLine($" - Gracz {p.Username} (Seat: {p.SeatIndex}): Chips = {p.Chips}");
         }
+
+        
+        int removedCount = table.Players.RemoveAll(p => p.Chips <= 0);
+        if (removedCount > 0) Console.WriteLine($"[START] Usunięto {removedCount} graczy bez żetonów.");
+
+        if (table.Players.Count < 2)
+        {
+            Console.WriteLine("[START] Za mało graczy do gry (wymagane min. 2). Anulowano.");
+            return;
+        }
+
+        
+        table.Deck = GenerateDeck();
+        ShuffleDeck(table.Deck);
+        table.CommunityCards.Clear();
+        table.Pot = 0;
+        table.Stage = "PreFlop";
+        table.GameInProgress = true;
+        table.CurrentMinBet = 0;
+        table.ActionsTakenInRound = 0;
+
+        
+        foreach (var p in table.Players)
+        {
+            p.Hand.Clear();
+            p.IsFolded = false;
+            p.CurrentBet = 0;
+            p.Hand.Add(DrawCard(table.Deck));
+            p.Hand.Add(DrawCard(table.Deck));
+            Console.WriteLine($"   -> Rozdano karty dla {p.Username}");
+        }
+
+        
+        table.DealerIndex = (table.DealerIndex + 1) % table.Players.Count;
+        
+        
+        table.CurrentPlayerIndex = (table.DealerIndex + 1) % table.Players.Count;
+
+        Console.WriteLine($"[START] Rozdanie rozpoczęte! Dealer: {table.DealerIndex}, Aktywny: {table.CurrentPlayerIndex}");
+    }
+}
 
         public bool PlayerMove(string tableId, string userId, string action, decimal amount)
         {
@@ -180,7 +268,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                     case "CALL":
                         decimal toCall = table.CurrentMinBet - player.CurrentBet;
                         if (player.Chips <= toCall) { 
-                            // ALL-IN
+                            
                             decimal allInAmount = player.Chips;
                             player.Chips = 0;
                             player.CurrentBet += allInAmount;
@@ -194,9 +282,9 @@ namespace OneMoreSpin.Services.ConcreteServices
                         }
                         break;
                     case "RAISE":
-                        // Logika Raise / All-in Raise
-                        decimal raiseTotal = player.CurrentBet + amount; // Ile łącznie chce postawić
-                        if (amount > player.Chips) amount = player.Chips; // Cap do posiadanych żetonów (All-in)
+                        
+                        decimal raiseTotal = player.CurrentBet + amount; 
+                        if (amount > player.Chips) amount = player.Chips; 
 
                         if (player.Chips >= amount) {
                             player.Chips -= amount;
@@ -205,7 +293,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                             
                             if (player.CurrentBet > table.CurrentMinBet) {
                                 table.CurrentMinBet = player.CurrentBet;
-                                table.ActionsTakenInRound = 0; // Reset rundy
+                                table.ActionsTakenInRound = 0; 
                             }
                             moveResult = true;
                         }
@@ -214,7 +302,7 @@ namespace OneMoreSpin.Services.ConcreteServices
 
                 if (moveResult)
                 {
-                    // Jeśli gracz wszedł All-In (ma 0 żetonów), NIE JEST FOLDED. Jest w grze, ale nie ma ruchu.
+                    
                     table.ActionsTakenInRound++;
                     MoveTurnToNextPlayer(table);
                     if (table.GameInProgress) CheckIfRoundEnded(table);
@@ -227,28 +315,22 @@ namespace OneMoreSpin.Services.ConcreteServices
         {
             int activePlayers = table.Players.Count(p => !p.IsFolded);
             
-            // Jeśli został tylko 1 gracz w grze (reszta Fold) -> Koniec
             if (activePlayers <= 1) {
                 EndHand(table); 
                 return;
             }
 
-            // Szukamy następnego gracza, który MA ŻETONY i NIE SPASOWAŁ
+
             int attempts = 0;
             do {
                 table.CurrentPlayerIndex = (table.CurrentPlayerIndex + 1) % table.Players.Count;
                 attempts++;
                 var p = table.Players[table.CurrentPlayerIndex];
                 
-                // Jeśli gracz nie spasował i ma > 0 żetonów -> To jego tura
-                if (!p.IsFolded && p.Chips > 0) return;
-
-                // Jeśli gracz jest All-in (Chips == 0), pomijamy go w licytacji, ale jest w grze!
+                if (!p.IsFolded && p.Chips > 0 && p.Hand.Count > 0) return;
 
             } while (attempts <= table.Players.Count);
             
-            // Jeśli pętla przeszła wszystkich i nikogo nie znalazła (wszyscy pozostali są All-in)
-            // To licytacja się skończyła.
         }
 
         private void CheckIfRoundEnded(PokerTable table)
@@ -256,16 +338,16 @@ namespace OneMoreSpin.Services.ConcreteServices
             var activePlayers = table.Players.Where(p => !p.IsFolded).ToList();
             var playersWithChips = activePlayers.Where(p => p.Chips > 0).ToList();
 
-            // Jeśli nikt nie ma żetonów do licytacji (wszyscy All-in) -> Next Stage
+            
             if (playersWithChips.Count == 0) {
                 ProceedToNextStage(table);
                 return;
             }
             
-            // Jeśli został 1 z żetonami, a reszta to All-in -> Sprawdzamy czy wyrównał
+            
             if (playersWithChips.Count == 1) {
                 var lastMan = playersWithChips[0];
-                // Jeśli jego bet jest równy lub wyższy od All-inów (maxBet), to koniec rundy
+                
                 if (lastMan.CurrentBet >= table.CurrentMinBet) {
                      ProceedToNextStage(table);
                      return;
@@ -285,7 +367,7 @@ namespace OneMoreSpin.Services.ConcreteServices
             table.CurrentMinBet = 0;
             foreach (var p in table.Players) p.CurrentBet = 0; 
             
-            // Logika przejścia etapów
+            
             if (table.Stage == "PreFlop") {
                 table.Stage = "Flop";
                 AddCommunityCards(table, 3);
@@ -301,17 +383,17 @@ namespace OneMoreSpin.Services.ConcreteServices
                 return;
             }
             
-            // Jeśli wszyscy są All-in, automatycznie lecimy do końca
+            
             int playersCanAct = table.Players.Count(p => !p.IsFolded && p.Chips > 0);
             if (playersCanAct <= 1 && table.Stage != "Showdown") {
                 _hubContext.Clients.Group(table.Id).SendAsync("UpdateGameState", table);
-                // Małe opóźnienie można by tu dodać, ale w C# blokuje wątek. 
-                // Rekurencyjnie idziemy do końca.
+                
+                
                 ProceedToNextStage(table); 
                 return;
             }
 
-            // Ustawiamy start na pierwszego aktywnego gracza po dealerze
+            
             int nextStart = (table.DealerIndex + 1) % table.Players.Count;
             int attempts = 0;
             while((table.Players[nextStart].IsFolded || table.Players[nextStart].Chips == 0) && attempts < table.Players.Count) {
@@ -337,9 +419,10 @@ namespace OneMoreSpin.Services.ConcreteServices
                 winner = activePlayers[0];
                 winHandName = "Przeciwnik spasował";
             } else {
-                // Showdown logic...
+                
                 double bestScore = -1;
                 foreach(var p in activePlayers) {
+                    if (p.Hand.Count < 2) continue;
                     var allCards = new List<Card>(p.Hand);
                     allCards.AddRange(table.CommunityCards);
                     var (score, name) = EvaluateHandStrength(allCards);
@@ -370,7 +453,7 @@ namespace OneMoreSpin.Services.ConcreteServices
             table.Pot = 0;
             table.GameInProgress = false; 
             table.Stage = "Showdown";    
-            
+            table.CurrentPlayerIndex = -1;
 
             _hubContext.Clients.Group(table.Id).SendAsync("UpdateGameState", table);
 
@@ -383,44 +466,45 @@ namespace OneMoreSpin.Services.ConcreteServices
                 table.Pot = 0;
                 table.Stage = "Waiting";
                 table.CommunityCards.Clear();
+                table.CurrentPlayerIndex = -1;
                 foreach(var p in table.Players) {
                     p.Hand.Clear();
                     p.IsFolded = false;
                     p.CurrentBet = 0;
                 }
                 
-                // Wysyłamy stan Waiting (karty znikają, przycisk START wraca)
+                
                 _hubContext.Clients.Group(table.Id).SendAsync("UpdateGameState", table);
             }
         }
 
-        // Zwraca (punkty, nazwa). Punkty służą do porównywania kto wygrał.
+        
        private (double score, string name) EvaluateHandStrength(List<Card> cards)
         {
             if (cards == null || cards.Count < 5) return (0, "Błąd rozdania");
 
-            // 1. Sortujemy wszystkie dostępne karty (ręka + stół) od najsilniejszej
+            
             var sorted = cards.OrderByDescending(c => (int)c.Rank).ToList();
 
-            // 2. Grupowanie do Par, Trójek, Karet
+            
             var groups = sorted.GroupBy(c => c.Rank)
                                .Select(g => new { Rank = g.Key, Count = g.Count() })
-                               .OrderByDescending(g => g.Count) // Najpierw te co mają najwięcej (np. kareta)
-                               .ThenByDescending(g => g.Rank)   // Potem wyższe rangi
+                               .OrderByDescending(g => g.Count) 
+                               .ThenByDescending(g => g.Rank)   
                                .ToList();
 
-            // 3. Sprawdzanie KOLORU (Flush)
+            
             var flushGroup = sorted.GroupBy(c => c.Suit).FirstOrDefault(g => g.Count() >= 5);
             bool isFlush = flushGroup != null;
 
-            // 4. Sprawdzanie STRITA (Straight)
+            
             bool isStraight = false;
             int straightHighRank = 0;
 
-            // Bierzemy unikalne rangi, żeby np. mając [5, 5, 4, 3, 2] nie zepsuć sprawdzania
+            
             var distinctRanks = sorted.Select(c => (int)c.Rank).Distinct().OrderByDescending(r => r).ToList();
 
-            // Algorytm: szukamy 5 kolejnych liczb
+            
             int consecutiveCount = 1;
             for (int i = 0; i < distinctRanks.Count - 1; i++)
             {
@@ -430,68 +514,101 @@ namespace OneMoreSpin.Services.ConcreteServices
                     if (consecutiveCount >= 5)
                     {
                         isStraight = true;
-                        // Wysoka karta strita to ta, od której zaczęła się seria (aktualna + 4 w górę, ale w liście to index - 4)
-                        // Prościej: skoro idziemy w dół i mamy 5, to najwyższa była 4 pozycje wcześniej
+                        
+                        
                         straightHighRank = distinctRanks[i - 3]; 
                         break; 
                     }
                 }
                 else
                 {
-                    consecutiveCount = 1; // Reset, dziura w sekwencji
+                    consecutiveCount = 1; 
                 }
             }
 
-            // Specjalny przypadek: Strit A-2-3-4-5 (Ace Low / Wheel)
-            // W distinctRanks As ma wartość 14. Musimy sprawdzić czy mamy: 14, 5, 4, 3, 2
+            
+            
             if (!isStraight && distinctRanks.Contains(14) && distinctRanks.Contains(2) && 
                 distinctRanks.Contains(3) && distinctRanks.Contains(4) && distinctRanks.Contains(5))
             {
                 isStraight = true;
-                straightHighRank = 5; // W tym stricie najwyższa jest 5
+                straightHighRank = 5; 
             }
 
-            // --- RANKING UKŁADÓW (Od najsilniejszego) ---
+            
 
-            // 1. POKER (Straight Flush) - Kolor + Strit
-            // (Uproszczenie: zakładamy że jeśli jest kolor i strit, to jest to Straight Flush. 
-            // W idealnym świecie trzeba sprawdzić czy to TE SAME karty tworzą strita i kolor, ale na potrzeby gry webowej to wystarczy)
-            if (isFlush && isStraight) 
-                return (900 + straightHighRank, $"POKER (Straight Flush do {GetRankName(straightHighRank)})");
+            
+    if (isFlush && isStraight) return (900 + straightHighRank, $"POKER do {GetRankName(straightHighRank)}");
 
-            // 2. KARETA (Four of a Kind)
-            if (groups[0].Count == 4) 
-                return (800 + (int)groups[0].Rank, $"Kareta ({GetRankName((int)groups[0].Rank)})");
+    
+    if (groups[0].Count == 4) 
+    {
+        
+        double kicker = sorted.First(c => c.Rank != groups[0].Rank).Rank * 0.01;
+        return (800 + (int)groups[0].Rank + kicker, $"Kareta ({GetRankName((int)groups[0].Rank)})");
+    }
 
-            // 3. FULL HOUSE (Trójka + Para)
-            if (groups[0].Count == 3 && groups.Count > 1 && groups[1].Count >= 2) 
-                return (700 + (int)groups[0].Rank, $"Full House ({GetRankName((int)groups[0].Rank)} na {GetRankName((int)groups[1].Rank)})");
+    
+    if (groups[0].Count == 3 && groups.Count > 1 && groups[1].Count >= 2) 
+        return (700 + (int)groups[0].Rank + ((int)groups[1].Rank * 0.01), $"Full House");
 
-            // 4. KOLOR (Flush)
-            if (isFlush) 
-                return (600 + (int)flushGroup.First().Rank, $"Kolor (na {GetRankName((int)flushGroup.First().Rank)})");
+    
+    if (isFlush) 
+    {
+        
+        var fCards = sorted.Where(c => c.Suit == flushGroup.Key).Take(5).ToList();
+        double score = 600 + fCards[0].Rank + (fCards[1].Rank * 0.01) + (fCards[2].Rank * 0.0001);
+        return (score, $"Kolor");
+    }
 
-            // 5. STRIT (Straight)
-            if (isStraight) 
-                return (500 + straightHighRank, $"Strit (do {GetRankName(straightHighRank)})");
+    
+    if (isStraight) return (500 + straightHighRank, $"Strit");
 
-            // 6. TRÓJKA (Three of a Kind)
-            if (groups[0].Count == 3) 
-                return (400 + (int)groups[0].Rank, $"Trójka ({GetRankName((int)groups[0].Rank)})");
+    
+    if (groups[0].Count == 3) 
+    {
+        
+        var kickers = sorted.Where(c => c.Rank != groups[0].Rank).Take(2).ToList();
+        double kScore = 0;
+        if (kickers.Count > 0) kScore += (int)kickers[0].Rank * 0.01;
+        if (kickers.Count > 1) kScore += (int)kickers[1].Rank * 0.0001;
 
-            // 7. DWIE PARY (Two Pairs)
-            if (groups[0].Count == 2 && groups.Count > 1 && groups[1].Count >= 2) 
-                return (300 + (int)groups[0].Rank, $"Dwie Pary ({GetRankName((int)groups[0].Rank)} i {GetRankName((int)groups[1].Rank)})");
+        return (400 + (int)groups[0].Rank + kScore, $"Trójka ({GetRankName((int)groups[0].Rank)})");
+    }
 
-            // 8. PARA (One Pair)
-            if (groups[0].Count == 2) 
-                return (200 + (int)groups[0].Rank, $"Para ({GetRankName((int)groups[0].Rank)})");
+    
+    if (groups[0].Count == 2 && groups.Count > 1 && groups[1].Count >= 2) 
+    {
+        
+        var kicker = sorted.FirstOrDefault(c => c.Rank != groups[0].Rank && c.Rank != groups[1].Rank);
+        double kScore = (kicker != null) ? (int)kicker.Rank * 0.01 : 0;
+        
+        return (300 + (int)groups[0].Rank + ((int)groups[1].Rank * 0.01) + (kScore * 0.0001), "Dwie Pary");
+    }
 
-            // 9. WYSOKA KARTA (High Card)
-            return (100 + (int)sorted[0].Rank, $"Wysoka Karta ({GetRankName((int)sorted[0].Rank)})");
-        }
+    
+    if (groups[0].Count == 2) 
+    {
+        
+        var kickers = sorted.Where(c => c.Rank != groups[0].Rank).Take(3).ToList();
+        double kScore = 0;
+        if (kickers.Count > 0) kScore += (int)kickers[0].Rank * 0.01;
+        if (kickers.Count > 1) kScore += (int)kickers[1].Rank * 0.0001;
+        if (kickers.Count > 2) kScore += (int)kickers[2].Rank * 0.000001;
 
-        // Pomocnicza metoda do ładnych nazw kart (np. 11 -> Walet)
+        return (200 + (int)groups[0].Rank + kScore, $"Para ({GetRankName((int)groups[0].Rank)})");
+    }
+
+    
+    double highCardScore = (int)sorted[0].Rank 
+                         + ((int)sorted[1].Rank * 0.01)
+                         + ((int)sorted[2].Rank * 0.0001)
+                         + ((int)sorted[3].Rank * 0.000001);
+                         
+    return (100 + highCardScore, $"Wysoka Karta ({GetRankName((int)sorted[0].Rank)})");
+}
+
+        
         private string GetRankName(int rank)
         {
             return rank switch
@@ -517,15 +634,15 @@ private async Task SaveHandResult(string userId, decimal currentChips, decimal m
                         var user = db.Users.FirstOrDefault(u => u.Id == idAsInt);
                         if (user != null)
                         {
-                            // 1. Aktualizacja Balansu (Portfela)
+                            
                             user.Balance = currentChips;
 
-                            // 2. Dodanie wpisu do Historii Gier
+                            
                             var gameHistoryEntry = new UserScore
                             {
                                 UserId = idAsInt,
-                                GameId = 4, // ID dla Pokera
-                                Stake = 0,  // W pokerze ciężko określić "stawkę" jedną liczbą bez dodatkowej logiki, wpisujemy 0
+                                GameId = 4, 
+                                Stake = 0,  
                                 MoneyWon = moneyWon,
                                 Score = moneyWon > 0 ? "Wygrana" : "Przegrana",
                                 DateOfGame = DateTime.UtcNow,
@@ -533,7 +650,7 @@ private async Task SaveHandResult(string userId, decimal currentChips, decimal m
 
                             await db.UserScores.AddAsync(gameHistoryEntry);
                             
-                            // Zapisujemy wszystko jednym strzałem
+                            
                             await db.SaveChangesAsync();
                             
                             Console.WriteLine($"[POKER DB] Zapisano historię dla ID {idAsInt}. Wynik: {moneyWon}");
@@ -547,7 +664,7 @@ private async Task SaveHandResult(string userId, decimal currentChips, decimal m
             }
         }
         
-        // Helpery do talii (GenerateDeck, ShuffleDeck, DrawCard) - bez zmian
+        
         private List<Card> GenerateDeck() {
             var deck = new List<Card>();
             foreach (Suit s in Enum.GetValues(typeof(Suit))) foreach (Rank r in Enum.GetValues(typeof(Rank))) deck.Add(new Card(r, s));
