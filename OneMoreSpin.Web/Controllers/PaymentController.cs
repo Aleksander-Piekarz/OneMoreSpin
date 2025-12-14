@@ -22,7 +22,7 @@ namespace OneMoreSpin.Web.Controllers
         private readonly IPaymentService _paymentService;
         private readonly ILogger<PaymentController> _logger;
         
-        
+        private readonly string _clientUrl;
         private readonly string? _webhookSecret;
 
         public class CreateCheckoutRequest
@@ -42,6 +42,12 @@ namespace OneMoreSpin.Web.Controllers
         {
             _paymentService = paymentService;
             _logger = logger;
+
+            var envUrl = Environment.GetEnvironmentVariable("CLIENT_URL");
+            //_clientUrl = !string.IsNullOrEmpty(envUrl) ? envUrl : "http://91.123.188.186:5173";
+            _clientUrl = config["ClientUrl"] ?? "http://localhost:5173"; //Powinno odczytywać jeżeli ustawione w PM2 wymaga dalszych testow
+
+            _logger.LogInformation($"[PAYMENT CONFIG] CLIENT_URL z PM2: '{envUrl}'. Używam adresu: '{_clientUrl}'");
 
             
             _webhookSecret = Environment.GetEnvironmentVariable("STRIPE_WEBHOOK_SECRET") ?? config["Stripe:WebhookSecret"];
@@ -78,8 +84,8 @@ namespace OneMoreSpin.Web.Controllers
                 },
                 Mode = "payment",
                 ClientReferenceId = userId, 
-                SuccessUrl = "http://localhost:5173/profile?payment=success",
-                CancelUrl = "http://localhost:5173/profile?payment=cancel",
+                SuccessUrl = $"{_clientUrl}/profile?payment=success",
+                CancelUrl = $"{_clientUrl}/profile?payment=cancel",
             };
 
             try

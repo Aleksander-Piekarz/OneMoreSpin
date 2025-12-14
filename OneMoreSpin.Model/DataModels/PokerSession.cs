@@ -13,6 +13,7 @@ namespace OneMoreSpin.Model.DataModels
     public decimal CurrentBet { get; set; }
     public bool IsFolded { get; set; }
     public List<Card> Hand { get; set; } = new List<Card>();
+    public int SeatIndex { get; set; } = -1; 
 
     public PokerPlayer(string connectionId, string username, decimal initialChips)
     {

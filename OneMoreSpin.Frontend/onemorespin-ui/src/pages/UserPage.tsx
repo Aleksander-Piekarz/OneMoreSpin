@@ -199,7 +199,6 @@ function UserProfile() {
         return <div className="userpage-container"><div>Nie udało się pobrać profilu: {error}</div></div>;
     }
     
-    // *** POPRAWKA: Wyświetlaj ekran ładowania, dopóki dane nie są gotowe ***
     if (loading || !me) {
         return <div className="userpage-container"><div>Ładowanie...</div></div>;
     }
