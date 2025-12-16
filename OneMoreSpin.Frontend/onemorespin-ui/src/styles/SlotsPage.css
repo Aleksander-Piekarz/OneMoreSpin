@@ -332,6 +332,7 @@
   overflow: hidden;
 }
 
+
 .slots-container {
   max-width: 1600px;
   width: 100%;
@@ -488,10 +489,11 @@
 
 .right-panel {
   display: flex;
-  align-items: center;
+  flex-direction: row;
+  align-items: flex-start;
   justify-content: center;
-  min-width: 180px;
-  height: 100%;
+  gap: 1.25rem;
+  margin-left: 0;
 }
 
 .bet-section {
@@ -1214,6 +1216,26 @@
 
   .right-panel {
     order: 3;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    margin-left: 0;
+  }
+
+  .right-sidebar-content {
+    width: 100%;
+    max-width: 420px;
+    margin-left: 0;
+  }
+
+  .slots-leaderboard {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .leaderboard-panel {
+    max-width: 100%;
   }
 
   .bet-section {

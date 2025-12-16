@@ -157,6 +157,7 @@ export default function RouletteGame() {
   const [winAmount, setWinAmount] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(true);
 
   const audioContextRef = useRef<AudioContext | null>(null);
 
@@ -448,7 +449,7 @@ export default function RouletteGame() {
           </div>
       )}
 
-      <div className="w-full max-w-[1800px] mx-auto flex flex-col xl:flex-row gap-24 items-center justify-center relative z-10 px-4 mt-24">
+      <div className="w-full max-w-[1800px] mx-auto flex flex-col xl:flex-row gap-24 items-center justify-center relative z-10 px-4 mt-24 leaderboard-host">
         
         <div className="flex flex-col items-center justify-center w-full gap-8 xl:w-auto xl:sticky xl:top-8">
            <div className="relative pb-5 transition-transform duration-700 transform scale-100 xl:scale-110">
@@ -592,6 +593,8 @@ export default function RouletteGame() {
         </div>
 
       </div>
+
+     
 
 
     </div>

@@ -537,76 +537,78 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             
 
+    // Wszystkie układy od najwyższego do najniższego
+            if (isFlush && isStraight) return (900 + straightHighRank, $"POKER do {GetRankName(straightHighRank)}");
+
             
-    if (isFlush && isStraight) return (900 + straightHighRank, $"POKER do {GetRankName(straightHighRank)}");
+            if (groups[0].Count == 4)
+            {
+                
+                
+                double kicker = (int)sorted.First(c => c.Rank != groups[0].Rank).Rank * 0.01;
+                return (800 + (int)groups[0].Rank + kicker, $"Kareta ({GetRankName((int)groups[0].Rank)})");
+            }
 
-    
-    if (groups[0].Count == 4) 
-    {
-        
-        double kicker = sorted.First(c => c.Rank != groups[0].Rank).Rank * 0.01;
-        return (800 + (int)groups[0].Rank + kicker, $"Kareta ({GetRankName((int)groups[0].Rank)})");
-    }
+            
+            if (groups[0].Count == 3 && groups.Count > 1 && groups[1].Count >= 2)
+                return (700 + (int)groups[0].Rank + ((int)groups[1].Rank * 0.01), $"Full House");
 
-    
-    if (groups[0].Count == 3 && groups.Count > 1 && groups[1].Count >= 2) 
-        return (700 + (int)groups[0].Rank + ((int)groups[1].Rank * 0.01), $"Full House");
+            
+            if (isFlush)
+            {
+                
+                var fCards = sorted.Where(c => c.Suit == flushGroup.Key).Take(5).ToList();
+                double score = 600 + (int)fCards[0].Rank + ((int)fCards[1].Rank * 0.01) + ((int)fCards[2].Rank * 0.0001);
+                return (score, $"Kolor");
+            }
 
-    
-    if (isFlush) 
-    {
-        
-        var fCards = sorted.Where(c => c.Suit == flushGroup.Key).Take(5).ToList();
-        double score = 600 + fCards[0].Rank + (fCards[1].Rank * 0.01) + (fCards[2].Rank * 0.0001);
-        return (score, $"Kolor");
-    }
+            
+            if (isStraight) return (500 + straightHighRank, $"Strit");
 
-    
-    if (isStraight) return (500 + straightHighRank, $"Strit");
+            
+            if (groups[0].Count == 3)
+            {
+                var kickers = sorted.Where(c => c.Rank != groups[0].Rank).Take(2).ToList();
+                double kScore = 0;
+                
+                if (kickers.Count > 0) kScore += (int)kickers[0].Rank * 0.01;
+                if (kickers.Count > 1) kScore += (int)kickers[1].Rank * 0.0001;
 
-    
-    if (groups[0].Count == 3) 
-    {
-        
-        var kickers = sorted.Where(c => c.Rank != groups[0].Rank).Take(2).ToList();
-        double kScore = 0;
-        if (kickers.Count > 0) kScore += (int)kickers[0].Rank * 0.01;
-        if (kickers.Count > 1) kScore += (int)kickers[1].Rank * 0.0001;
+                return (400 + (int)groups[0].Rank + kScore, $"Trójka ({GetRankName((int)groups[0].Rank)})");
+            }
 
-        return (400 + (int)groups[0].Rank + kScore, $"Trójka ({GetRankName((int)groups[0].Rank)})");
-    }
+            
+            if (groups[0].Count == 2 && groups.Count > 1 && groups[1].Count >= 2)
+            {
+                var kicker = sorted.FirstOrDefault(c => c.Rank != groups[0].Rank && c.Rank != groups[1].Rank);
+                
+                double kScore = (kicker != null) ? (int)kicker.Rank * 0.01 : 0;
 
-    
-    if (groups[0].Count == 2 && groups.Count > 1 && groups[1].Count >= 2) 
-    {
-        
-        var kicker = sorted.FirstOrDefault(c => c.Rank != groups[0].Rank && c.Rank != groups[1].Rank);
-        double kScore = (kicker != null) ? (int)kicker.Rank * 0.01 : 0;
-        
-        return (300 + (int)groups[0].Rank + ((int)groups[1].Rank * 0.01) + (kScore * 0.0001), "Dwie Pary");
-    }
+                return (300 + (int)groups[0].Rank + ((int)groups[1].Rank * 0.01) + (kScore * 0.0001), "Dwie Pary");
+            }
 
-    
-    if (groups[0].Count == 2) 
-    {
-        
-        var kickers = sorted.Where(c => c.Rank != groups[0].Rank).Take(3).ToList();
-        double kScore = 0;
-        if (kickers.Count > 0) kScore += (int)kickers[0].Rank * 0.01;
-        if (kickers.Count > 1) kScore += (int)kickers[1].Rank * 0.0001;
-        if (kickers.Count > 2) kScore += (int)kickers[2].Rank * 0.000001;
+            
+            if (groups[0].Count == 2)
+            {
+                var kickers = sorted.Where(c => c.Rank != groups[0].Rank).Take(3).ToList();
+                double kScore = 0;
+                
+                if (kickers.Count > 0) kScore += (int)kickers[0].Rank * 0.01;
+                if (kickers.Count > 1) kScore += (int)kickers[1].Rank * 0.0001;
+                if (kickers.Count > 2) kScore += (int)kickers[2].Rank * 0.000001;
 
-        return (200 + (int)groups[0].Rank + kScore, $"Para ({GetRankName((int)groups[0].Rank)})");
-    }
+                return (200 + (int)groups[0].Rank + kScore, $"Para ({GetRankName((int)groups[0].Rank)})");
+            }
 
-    
-    double highCardScore = (int)sorted[0].Rank 
-                         + ((int)sorted[1].Rank * 0.01)
-                         + ((int)sorted[2].Rank * 0.0001)
-                         + ((int)sorted[3].Rank * 0.000001);
-                         
-    return (100 + highCardScore, $"Wysoka Karta ({GetRankName((int)sorted[0].Rank)})");
-}
+            
+            
+            double highCardScore = (int)sorted[0].Rank
+                                 + ((int)sorted[1].Rank * 0.01)
+                                 + ((int)sorted[2].Rank * 0.0001)
+                                 + ((int)sorted[3].Rank * 0.000001);
+
+            return (100 + highCardScore, $"Wysoka Karta ({GetRankName((int)sorted[0].Rank)})");
+        }
 
         
         private string GetRankName(int rank)

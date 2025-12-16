@@ -12,6 +12,7 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hoveredTile, setHoveredTile] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   // NOWOŚĆ: Stan decydujący co wyświetlamy (siatka gier CZY wybór pokera)
   const [view, setView] = useState<'grid' | 'poker-select'>('grid');
@@ -23,7 +24,26 @@ const HomePage: React.FC = () => {
       navigate("/");
       return;
     }
+
+    checkAdminStatus();
   }, [navigate]);
+
+  const checkAdminStatus = async () => {
+    try {
+      const token = localStorage.getItem("jwt");
+      const response = await fetch(`${import.meta.env.VITE_API_BASE}/admin/users`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    } catch (err) {
+      setIsAdmin(false);
+    }
+  };
 
   useEffect(() => {
     const preloadImages = () => {
@@ -43,7 +63,25 @@ const HomePage: React.FC = () => {
     preloadImages();
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("jwt");
+      // Wyślij żądanie do API aby ustawić IsActive = false
+      const response = await fetch(`${import.meta.env.VITE_API_BASE}/auth/logout`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        console.error('Logout failed:', response.status);
+      }
+    } catch (err) {
+      console.error('Logout API call failed:', err);
+    }
+    
     localStorage.removeItem("jwt");
     localStorage.removeItem("user");
     navigate("/");
@@ -134,6 +172,15 @@ const HomePage: React.FC = () => {
 
       <div className={`menu-dropdown ${isMenuOpen ? 'open' : ''}`}>
         <div className="menu-content">
+          {isAdmin && (
+            <button className="menu-item admin" onClick={() => {
+              navigate('/admin');
+              setIsMenuOpen(false);
+            }}>
+              <i className="fas fa-shield-alt"></i>
+              <span>Panel Admina</span>
+            </button>
+          )}
           <button className="menu-item" onClick={() => console.log("Settings")}>
             <i className="fas fa-cog"></i>
             <span>Ustawienia</span>

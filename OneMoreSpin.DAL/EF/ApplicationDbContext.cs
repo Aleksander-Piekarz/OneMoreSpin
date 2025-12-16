@@ -12,11 +12,12 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int>
     public DbSet<Lobby> Lobbies { get; set; }
     public DbSet<Payment> Payments { get; set; }
     public DbSet<UserScore> UserScores { get; set; }
-    
+
     // --- NOWE ---
     public DbSet<Mission> Missions { get; set; }
     public DbSet<UserMission> UserMissions { get; set; }
     public DbSet<UserPlayedGame> UserPlayedGames { get; set; }
+
     // --- KONIEC NOWEGO ---
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -25,8 +26,8 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
-    
-        optionsBuilder.UseLazyLoadingProxies(); 
+
+        optionsBuilder.UseLazyLoadingProxies();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
