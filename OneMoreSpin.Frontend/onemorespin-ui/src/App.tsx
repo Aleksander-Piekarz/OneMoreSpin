@@ -12,6 +12,7 @@ import { PokerPage } from "./pages/PokerPage";
 import SinglePokerPage  from "./pages/SinglePokerPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -23,7 +24,7 @@ export default function App() {
         <Route path="/profile" element={<UserPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/slots" element={<SlotsPage />} />
-          <Route path="/roulette" element={<RoulettePage />} />
+        <Route path="/roulette" element={<RoulettePage />} />
         <Route path="/blackjack" element={<BlackjackPage />} />
         <Route path="/poker" element={<PokerLobby />} />
         <Route path="/poker/:tableId" element={<PokerPage />} />

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { refreshMissions } from "../events";
 import { fireConfetti } from "../utils/confetti";
+import Leaderboard from "../components/Leaderboard";
 import "../styles/SlotsPage.css";
 
 import lemonImg from "../assets/img/slots/lemon.png";
@@ -522,6 +523,10 @@ const SlotsPage: React.FC = () => {
             ))}
           </div>
         )}
+
+        <div className="mt-8 border-t pt-6">
+          <Leaderboard gameId={3} title="Top Slots Winners" className="bg-gray-900 p-4 rounded" />
+        </div>
       </main>
     </div>
   );

@@ -332,4 +332,12 @@ export const api = {
       });
     },
   },
+  leaderboard: {
+    getByGameId(gameId: number) {
+      return request<{ Email: string; MoneyWon: number }[]>(`/api/leaderboard/game/${gameId}`);
+    },
+    getGlobal() {
+      return request<{ Email: string; MoneyWon: number }[]>(`/api/leaderboard`);
+    },
+  },
 };
