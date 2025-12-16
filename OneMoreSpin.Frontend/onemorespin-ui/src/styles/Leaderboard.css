@@ -1,0 +1,225 @@
+/* src/styles/Leaderboard.css */
+
+.casino-leaderboard {
+  background: linear-gradient(160deg, rgba(18, 22, 52, 0.92) 0%, rgba(8, 10, 28, 0.9) 100%);
+  border: 1px solid rgba(117, 129, 255, 0.45);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55), 0 0 30px rgba(116, 129, 255, 0.25), inset 0 0 20px rgba(255, 255, 255, 0.03);
+  font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
+  animation: fadeIn 0.5s ease-in;
+  width: 100%;
+  backdrop-filter: blur(10px);
+}
+
+.leaderboard-header {
+  background: linear-gradient(120deg, #ffd65a 0%, #ffb638 50%, #ffd65a 100%);
+  color: #0b0f24;
+  padding: 10px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.leaderboard-content {
+  padding: 10px 12px 14px;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #e7ecff;
+  font-size: 0.85rem;
+}
+
+.leaderboard-table tr {
+  border-bottom: 1px solid rgba(231, 236, 255, 0.08);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.leaderboard-table tr:last-child {
+  border-bottom: none;
+}
+
+.leaderboard-table tr:hover {
+  background: rgba(116, 129, 255, 0.08);
+  transform: translateX(2px);
+}
+
+.leaderboard-table tr.top-1 {
+  background: linear-gradient(90deg, rgba(255, 214, 90, 0.18), rgba(255, 182, 56, 0.18));
+  font-weight: 800;
+  color: #ffd65a;
+  box-shadow: inset 0 0 12px rgba(255, 214, 90, 0.12);
+}
+
+.leaderboard-table td {
+  padding: 8px 6px;
+}
+
+.leaderboard-table .rank {
+  color: rgba(231, 236, 255, 0.55);
+  width: 28px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.leaderboard-table .top-1 .rank {
+  color: #ffb638;
+}
+
+.leaderboard-table .user {
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
+  color: #e7ecff;
+  letter-spacing: 0.3px;
+}
+
+.leaderboard-table .amount {
+  text-align: right;
+  color: #55f5c6;
+  font-family: 'Courier New', monospace;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+}
+
+.leaderboard-status {
+  padding: 16px;
+  text-align: center;
+  color: rgba(231, 236, 255, 0.7);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.leaderboard-status.error {
+  color: #ff6b6b;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+.leaderboard-host {
+  position: relative;
+}
+
+.leaderboard-drawer {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  z-index: 20;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.leaderboard-drawer.left {
+  left: 20px;
+  right: auto;
+  align-items: flex-start;
+}
+
+.leaderboard-drawer.left .leaderboard-panel {
+  transform-origin: left center;
+}
+
+.leaderboard-drawer.left.closed .leaderboard-panel {
+  transform: translateX(-120%);
+}
+
+.leaderboard-panel {
+  width: 100%;
+  max-width: 280px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.leaderboard-drawer.closed .leaderboard-panel {
+  opacity: 0;
+  transform: translateX(120%);
+  pointer-events: none;
+}
+
+.leaderboard-toggle {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.6) 0%, rgba(118, 75, 162, 0.6) 100%);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.leaderboard-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.leaderboard-toggle i {
+  font-size: 14px;
+}
+
+
+.leaderboard-widget {
+  min-width: 230px;
+  max-width: 260px;
+}
+
+@media (max-width: 1400px) {
+  .leaderboard-drawer {
+    position: static;
+    transform: none;
+    width: 100%;
+    align-items: flex-end;
+  }
+
+  .leaderboard-drawer.closed .leaderboard-panel {
+    display: none;
+    opacity: 0;
+    transform: none;
+  }
+
+  .leaderboard-panel {
+    max-width: 420px;
+  }
+
+  .leaderboard-toggle {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 1200px) {
+  .leaderboard-panel {
+    max-width: 100%;
+  }
+
+  .leaderboard-widget {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+}
+

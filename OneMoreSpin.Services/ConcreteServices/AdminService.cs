@@ -38,8 +38,8 @@ public class AdminService : BaseService, IAdminService
     {
         var totalCount = await DbContext.Users.CountAsync();
 
-        var users = await DbContext.Users
-            .OrderByDescending(u => u.CreatedAt)
+        var users = await DbContext
+            .Users.OrderByDescending(u => u.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -49,7 +49,7 @@ public class AdminService : BaseService, IAdminService
             Users = Mapper.Map<List<UserProfileVm>>(users),
             TotalCount = totalCount,
             Page = page,
-            PageSize = pageSize
+            PageSize = pageSize,
         };
     }
 

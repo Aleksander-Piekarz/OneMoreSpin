@@ -162,11 +162,12 @@ public class Program
         builder.Services.AddScoped<IRewardService, RewardService>();
         builder.Services.AddScoped<IMissionService, MissionService>();
         builder.Services.AddScoped<ISlotService, SlotService>();
-            builder.Services.AddScoped<IRouletteService, RouletteService>();
+        builder.Services.AddScoped<IRouletteService, RouletteService>();
         builder.Services.AddScoped<IBlackjackService, BlackjackService>();
         builder.Services.AddScoped<ISinglePokerService, SinglePokerService>();
         builder.Services.AddScoped<IAdminService, AdminService>();
         builder.Services.AddHostedService<MissionResetService>();
+        builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 
         // CORS Policy
         builder.Services.AddCors(opt =>
@@ -174,10 +175,10 @@ public class Program
             opt.AddPolicy(
                 "SpaDev",
                 p =>
-                   p.SetIsOriginAllowed(origin => true)
-                 .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials() 
+                    p.SetIsOriginAllowed(origin => true)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials()
             );
         });
 

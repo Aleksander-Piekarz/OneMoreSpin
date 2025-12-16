@@ -27,6 +27,77 @@ body {
   position: relative;
 }
 
+.sp-animated-bg {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.sp-floating-shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.15;
+  animation: spFloat 22s infinite ease-in-out;
+}
+
+.sp-shape-1 {
+  width: 420px;
+  height: 420px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  top: -120px;
+  left: -120px;
+  animation-duration: 26s;
+}
+
+.sp-shape-2 {
+  width: 320px;
+  height: 320px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  top: 18%;
+  right: -60px;
+  animation-duration: 30s;
+  animation-delay: 4s;
+}
+
+.sp-shape-3 {
+  width: 360px;
+  height: 360px;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  bottom: -120px;
+  left: 48%;
+  animation-duration: 28s;
+  animation-delay: 9s;
+}
+
+.sp-shape-4 {
+  width: 260px;
+  height: 260px;
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  top: 62%;
+  left: 8%;
+  animation-duration: 24s;
+  animation-delay: 14s;
+}
+
+.sp-shape-5 {
+  width: 320px;
+  height: 320px;
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  bottom: 8%;
+  right: 12%;
+  animation-duration: 27s;
+  animation-delay: 7s;
+}
+
+@keyframes spFloat {
+  0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  25% { transform: translate(50px, 100px) rotate(90deg) scale(1.08); }
+  50% { transform: translate(-30px, 50px) rotate(180deg) scale(0.92); }
+  75% { transform: translate(70px, -60px) rotate(270deg) scale(1.04); }
+}
+
 /* --- KONTENER GŁÓWNY --- */
 .sp-poker-container {
   position: relative;
