@@ -39,6 +39,7 @@ const SlotsPage: React.FC = () => {
   const [autoSpinCount, setAutoSpinCount] = useState<number>(Infinity);
   const [remainingSpins, setRemainingSpins] = useState<number>(Infinity);
   const [isShowingWin, setIsShowingWin] = useState(false);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(true);
 
 
   const leverAudioRef = React.useRef<HTMLAudioElement>(new Audio(leverSoundDefault));
@@ -300,7 +301,7 @@ const SlotsPage: React.FC = () => {
         </div>
       </header>
 
-      <main className="slots-main">
+      <main className={`slots-main leaderboard-host ${leaderboardOpen ? 'leaderboard-visible' : ''}`}>
         <div className="slots-container">
           <div className="left-panel">
             <div className="bet-section">
@@ -489,6 +490,20 @@ const SlotsPage: React.FC = () => {
           </div>
         </div>
 
+        <div className={`leaderboard-drawer ${leaderboardOpen ? 'open' : 'closed'}`}>
+          <button
+            className="leaderboard-toggle"
+            onClick={() => setLeaderboardOpen((prev) => !prev)}
+            aria-expanded={leaderboardOpen}
+          >
+            <i className={`fas ${leaderboardOpen ? 'fa-chevron-right' : 'fa-chevron-left'}`}></i>
+            <span>{leaderboardOpen ? 'Schowaj' : 'Top wins'}</span>
+          </button>
+          <div className="leaderboard-panel">
+            <Leaderboard gameId={3} title="TOP WINS" className="leaderboard-widget" />
+          </div>
+        </div>
+
         {error && (
           <div className="error-message">
             <i className="fas fa-exclamation-circle"></i>
@@ -524,9 +539,7 @@ const SlotsPage: React.FC = () => {
           </div>
         )}
 
-        <div className="right-sidebar-content">
-          <Leaderboard gameId={3} title="TOP WINS" />
-        </div>
+
       </main>
     </div>
   );

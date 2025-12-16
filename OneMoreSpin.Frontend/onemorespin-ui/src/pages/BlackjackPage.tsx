@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { refreshMissions } from "../events";
 import { fireConfetti } from "../utils/confetti";
+import Leaderboard from "../components/Leaderboard";
 import "../styles/BlackjackPage.css";
 
 type BlackjackCard = {
@@ -37,6 +38,7 @@ const BlackjackPage: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [showResult, setShowResult] = useState(false);
   const [isResultFadingOut, setIsResultFadingOut] = useState(false);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
@@ -248,7 +250,7 @@ const BlackjackPage: React.FC = () => {
         </div>
       </header>
 
-      <main className="blackjack-main">
+      <main className={`blackjack-main leaderboard-host ${leaderboardOpen ? "leaderboard-visible" : ""}`}>
         <div className="blackjack-container">
           <div className="left-panel">
             <div className="bet-section">
@@ -450,6 +452,20 @@ const BlackjackPage: React.FC = () => {
                 </>
               )}
             </div>
+          </div>
+        </div>
+
+        <div className={`leaderboard-drawer ${leaderboardOpen ? "open" : "closed"}`}>
+          <button
+            className="leaderboard-toggle"
+            onClick={() => setLeaderboardOpen((prev) => !prev)}
+            aria-expanded={leaderboardOpen}
+          >
+            <i className={`fas ${leaderboardOpen ? "fa-chevron-right" : "fa-chevron-left"}`}></i>
+            <span>{leaderboardOpen ? "Schowaj" : "Top wins"}</span>
+          </button>
+          <div className="leaderboard-panel">
+            <Leaderboard gameId={2} title="TOP WINS" className="leaderboard-widget" />
           </div>
         </div>
 

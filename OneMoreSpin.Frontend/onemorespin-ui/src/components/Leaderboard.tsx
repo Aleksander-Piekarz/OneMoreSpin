@@ -13,10 +13,11 @@ interface LeaderboardProps {
 }
 
 const formatMoney = (value: number): string => {
-  if (value >= 1e9) return (value / 1e9).toFixed(1) + 'B';
-  if (value >= 1e6) return (value / 1e6).toFixed(1) + 'M';
-  if (value >= 1e3) return (value / 1e3).toFixed(1) + 'k';
-  return value.toFixed(0);
+  const amount = Number.isFinite(value) ? value : 0;
+  if (amount >= 1e9) return (amount / 1e9).toFixed(1) + ' B';
+  if (amount >= 1e6) return (amount / 1e6).toFixed(1) + ' M';
+  if (amount >= 1e3) return (amount / 1e3).toFixed(1) + ' k';
+  return amount.toFixed(0);
 };
 
 // Funkcja maskująca email (np. al***@gmail.com) dla prywatności
@@ -44,8 +45,13 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ gameId, title = 'TOP W
           if (!Array.isArray(data)) {
             throw new Error("Błąd danych");
           }
-          // Sortujemy malejąco po wygranej i bierzemy top 5, żeby nie zajmowało za dużo miejsca
-          const sorted = data.sort((a, b) => b.MoneyWon - a.MoneyWon).slice(0, 5);
+
+          const normalized = data.map((item) => ({
+            ...item,
+            MoneyWon: Number((item as any).MoneyWon) || 0
+          }));
+
+          const sorted = normalized.sort((a, b) => b.MoneyWon - a.MoneyWon).slice(0, 10);
           setEntries(sorted);
         }
       } catch (e: any) {
@@ -83,7 +89,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ gameId, title = 'TOP W
                 <tr key={`${e.Email}-${i}`} className={i === 0 ? 'top-1' : ''}>
                   <td className="rank">#{i + 1}</td>
                   <td className="user">{maskEmail(e.Email)}</td>
-                  <td className="amount">{formatMoney(e.MoneyWon)} $</td>
+                  <td className="amount">{formatMoney(e.MoneyWon)} PLN</td>
                 </tr>
               ))}
             </tbody>

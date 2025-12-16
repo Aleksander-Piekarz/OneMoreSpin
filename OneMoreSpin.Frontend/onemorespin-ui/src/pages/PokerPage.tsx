@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePokerGame } from '../hooks/usePokerGame';
 import { Suit, type Card } from '../types/poker'; 
+import Leaderboard from '../components/Leaderboard';
 import '../styles/PokerPage.css';
 
 // --- TYPY MOTYWÓW ---
@@ -40,6 +41,7 @@ export const PokerPage = () => {
     
     const { table, logs, isConnected, startGame, move, myUserId } = usePokerGame(currentTableId);
     const [raiseAmount, setRaiseAmount] = useState(100);
+    const [leaderboardOpen, setLeaderboardOpen] = useState(true);
     const logsEndRef = useRef<HTMLDivElement>(null);
 
     // --- WYBÓR MOTYWU NA PODSTAWIE ID STOŁU ---
@@ -80,7 +82,7 @@ export const PokerPage = () => {
     }
 
     return (
-        <div className="poker-container">
+        <div className="poker-container leaderboard-host">
             {/* PASEK STATUSU */}
             <div className="status-bar">
                 <button onClick={() => navigate('/poker')} style={{background:'transparent', border:'1px solid #555', color:'#aaa', padding:'5px 10px', borderRadius:'5px', cursor:'pointer'}}>
@@ -199,6 +201,20 @@ export const PokerPage = () => {
                         {myPlayer && myPlayer.isFolded && <div style={{color: '#ef5350', fontWeight: 'bold'}}>SPASOWAŁEŚ</div>}
                     </>
                 )}
+            </div>
+
+            <div className={`leaderboard-drawer left ${leaderboardOpen ? 'open' : 'closed'}`}>
+                <button
+                    className="leaderboard-toggle"
+                    onClick={() => setLeaderboardOpen(prev => !prev)}
+                    aria-expanded={leaderboardOpen}
+                >
+                    <i className={`fas ${leaderboardOpen ? 'fa-chevron-left' : 'fa-chevron-right'}`}></i>
+                    <span>{leaderboardOpen ? 'Schowaj' : 'Top wins'}</span>
+                </button>
+                <div className="leaderboard-panel">
+                    <Leaderboard gameId={4} title="TOP WINS" className="leaderboard-widget" />
+                </div>
             </div>
         </div>
     );

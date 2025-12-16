@@ -3,6 +3,7 @@ import '../styles/SinglePokerPage.css';
 import { api } from '../api';
 import type { UserInfo } from '../api';
 import { fireConfetti } from '../utils/confetti';
+import Leaderboard from '../components/Leaderboard';
 
 type CardVm = { id: number; rank: string; suit: string };
 type PokerSessionVm = {
@@ -48,6 +49,7 @@ export default function PokerGame() {
   
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(true);
   
   const hasWon = session ? (session.isWin || session.playerWon || session.winAmount > 0) : false;
   const isGameFinished = Boolean(session?.playerHandRank && session?.dealerHandRank);
@@ -121,17 +123,29 @@ export default function PokerGame() {
 
 
   return (
-    <div className="sp-poker-page">
+    <div className="sp-poker-page leaderboard-host">
+      <div className="sp-animated-bg">
+        <div className="sp-floating-shape sp-shape-1"></div>
+        <div className="sp-floating-shape sp-shape-2"></div>
+        <div className="sp-floating-shape sp-shape-3"></div>
+        <div className="sp-floating-shape sp-shape-4"></div>
+        <div className="sp-floating-shape sp-shape-5"></div>
+      </div>
       <div className="sp-poker-container">
         {/* HEADER */}
-        <div className="sp-poker-header">
-          <div className="sp-header-left">
-            <button className="sp-back-btn" onClick={() => window.history.back()}>
-              <i className="fas fa-chevron-left"></i> Powrót
-            </button>
-            <h1 className="sp-poker-title">ROYAL POKER</h1>
-          </div>
-          <div className="sp-balance-display">
+        <div className="sp-poker-header slots-header">
+          <button className="back-btn" onClick={() => window.history.back()}>
+            <i className="fas fa-arrow-left"></i>
+            <span>POWRÓT</span>
+          </button>
+
+          <h1 className="slots-title">
+            <span className="title-word">ROYAL</span>
+            <span className="title-word">POKER</span>
+          </h1>
+
+          <div className="balance-display">
+             <i className="fas fa-coins"></i>
              <span>{formatNumberWithSpaces(balance)} PLN</span>
           </div>
         </div>
@@ -245,6 +259,20 @@ export default function PokerGame() {
           </div>
         </div>
         
+      </div>
+
+      <div className={`leaderboard-drawer ${leaderboardOpen ? 'open' : 'closed'}`}>
+        <button
+          className="leaderboard-toggle"
+          onClick={() => setLeaderboardOpen((prev) => !prev)}
+          aria-expanded={leaderboardOpen}
+        >
+          <i className={`fas ${leaderboardOpen ? 'fa-chevron-right' : 'fa-chevron-left'}`}></i>
+          <span>{leaderboardOpen ? 'Schowaj' : 'Top wins'}</span>
+        </button>
+        <div className="leaderboard-panel">
+          <Leaderboard gameId={4} title="TOP WINS" className="leaderboard-widget" />
+        </div>
       </div>
     </div>
   );
