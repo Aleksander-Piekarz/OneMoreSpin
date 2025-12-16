@@ -165,6 +165,7 @@ public class Program
             builder.Services.AddScoped<IRouletteService, RouletteService>();
         builder.Services.AddScoped<IBlackjackService, BlackjackService>();
         builder.Services.AddScoped<ISinglePokerService, SinglePokerService>();
+        builder.Services.AddScoped<IAdminService, AdminService>();
         builder.Services.AddHostedService<MissionResetService>();
 
         // CORS Policy
