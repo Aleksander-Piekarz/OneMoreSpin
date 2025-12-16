@@ -57,7 +57,7 @@ const SlotsPage: React.FC = () => {
 
   const playSound = (type: 'lever' | 'win' | 'lose') => {
     const audioRef = type === 'lever' ? leverAudioRef : type === 'win' ? winAudioRef : loseAudioRef;
-    
+
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -70,12 +70,12 @@ const SlotsPage: React.FC = () => {
       leverAudioRef.current.preload = 'auto';
       winAudioRef.current.preload = 'auto';
       loseAudioRef.current.preload = 'auto';
-      
+
       leverAudioRef.current.load();
       winAudioRef.current.load();
       loseAudioRef.current.load();
     };
-    
+
     preloadAudio();
   }, []);
 
@@ -86,7 +86,7 @@ const SlotsPage: React.FC = () => {
         img.src = src;
       });
     };
-    
+
     preloadImages();
   }, []);
 
@@ -96,7 +96,7 @@ const SlotsPage: React.FC = () => {
       navigate("/");
       return;
     }
-    
+
     const fetchBalance = async () => {
       try {
         const userData = await api.auth.me();
@@ -107,7 +107,7 @@ const SlotsPage: React.FC = () => {
         console.error("Błąd pobierania balansu:", err);
       }
     };
-    
+
     fetchBalance();
   }, [navigate]);
 
@@ -219,7 +219,7 @@ const SlotsPage: React.FC = () => {
 
     try {
       const result = await api.slots.spin(bet);
-      
+
       setTimeout(() => {
         clearInterval(spinInterval);
         setGrid(result.grid);
@@ -235,22 +235,22 @@ const SlotsPage: React.FC = () => {
           setWinAmount(result.win);
           const totalMultiplier = result.winDetails.reduce((sum: number, detail: any) => sum + (detail.Multiplier || detail.multiplier || 0), 0);
           setWinMultiplier(totalMultiplier);
-          
+
           const showDelay = 300;
           const displayDuration = 2500;
           const fadeOutDuration = 400;
-          
+
           setTimeout(() => {
             setShowWin(true);
             setShowConfetti(true);
             setIsFadingOut(false);
             fireConfetti(displayDuration + fadeOutDuration);
           }, showDelay);
-          
+
           setTimeout(() => {
             setIsFadingOut(true);
           }, showDelay + displayDuration);
-          
+
           setTimeout(() => {
             setShowWin(false);
             setShowConfetti(false);
@@ -305,24 +305,24 @@ const SlotsPage: React.FC = () => {
           <div className="left-panel">
             <div className="bet-section">
               <label className="bet-label">STAWKA</label>
-              
+
               <div className="bet-row">
-                <button 
-                  className="bet-quick-btn small negative" 
+                <button
+                  className="bet-quick-btn small negative"
                   onClick={() => adjustBet(-100)}
                   disabled={isSpinning}
                 >
                   -100
                 </button>
-                <button 
-                  className="bet-quick-btn small negative" 
+                <button
+                  className="bet-quick-btn small negative"
                   onClick={() => adjustBet(-50)}
                   disabled={isSpinning}
                 >
                   -50
                 </button>
-                <button 
-                  className="bet-quick-btn small negative" 
+                <button
+                  className="bet-quick-btn small negative"
                   onClick={() => adjustBet(-10)}
                   disabled={isSpinning}
                 >
@@ -342,22 +342,22 @@ const SlotsPage: React.FC = () => {
               />
 
               <div className="bet-row">
-                <button 
-                  className="bet-quick-btn small" 
+                <button
+                  className="bet-quick-btn small"
                   onClick={() => adjustBet(10)}
                   disabled={isSpinning}
                 >
                   +10
                 </button>
-                <button 
-                  className="bet-quick-btn small" 
+                <button
+                  className="bet-quick-btn small"
                   onClick={() => adjustBet(50)}
                   disabled={isSpinning}
                 >
                   +50
                 </button>
-                <button 
-                  className="bet-quick-btn small" 
+                <button
+                  className="bet-quick-btn small"
                   onClick={() => adjustBet(100)}
                   disabled={isSpinning}
                 >
@@ -365,7 +365,7 @@ const SlotsPage: React.FC = () => {
                 </button>
               </div>
 
-              <button 
+              <button
                 className="max-bet-btn"
                 onClick={() => setBet(balance)}
                 disabled={isSpinning}
@@ -375,7 +375,7 @@ const SlotsPage: React.FC = () => {
 
               <div className="auto-play-section">
                 <label className="auto-play-label">AUTO SPIN</label>
-                
+
                 <div className="auto-spin-options">
                   <button
                     className={`auto-spin-option ${autoSpinCount === 5 ? 'selected' : ''}`}
@@ -414,14 +414,14 @@ const SlotsPage: React.FC = () => {
                   </button>
                 </div>
 
-                <button 
+                <button
                   className={`auto-play-btn ${autoPlay ? 'active' : ''}`}
                   onClick={toggleAutoPlay}
                 >
                   <i className={`fas ${autoPlay ? 'fa-stop' : 'fa-play'}`}></i>
                   <span>
-                    {autoPlay 
-                      ? `STOP (${remainingSpins === Infinity ? '∞' : remainingSpins})` 
+                    {autoPlay
+                      ? `STOP (${remainingSpins === Infinity ? '∞' : remainingSpins})`
                       : 'START AUTO'}
                   </span>
                 </button>
@@ -444,15 +444,15 @@ const SlotsPage: React.FC = () => {
                       ([r, c]) => r === rowIndex && c === colIndex
                     );
                     return (
-                      <div 
-                        key={`${rowIndex}-${colIndex}`} 
+                      <div
+                        key={`${rowIndex}-${colIndex}`}
                         className={`slot-cell ${isSpinning ? 'spinning-cell' : ''} ${isWinningCell ? 'winning' : ''}`}
                         style={{ animationDelay: `${colIndex * 0.1}s` }}
                       >
                         {symbol && symbolMap[symbol] && (
-                          <img 
-                            src={symbolMap[symbol]} 
-                            alt={symbol} 
+                          <img
+                            src={symbolMap[symbol]}
+                            alt={symbol}
                             className="slot-symbol"
                           />
                         )}
@@ -468,7 +468,7 @@ const SlotsPage: React.FC = () => {
 
           <div className="right-panel">
             <div className="lever-container">
-              <button 
+              <button
                 className={`lever-btn ${isSpinning ? 'pulling' : ''}`}
                 onClick={handleSpin}
                 disabled={isSpinning || autoPlay}
@@ -524,8 +524,8 @@ const SlotsPage: React.FC = () => {
           </div>
         )}
 
-        <div className="mt-8 border-t pt-6">
-          <Leaderboard gameId={3} title="Top Slots Winners" className="bg-gray-900 p-4 rounded" />
+        <div className="right-sidebar-content">
+          <Leaderboard gameId={3} title="TOP WINS" />
         </div>
       </main>
     </div>

@@ -334,10 +334,24 @@ export const api = {
   },
   leaderboard: {
     getByGameId(gameId: number) {
-      return request<{ Email: string; MoneyWon: number }[]>(`/api/leaderboard/game/${gameId}`);
+      return request<{ email?: string; Email?: string; moneyWon?: number; MoneyWon?: number }[]>(
+        `/leaderboard/game/${gameId}`
+      ).then((rows) =>
+        rows.map((r) => ({
+          Email: r.Email ?? r.email ?? "",
+          MoneyWon: r.MoneyWon ?? r.moneyWon ?? 0,
+        }))
+      );
     },
     getGlobal() {
-      return request<{ Email: string; MoneyWon: number }[]>(`/api/leaderboard`);
+      return request<{ email?: string;  moneyWon?: number }[]>(
+        `/leaderboard`
+      ).then((rows) =>
+        rows.map((r) => ({
+          Email: r.email ?? "",
+          MoneyWon: r.moneyWon ?? 0,
+        }))
+      );
     },
   },
 };

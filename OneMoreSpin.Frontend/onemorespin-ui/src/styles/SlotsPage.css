@@ -488,10 +488,17 @@
 
 .right-panel {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-width: 180px;
-  height: 100%;
+  justify-content: flex-start;
+  gap: 2rem; /* Odstęp między dźwignią a leaderboardem */
+}
+
+/* Kontener otaczający leaderboard wewnątrz SlotsPage */
+.right-sidebar-content {
+  width: 100%;
+  max-width: 200px; /* Dopasuj szerokość do dźwigni */
+  z-index: 10;
 }
 
 .bet-section {

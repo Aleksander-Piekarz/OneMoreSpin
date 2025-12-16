@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-
+import { api } from '../api';
+import '../styles/Leaderboard.css';
 type Entry = {
   Email: string;
   MoneyWon: number;
@@ -12,13 +13,20 @@ interface LeaderboardProps {
 }
 
 const formatMoney = (value: number): string => {
-  if (value >= 1e9) return (value / 1e9).toFixed(2) + 'B';
-  if (value >= 1e6) return (value / 1e6).toFixed(2) + 'M';
-  if (value >= 1e3) return (value / 1e3).toFixed(2) + 'K';
-  return value.toFixed(2);
+  if (value >= 1e9) return (value / 1e9).toFixed(1) + 'B';
+  if (value >= 1e6) return (value / 1e6).toFixed(1) + 'M';
+  if (value >= 1e3) return (value / 1e3).toFixed(1) + 'k';
+  return value.toFixed(0);
 };
 
-export const Leaderboard: React.FC<LeaderboardProps> = ({ gameId, title = 'Leaderboard', className }) => {
+// Funkcja maskująca email (np. al***@gmail.com) dla prywatności
+const maskEmail = (email: string) => {
+  const [name, domain] = email.split('@');
+  if (!name || name.length < 3) return email;
+  return `${name.substring(0, 2)}***@${domain}`;
+};
+
+export const Leaderboard: React.FC<LeaderboardProps> = ({ gameId, title = 'TOP WINS', className }) => {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,56 +37,58 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ gameId, title = 'Leade
       try {
         setLoading(true);
         setError(null);
-        const url = `/api/leaderboard/game/${gameId}`;
-        const resp = await fetch(url);
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
-        const text = await resp.text();
-        const data: Entry[] = JSON.parse(text);
-        if (!cancelled) setEntries(data);
+        
+        const data = await api.leaderboard.getByGameId(gameId);
+
+        if (!cancelled) {
+          if (!Array.isArray(data)) {
+            throw new Error("Błąd danych");
+          }
+          // Sortujemy malejąco po wygranej i bierzemy top 5, żeby nie zajmowało za dużo miejsca
+          const sorted = data.sort((a, b) => b.MoneyWon - a.MoneyWon).slice(0, 5);
+          setEntries(sorted);
+        }
       } catch (e: any) {
-        if (!cancelled) setError(`(gameId: ${gameId}) ${e?.message ?? 'Failed to load leaderboard'}`);
+        if (!cancelled) setError("Błąd ładowania");
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
     load();
-    return () => { cancelled = true; };
+    const interval = setInterval(load, 30000); // Odświeżaj co 30 sekund
+    return () => { 
+      cancelled = true; 
+      clearInterval(interval);
+    };
   }, [gameId]);
 
-  if (loading) {
-    return <div className={className}>Loading {title}…</div>;
-  }
-  if (error) {
-    return <div className={className}>Failed to load: {error}</div>;
-  }
-
   return (
-    <div className={className}>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead>
-            <tr className="text-left border-b">
-              <th className="py-2 px-3">#</th>
-              <th className="py-2 px-3">Email</th>
-              <th className="py-2 px-3">Winnings</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e, i) => (
-              <tr key={`${e.Email}-${i}`} className="border-b">
-                <td className="py-2 px-3">{i + 1}</td>
-                <td className="py-2 px-3">{e.Email}</td>
-                <td className="py-2 px-3 text-right font-semibold">{formatMoney(e.MoneyWon)}</td>
-              </tr>
-            ))}
-            {entries.length === 0 && (
-              <tr>
-                <td className="py-3 px-3" colSpan={3}>No entries yet.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+    <div className={`casino-leaderboard ${className || ''}`}>
+      <div className="leaderboard-header">
+        <i className="fas fa-trophy"></i>
+        <span>{title}</span>
+      </div>
+
+      <div className="leaderboard-content">
+        {loading && entries.length === 0 ? (
+          <div className="leaderboard-status">Ładowanie...</div>
+        ) : error ? (
+          <div className="leaderboard-status error">{error}</div>
+        ) : entries.length === 0 ? (
+          <div className="leaderboard-status">Brak wyników</div>
+        ) : (
+          <table className="leaderboard-table">
+            <tbody>
+              {entries.map((e, i) => (
+                <tr key={`${e.Email}-${i}`} className={i === 0 ? 'top-1' : ''}>
+                  <td className="rank">#{i + 1}</td>
+                  <td className="user">{maskEmail(e.Email)}</td>
+                  <td className="amount">{formatMoney(e.MoneyWon)} $</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

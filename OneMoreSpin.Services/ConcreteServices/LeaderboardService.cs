@@ -18,23 +18,31 @@ public class LeaderboardService : ILeaderboardService
 
     public async Task<List<(string Email, decimal MoneyWon)>> GetTop10ByWinningsAsync()
     {
-        return await _db.UserScores
-            .Include(us => us.User)
+        return await _db
+            .UserScores.Include(us => us.User)
             .OrderByDescending(us => us.MoneyWon)
             .Take(10)
-            .Select(us => new ValueTuple<string, decimal>(us.User.Email ?? string.Empty, us.MoneyWon))
+            .Select(us => new ValueTuple<string, decimal>(
+                us.User.Email ?? string.Empty,
+                us.MoneyWon
+            ))
             .ToListAsync();
     }
 
-    public async Task<List<(string Email, decimal MoneyWon)>> GetTop10ByWinningsForGameAsync(int gameId)
+    public async Task<List<(string Email, decimal MoneyWon)>> GetTop10ByWinningsForGameAsync(
+        int gameId
+    )
     {
-        return await _db.UserScores
-            .Include(us => us.User)
+        return await _db
+            .UserScores.Include(us => us.User)
             .Include(us => us.Game)
             .Where(us => us.GameId == gameId)
             .OrderByDescending(us => us.MoneyWon)
             .Take(10)
-            .Select(us => new ValueTuple<string, decimal>(us.User.Email ?? string.Empty, us.MoneyWon))
+            .Select(us => new ValueTuple<string, decimal>(
+                us.User.Email ?? string.Empty,
+                us.MoneyWon
+            ))
             .ToListAsync();
     }
 }
