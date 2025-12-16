@@ -130,6 +130,13 @@ public class AuthController : ControllerBase
         if (!ok.Succeeded)
             return Unauthorized(new { error = "Invalid credentials" });
 
+        // Ustawienie IsActive = true przy logowaniu
+        if (!user.IsActive)
+        {
+            user.IsActive = true;
+            await _userManager.UpdateAsync(user);
+        }
+
         var token = GenerateJwt(user, cfg);
 
         return Ok(
@@ -211,6 +218,27 @@ public class AuthController : ControllerBase
             }
 
             return BadRequest(ModelState);
+        }
+
+        [HttpPost("logout")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+                return Unauthorized(new { error = "Invalid user" });
+
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+                return NotFound(new { error = "User not found" });
+
+            user.IsActive = false;
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+                return BadRequest(new { error = "Failed to update user status" });
+
+            return Ok(new { message = "Logout successful" });
         }
     }
 
