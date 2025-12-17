@@ -39,21 +39,45 @@ export const PokerPage = () => {
     // Używamy ID z URL lub domyślnego
     const currentTableId = tableId || "stol-1";
     
-    const { table, logs, isConnected, startGame, move, myUserId } = usePokerGame(currentTableId);
+    // Rozszerzamy destrukturyzację o chatMessages i sendChatMessage
+    const { table, logs, isConnected, startGame, move, myUserId, chatMessages, sendChatMessage } = usePokerGame(currentTableId);
+    
     const [raiseAmount, setRaiseAmount] = useState(100);
     const [leaderboardOpen, setLeaderboardOpen] = useState(true);
+    
+    // --- STAN I REF DLA CZATU ---
+    const [newMessage, setNewMessage] = useState("");
     const logsEndRef = useRef<HTMLDivElement>(null);
+    const chatEndRef = useRef<HTMLDivElement>(null);
 
     // --- WYBÓR MOTYWU NA PODSTAWIE ID STOŁU ---
     let currentTheme: ThemeType = 'beginner';
     if (currentTableId.includes('stol-2')) currentTheme = 'advanced';
     if (currentTableId.includes('vip')) currentTheme = 'vip';
 
+    // Auto-scroll dla logów gry
     useEffect(() => {
         if (logsEndRef.current) {
             logsEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [logs]);
+
+    // Auto-scroll dla czatu
+    useEffect(() => {
+        if (chatEndRef.current) {
+            chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [chatMessages]);
+
+    // Obsługa wysyłania wiadomości
+    const handleSend = () => {
+        if (!newMessage.trim()) return;
+        // Sprawdzenie czy funkcja istnieje (dla bezpieczeństwa, jeśli hook nie został jeszcze zaktualizowany)
+        if (sendChatMessage) {
+            sendChatMessage(newMessage);
+            setNewMessage("");
+        }
+    };
 
     if (!isConnected) return <div className="poker-container" style={{justifyContent:'center'}}><h2>🔌 Łączenie z kasynem...</h2></div>;
     if (!table) return <div className="poker-container" style={{justifyContent:'center'}}><h2>🚀 Wchodzenie do stołu...</h2></div>;
@@ -146,6 +170,7 @@ export const PokerPage = () => {
                 })}
             </div>
 
+            {/* PANEL LOGÓW (LEWA STRONA) */}
             <div className="log-panel">
                 <div className="log-header">
                     <span>HISTORIA GRY</span><span style={{color: '#66bb6a'}}>● Live</span>
@@ -159,6 +184,107 @@ export const PokerPage = () => {
                         return <div key={i} style={{color: c}}>{log}</div>
                     })}
                     <div ref={logsEndRef} />
+                </div>
+            </div>
+
+            {/* PANEL CZATU (NOWY - PRAWA STRONA, NAD KONTROLKAMI LUB PO BOKU) */}
+            <div className="chat-panel-widget" style={{
+                position: 'absolute',
+                bottom: '100px',
+                right: '20px',
+                width: '320px',
+                height: '250px',
+                backgroundColor: 'rgba(20, 20, 20, 0.95)',
+                border: '1px solid #444',
+                borderRadius: '8px',
+                display: 'flex',
+                flexDirection: 'column',
+                zIndex: 50,
+                boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
+            }}>
+                <div className="chat-header" style={{
+                    padding: '8px 12px',
+                    borderBottom: '1px solid #444',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: '#fff',
+                    fontWeight: 'bold',
+                    fontSize: '0.9rem',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    borderTopLeftRadius: '8px',
+                    borderTopRightRadius: '8px'
+                }}>
+                    <span>💬 CZAT STOŁU</span>
+                </div>
+
+                <div className="chat-messages" style={{
+                    flex: 1,
+                    overflowY: 'auto',
+                    padding: '10px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                    scrollbarWidth: 'thin',
+                }}>
+                    {chatMessages && chatMessages.length > 0 ? (
+                        chatMessages.map((msg, i) => (
+                            <div key={i} style={{ fontSize: '0.85rem', lineHeight: '1.3', wordBreak: 'break-word' }}>
+                                <span style={{ color: msg.username === myPlayer?.username ? '#66bb6a' : '#ffd700', fontWeight: 'bold', marginRight: '5px' }}>
+                                    {msg.username}:
+                                </span>
+                                <span style={{ color: '#eee' }}>{msg.text}</span>
+                            </div>
+                        ))
+                    ) : (
+                        <div style={{color: '#666', fontStyle: 'italic', fontSize: '0.8rem', textAlign: 'center', marginTop: '10px'}}>
+                            Rozpocznij rozmowę...
+                        </div>
+                    )}
+                    <div ref={chatEndRef} />
+                </div>
+
+                <div className="chat-input-area" style={{
+                    padding: '8px',
+                    borderTop: '1px solid #444',
+                    display: 'flex',
+                    gap: '5px',
+                    background: 'rgba(0,0,0,0.3)',
+                    borderBottomLeftRadius: '8px',
+                    borderBottomRightRadius: '8px'
+                }}>
+                    <input 
+                        type="text" 
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                        placeholder="Napisz wiadomość..."
+                        style={{
+                            flex: 1,
+                            background: '#333',
+                            border: '1px solid #555',
+                            borderRadius: '4px',
+                            color: 'white',
+                            padding: '6px 10px',
+                            fontSize: '0.9rem',
+                            outline: 'none'
+                        }}
+                    />
+                    <button 
+                        onClick={handleSend}
+                        style={{
+                            background: '#66bb6a',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '0 12px',
+                            color: 'white',
+                            cursor: 'pointer',
+                            fontWeight: 'bold',
+                            fontSize: '1.1rem'
+                        }}
+                    >
+                        ➤
+                    </button>
                 </div>
             </div>
 

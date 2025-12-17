@@ -6,20 +6,20 @@ class PokerService {
     private connection: signalR.HubConnection;
 
     constructor() {
-        const hubUrl = "http://91.123.188.186:5000/pokerHub"; 
+        const hubUrl = "http://91.123.188.186:5000/pokerHub";
 
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl(hubUrl, {
 
                 accessTokenFactory: () => {
-                    return localStorage.getItem("jwt") || ""; 
+                    return localStorage.getItem("jwt") || "";
                 }
             })
             .withAutomaticReconnect()
             .build();
     }
 
-public async startConnection() {
+    public async startConnection() {
         // 1. Jeśli już połączony - wyjdź natychmiast
         if (this.connection.state === signalR.HubConnectionState.Connected) {
             return;
@@ -40,17 +40,17 @@ public async startConnection() {
         // Rzutujemy 'state' na typ ogólny, żeby TypeScript nie "wymądrzał się", 
         // że wie lepiej jaki jest stan.
         while ((this.connection.state as signalR.HubConnectionState) !== signalR.HubConnectionState.Connected) {
-            
+
             // Czekaj 50ms
             await new Promise(resolve => setTimeout(resolve, 50));
-            
+
             // Zabezpieczenie przed nieskończoną pętlą przy błędzie
             if (this.connection.state === signalR.HubConnectionState.Disconnected) {
                 break;
             }
         }
     }
-    
+
 
     public async stopConnection() {
         if (this.connection.state === signalR.HubConnectionState.Connected) {
@@ -83,7 +83,7 @@ public async startConnection() {
         this.connection.on("UpdateGameState", callback);
     }
     // ... reszta listenerów tak jak była ...
-    
+
     public onPlayerJoined(callback: (username: string) => void) {
         this.connection.on("PlayerJoined", callback);
     }
@@ -96,11 +96,22 @@ public async startConnection() {
         this.connection.on("Error", callback);
     }
 
+
+    public async sendMessage(tableId: string, message: string) {
+        if (this.connection.state !== signalR.HubConnectionState.Connected) return;
+        await this.connection.invoke("SendMessage", tableId, message);
+    }
+
+
+    public onReceiveMessage(callback: (username: string, message: string) => void) {
+        this.connection.on("ReceiveMessage", callback);
+    }
     public offEvents() {
         this.connection.off("UpdateGameState");
         this.connection.off("PlayerJoined");
         this.connection.off("ActionLog");
         this.connection.off("Error");
+        this.connection.off("ReceiveMessage");
     }
 }
 
