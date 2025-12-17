@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { pokerService } from "../services/pokerService";
 import { type PokerTable } from "../types/poker";
 
+export interface ChatMessage {
+    username: string;
+    text: string;
+}
 const getMyId = () => {
     try {
         const token = localStorage.getItem("jwt");
@@ -29,8 +33,8 @@ export const usePokerGame = (tableId: string) => {
     const [logs, setLogs] = useState<string[]>([]);
     const [isConnected, setIsConnected] = useState(false);
     const [myUserId, setMyUserId] = useState("");
-
-    // USUNIĘTO REF 'isConnecting' - pozwala to naprawić błąd w Strict Mode
+    const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+   
 
     useEffect(() => {
         let isMounted = true;
@@ -38,6 +42,25 @@ export const usePokerGame = (tableId: string) => {
         // 1. Ustaw ID
         const id = getMyId();
         setMyUserId(id);
+
+        // 2. Rejestruj listenery PRZED połączeniem
+        pokerService.onUpdateGameState((updatedTable) => {
+            if (isMounted) setTable(updatedTable);
+        });
+
+        pokerService.onPlayerJoined((username) => {
+            if (isMounted) setLogs(prev => [...prev, `Gracz ${username} dołączył.`]);
+        });
+
+        pokerService.onActionLog((msg) => {
+            if (isMounted) setLogs(prev => [...prev, msg]);
+        });
+
+        pokerService.onReceiveMessage((username, text) => {
+            if (isMounted) {
+                setChatMessages(prev => [...prev, { username, text }]);
+            }
+        });
 
         const connectAndJoin = async () => {
             try {
@@ -57,20 +80,6 @@ export const usePokerGame = (tableId: string) => {
             }
         };
 
-        // Listenery
-        pokerService.onUpdateGameState((updatedTable) => {
-            // console.log("Hook: Otrzymano stół:", updatedTable);
-            if (isMounted) setTable(updatedTable);
-        });
-
-        pokerService.onPlayerJoined((username) => {
-            if (isMounted) setLogs(prev => [...prev, `Gracz ${username} dołączył.`]);
-        });
-
-        pokerService.onActionLog((msg) => {
-             if (isMounted) setLogs(prev => [...prev, msg]);
-        });
-
         connectAndJoin();
 
         return () => {
@@ -88,6 +97,9 @@ export const usePokerGame = (tableId: string) => {
         if (!isConnected) return;
         await pokerService.makeMove(tableId, action, amount);
     };
-
-    return { table, logs, isConnected, startGame, move, myUserId };
+    const sendChatMessage = async (msg: string) => {
+            if (!isConnected) return;
+            await pokerService.sendMessage(tableId, msg);
+        };
+    return { table, logs, isConnected, startGame, move, myUserId, chatMessages, sendChatMessage };
 };

@@ -1,13 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using OneMoreSpin.Services.ConcreteServices;
 using OneMoreSpin.Services.Interfaces;
-using System;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
-namespace OneMoreSpin.Services.Hubs 
+namespace OneMoreSpin.Services.Hubs
 {
     [Authorize]
     public class PokerHub : Hub
@@ -19,23 +20,21 @@ namespace OneMoreSpin.Services.Hubs
             _pokerService = pokerService;
         }
 
-        
-        public override async Task OnDisconnectedAsync(Exception exception)
+        public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            
             _pokerService.LeaveTable(Context.ConnectionId);
-            
+
             await base.OnDisconnectedAsync(exception);
         }
-        
 
         public async Task JoinTable(string tableId)
         {
             var userId = Context.UserIdentifier;
             if (string.IsNullOrEmpty(userId))
             {
-                userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value 
-                         ?? Context.User?.FindFirst("sub")?.Value;
+                userId =
+                    Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                    ?? Context.User?.FindFirst("sub")?.Value;
             }
 
             if (string.IsNullOrEmpty(userId))
@@ -50,7 +49,7 @@ namespace OneMoreSpin.Services.Hubs
 
             var table = _pokerService.GetTable(tableId);
             await Clients.Group(tableId).SendAsync("UpdateGameState", table);
-            
+
             var player = table.Players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
             if (player != null)
             {
@@ -65,26 +64,43 @@ namespace OneMoreSpin.Services.Hubs
             await Clients.Group(tableId).SendAsync("UpdateGameState", table);
         }
 
-     public async Task<List<TableInfoDto>> GetTables()
+        public async Task<List<TableInfoDto>> GetTables()
         {
-            
             return _pokerService.GetLobbyInfo();
         }
+
         public async Task MakeMove(string tableId, string action, decimal amount)
         {
-            var userId = Context.UserIdentifier ?? Context.User?.FindFirst("sub")?.Value;
+            var userId = Context.UserIdentifier ?? Context.User?.FindFirst("sub")?.Value ?? "";
             bool success = _pokerService.PlayerMove(tableId, userId, action, amount);
 
             if (success)
             {
                 var table = _pokerService.GetTable(tableId);
                 await Clients.Group(tableId).SendAsync("UpdateGameState", table);
-                
+
                 var player = table.Players.FirstOrDefault(p => p.UserId == userId);
                 var name = player?.Username ?? "Gracz";
                 await Clients.Group(tableId).SendAsync("ActionLog", $"{name}: {action}");
             }
         }
-        
+
+        public async Task SendMessage(string tableId, string message)
+        {
+            Console.WriteLine($"[CHAT] SendMessage wywoływana! TableId: {tableId}, Message: {message}");
+            
+            if (string.IsNullOrWhiteSpace(message))
+                return;
+
+            var table = _pokerService.GetTable(tableId);
+            if (table == null)
+                return;
+
+            var player = table.Players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
+
+            string username = player?.Username ?? Context.User?.Identity?.Name ?? "Obserwator";
+
+            await Clients.Group(tableId).SendAsync("ReceiveMessage", username, message);
+        }
     }
 }
