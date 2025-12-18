@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Trash2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import DemoToggle from '../components/DemoToggle';
 import { refreshMissions } from "../events";
 import "../styles/RoulettePage.css";
 
@@ -145,6 +146,8 @@ const RouletteWheel = ({
 export default function RouletteGame() {
   const navigate = useNavigate();
   const [balance, setBalance] = useState(0);
+  const [unlimitedMode, setUnlimitedMode] = useState(false);
+  
   const [currentChip, setCurrentChip] = useState(10);
   const [bets, setBets] = useState<Bet[]>([]);
   
@@ -228,11 +231,11 @@ export default function RouletteGame() {
 
   const placeBet = (type: BetType, value: BetValue) => {
     if (isSpinning) return;
-    if (balance < currentChip) {
+    if (!unlimitedMode && balance < currentChip) {
       return;
     }
 
-    setBalance(prev => prev - currentChip);
+    if (!unlimitedMode) setBalance(prev => prev - currentChip);
     
     setBets(prev => {
       const existingBetIndex = prev.findIndex(b => b.type === type && b.value === value);
@@ -250,7 +253,7 @@ export default function RouletteGame() {
   const clearBets = () => {
     if (isSpinning) return;
     const totalRefund = bets.reduce((acc, bet) => acc + bet.amount, 0);
-    setBalance(prev => prev + totalRefund);
+    if (!unlimitedMode) setBalance(prev => prev + totalRefund);
     setBets([]);
   };
 
@@ -275,7 +278,7 @@ export default function RouletteGame() {
                 value: b.value.toString(),
                 amount: b.amount
             }))
-        });
+        }, unlimitedMode);
 
         const winningNumber = result.winNumber;
 
@@ -317,11 +320,15 @@ export default function RouletteGame() {
     
     const totalCurrentBets = bets.reduce((acc, bet) => acc + bet.amount, 0);
     
-    if (result.balance >= totalCurrentBets) {
+    if (!unlimitedMode) {
+      if (result.balance >= totalCurrentBets) {
         setBalance(result.balance - totalCurrentBets);
     } else {
         setBalance(result.balance);
         setBets([]);
+      }
+    } else {
+      setBets([]);
     }
     
     refreshMissions();
@@ -416,9 +423,12 @@ export default function RouletteGame() {
           <span className="title-word">ROULETTE</span>
         </div>
 
-        <div className="balance-display">
-          <i className="fas fa-coins"></i>
-          <span>{balance.toLocaleString()} PLN</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <DemoToggle checked={unlimitedMode} onChange={setUnlimitedMode} />
+          <div className="balance-display">
+            <i className="fas fa-coins"></i>
+            <span>{balance.toLocaleString()} PLN</span>
+          </div>
         </div>
       </header>
 

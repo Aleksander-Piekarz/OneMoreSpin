@@ -4,6 +4,7 @@ import { api } from "../api";
 import { refreshMissions } from "../events";
 import { fireConfetti } from "../utils/confetti";
 import Leaderboard from "../components/Leaderboard";
+import DemoToggle from "../components/DemoToggle";
 import "../styles/BlackjackPage.css";
 
 type BlackjackCard = {
@@ -33,6 +34,7 @@ const BlackjackPage: React.FC = () => {
   const navigate = useNavigate();
   const [bet, setBet] = useState<number>(10);
   const [balance, setBalance] = useState<number>(0);
+  const [unlimitedMode, setUnlimitedMode] = useState(false);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isDealing, setIsDealing] = useState(false);
   const [error, setError] = useState<string>("");
@@ -81,7 +83,7 @@ const BlackjackPage: React.FC = () => {
       setTimeout(() => setError(""), 3000);
       return;
     }
-    if (bet > balance) {
+    if (!unlimitedMode && bet > balance) {
       setError("Niewystarczający balans");
       setTimeout(() => setError(""), 3000);
       return;
@@ -93,11 +95,11 @@ const BlackjackPage: React.FC = () => {
     setGameState(null);
 
     try {
-      const result = await api.blackjack.start(bet);
+      const result = await api.blackjack.startWithMode(bet, unlimitedMode);
       
       setTimeout(() => {
         setGameState(result);
-        setBalance(result.balance);
+        if (!unlimitedMode) setBalance(result.balance);
         setIsDealing(false);
         refreshMissions();
 
@@ -116,9 +118,9 @@ const BlackjackPage: React.FC = () => {
     if (!gameState) return;
 
     try {
-      const result = await api.blackjack.hit(gameState.sessionId);
+      const result = await api.blackjack.hitWithMode(gameState.sessionId, unlimitedMode);
       setGameState(result);
-      setBalance(result.balance);
+      if (!unlimitedMode) setBalance(result.balance);
 
       if (result.gameFinished) {
         showGameResult(result);
@@ -134,9 +136,9 @@ const BlackjackPage: React.FC = () => {
     if (!gameState) return;
 
     try {
-      const result = await api.blackjack.stand(gameState.sessionId);
+      const result = await api.blackjack.standWithMode(gameState.sessionId, unlimitedMode);
       setGameState(result);
-      setBalance(result.balance);
+      if (!unlimitedMode) setBalance(result.balance);
       showGameResult(result);
       refreshMissions();
     } catch (err: any) {
@@ -149,9 +151,9 @@ const BlackjackPage: React.FC = () => {
     if (!gameState) return;
 
     try {
-      const result = await api.blackjack.double(gameState.sessionId);
+      const result = await api.blackjack.doubleWithMode(gameState.sessionId, unlimitedMode);
       setGameState(result);
-      setBalance(result.balance);
+      if (!unlimitedMode) setBalance(result.balance);
       showGameResult(result);
       refreshMissions();
     } catch (err: any) {
@@ -243,9 +245,12 @@ const BlackjackPage: React.FC = () => {
         </h1>
 
         <div className="header-right-cluster">
-          <div className="balance-display">
-            <i className="fas fa-coins"></i>
-            <span>{balance.toLocaleString()} PLN</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <DemoToggle checked={unlimitedMode} onChange={setUnlimitedMode} />
+            <div className="balance-display">
+              <i className="fas fa-coins"></i>
+              <span>{balance.toLocaleString()} PLN</span>
+            </div>
           </div>
         </div>
       </header>

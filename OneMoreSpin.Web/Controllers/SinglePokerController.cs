@@ -38,8 +38,13 @@ public class SinglePokerController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
+        var unlimited = false;
+        if (Request.Headers.TryGetValue("X-Unlimited-Mode", out var vals))
+        {
+            unlimited = vals.FirstOrDefault() == "true";
+        }
 
-        var vm = await _pokerService.StartSessionAsync(userId, req.BetAmount);
+        var vm = await _pokerService.StartSessionAsync(userId, req.BetAmount, unlimited);
         return Ok(vm);
     }
 
@@ -50,7 +55,13 @@ public class SinglePokerController : ControllerBase
     {
         int sessionId = id > 0 ? id : req.SessionId;
         var indices = req.Indices.Any() ? req.Indices : req.DiscardIndices;
-        var vm = await _pokerService.DrawAsync(sessionId, indices);
+        var unlimited = false;
+        if (Request.Headers.TryGetValue("X-Unlimited-Mode", out var vals))
+        {
+            unlimited = vals.FirstOrDefault() == "true";
+        }
+
+        var vm = await _pokerService.DrawAsync(sessionId, indices, unlimited);
         return Ok(vm);
     }
 

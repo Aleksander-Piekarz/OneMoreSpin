@@ -32,7 +32,7 @@ public class SinglePokerService : BaseService, ISinglePokerService
         _missionService = missionService;
     }
 
-    public async Task<PokerGameSessionVm> StartSessionAsync(string userId, decimal betAmount)
+    public async Task<PokerGameSessionVm> StartSessionAsync(string userId, decimal betAmount, bool unlimitedMode = false)
     {
         if (!int.TryParse(userId, out int parsedUserId))
             throw new ArgumentException("Nieprawidłowy format ID użytkownika");
@@ -41,12 +41,15 @@ public class SinglePokerService : BaseService, ISinglePokerService
         if (user == null)
             throw new KeyNotFoundException("Nie znaleziono użytkownika");
 
-        if (user.Balance < betAmount)
-            throw new InvalidOperationException("Niewystarczające środki");
+        if (!unlimitedMode)
+        {
+            if (user.Balance < betAmount)
+                throw new InvalidOperationException("Niewystarczające środki");
 
-        // Zabezpieczenie proste: odejmujemy zakład teraz
-        user.Balance -= betAmount;
-        await DbContext.SaveChangesAsync();
+            // Zabezpieczenie proste: odejmujemy zakład teraz
+            user.Balance -= betAmount;
+            await DbContext.SaveChangesAsync();
+        }
 
         var deck = CreateShuffledDeck();
 
@@ -85,7 +88,8 @@ public class SinglePokerService : BaseService, ISinglePokerService
 
     public async Task<PokerGameSessionVm> DrawAsync(
         int sessionId,
-        IEnumerable<int> cardIndicesToDiscard
+        IEnumerable<int> cardIndicesToDiscard,
+        bool unlimitedMode = false
     )
     {
         if (!Sessions.TryGetValue(sessionId, out var session))
@@ -115,7 +119,7 @@ public class SinglePokerService : BaseService, ISinglePokerService
         session.EvaluatedDealerHand = EvaluateHand(session.DealerHand);
 
         var compare = CompareHands(session.EvaluatedPlayerHand, session.EvaluatedDealerHand);
-        if (compare > 0)
+            if (compare > 0)
         {
             session.PlayerWon = true;
             session.WinAmount = session.BetAmount * 2m;
@@ -124,8 +128,11 @@ public class SinglePokerService : BaseService, ISinglePokerService
                 var user = DbContext.Users.Find(uid);
                 if (user != null)
                 {
-                    user.Balance += session.WinAmount;
-                    await DbContext.SaveChangesAsync();
+                        if (!unlimitedMode)
+                        {
+                            user.Balance += session.WinAmount;
+                            await DbContext.SaveChangesAsync();
+                        }
                 }
             }
 
@@ -135,7 +142,7 @@ public class SinglePokerService : BaseService, ISinglePokerService
             );
             await _missionService.UpdateWinInARowProgressAsync(session.UserId, session.PlayerWon);
         }
-        else if (compare < 0)
+            else if (compare < 0)
         {
             session.PlayerWon = false;
             session.WinAmount = 0m;
@@ -149,8 +156,11 @@ public class SinglePokerService : BaseService, ISinglePokerService
                 var user = DbContext.Users.Find(uid);
                 if (user != null)
                 {
-                    user.Balance += session.WinAmount;
-                    DbContext.SaveChanges();
+                        if (!unlimitedMode)
+                        {
+                            user.Balance += session.WinAmount;
+                            DbContext.SaveChanges();
+                        }
                 }
             }
         }

@@ -36,9 +36,15 @@ public class BlackjackController : ControllerBase
             return Unauthorized();
         }
 
+        var unlimited = false;
+        if (Request.Headers.TryGetValue("X-Unlimited-Mode", out var vals))
+        {
+            unlimited = vals.FirstOrDefault() == "true";
+        }
+
         try
         {
-            var result = await _blackjackService.StartGameAsync(userId, request.Bet);
+            var result = await _blackjackService.StartGameAsync(userId, request.Bet, unlimited);
             return Ok(result);
         }
         catch (InvalidOperationException e)
@@ -60,9 +66,15 @@ public class BlackjackController : ControllerBase
             return Unauthorized();
         }
 
+        var unlimited = false;
+        if (Request.Headers.TryGetValue("X-Unlimited-Mode", out var vals))
+        {
+            unlimited = vals.FirstOrDefault() == "true";
+        }
+
         try
         {
-            var result = await _blackjackService.HitAsync(userId, request.SessionId);
+            var result = await _blackjackService.HitAsync(userId, request.SessionId, unlimited);
             return Ok(result);
         }
         catch (InvalidOperationException e)
@@ -88,9 +100,15 @@ public class BlackjackController : ControllerBase
             return Unauthorized();
         }
 
+        var unlimited = false;
+        if (Request.Headers.TryGetValue("X-Unlimited-Mode", out var vals))
+        {
+            unlimited = vals.FirstOrDefault() == "true";
+        }
+
         try
         {
-            var result = await _blackjackService.StandAsync(userId, request.SessionId);
+            var result = await _blackjackService.StandAsync(userId, request.SessionId, unlimited);
             return Ok(result);
         }
         catch (InvalidOperationException e)
@@ -116,9 +134,15 @@ public class BlackjackController : ControllerBase
             return Unauthorized();
         }
 
+        var unlimited = false;
+        if (Request.Headers.TryGetValue("X-Unlimited-Mode", out var vals))
+        {
+            unlimited = vals.FirstOrDefault() == "true";
+        }
+
         try
         {
-            var result = await _blackjackService.DoubleDownAsync(userId, request.SessionId);
+            var result = await _blackjackService.DoubleDownAsync(userId, request.SessionId, unlimited);
             return Ok(result);
         }
         catch (InvalidOperationException e)

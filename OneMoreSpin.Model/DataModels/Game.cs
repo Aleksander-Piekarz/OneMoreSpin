@@ -7,8 +7,6 @@ public class Game
     public string Description { get; set; } = null!;
     public string ImageUrl { get; set; } = null!;
 
-    public const string RouletteGameName = "Ruletka";
-
     // Navigation properties
     public virtual ICollection<Lobby> Lobbies { get; set; } = [];
     public virtual ICollection<UserScore> UserScores { get; set; } = [];

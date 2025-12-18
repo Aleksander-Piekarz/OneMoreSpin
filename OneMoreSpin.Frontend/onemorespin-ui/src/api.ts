@@ -74,6 +74,11 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
     "Content-Type": "application/json",
     ...((opts.headers as Record<string, string>) ?? {}),
   };
+  
+  const anyOpts = opts as any;
+  if (anyOpts && anyOpts.unlimitedMode) {
+    headers["X-Unlimited-Mode"] = "true";
+  }
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
@@ -202,7 +207,7 @@ export const api = {
   },
 
   slots: {
-    spin(bet: number) {
+    spin(bet: number, unlimitedMode = false) {
       return request<{
         grid: string[][];
         win: number;
@@ -219,30 +224,35 @@ export const api = {
       }>("/Slots/spin", {
         method: "POST",
         body: JSON.stringify({ bet }),
-      });
+
+        unlimitedMode,
+      } as any);
     },
   },
 
   roulette: {
-    spin(payload: RouletteSpinRequestVm): Promise<RouletteSpinResultVm> {
+    spin(payload: RouletteSpinRequestVm, unlimitedMode = false): Promise<RouletteSpinResultVm> {
       return request<RouletteSpinResultVm>("/Roulette/spin", {
         method: "POST",
         body: JSON.stringify(payload),
-      });
+        unlimitedMode,
+      } as any);
     },
   },
   poker: {
-    start(betAmount: number) {
+    start(betAmount: number, unlimitedMode = false) {
       return request<any>("/singlepoker/start", {
         method: "POST",
         body: JSON.stringify({ betAmount }),
-      });
+        unlimitedMode,
+      } as any);
     },
-    draw(sessionId: number, indices: number[]) {
+    draw(sessionId: number, indices: number[], unlimitedMode = false) {
       return request<any>("/singlepoker/draw", {
         method: "POST",
         body: JSON.stringify({ sessionId, indices }),
-      });
+        unlimitedMode,
+      } as any);
     },
   },
 
@@ -268,6 +278,13 @@ export const api = {
         body: JSON.stringify({ bet }),
       });
     },
+    startWithMode(bet: number, unlimitedMode = false) {
+      return request<any>("/Blackjack/start", {
+        method: "POST",
+        body: JSON.stringify({ bet }),
+        unlimitedMode,
+      } as any);
+    },
     hit(sessionId: number) {
       return request<{
         sessionId: number;
@@ -288,6 +305,13 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ sessionId }),
       });
+    },
+    hitWithMode(sessionId: number, unlimitedMode = false) {
+      return request<any>("/Blackjack/hit", {
+        method: "POST",
+        body: JSON.stringify({ sessionId }),
+        unlimitedMode,
+      } as any);
     },
     stand(sessionId: number) {
       return request<{
@@ -310,6 +334,13 @@ export const api = {
         body: JSON.stringify({ sessionId }),
       });
     },
+    standWithMode(sessionId: number, unlimitedMode = false) {
+      return request<any>("/Blackjack/stand", {
+        method: "POST",
+        body: JSON.stringify({ sessionId }),
+        unlimitedMode,
+      } as any);
+    },
     double(sessionId: number) {
       return request<{
         sessionId: number;
@@ -330,6 +361,13 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ sessionId }),
       });
+    },
+    doubleWithMode(sessionId: number, unlimitedMode = false) {
+      return request<any>("/Blackjack/double", {
+        method: "POST",
+        body: JSON.stringify({ sessionId }),
+        unlimitedMode,
+      } as any);
     },
   },
   leaderboard: {
