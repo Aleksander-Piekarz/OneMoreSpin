@@ -6,6 +6,6 @@ namespace OneMoreSpin.Services.Interfaces
 {
     public interface IRouletteService
     {
-        Task<RouletteSpinResultVm> SpinAsync(string userId, List<RouletteBetVm> bets);
+        Task<RouletteSpinResultVm> SpinAsync(string userId, List<RouletteBetVm> bets, bool unlimitedMode = false);
     }
 }

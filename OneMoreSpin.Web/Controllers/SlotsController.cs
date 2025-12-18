@@ -33,9 +33,15 @@ namespace OneMoreSpin.Web.Controllers
                 return Unauthorized();
             }
 
+            var unlimited = false;
+            if (Request.Headers.TryGetValue("X-Unlimited-Mode", out var vals))
+            {
+                unlimited = vals.FirstOrDefault() == "true";
+            }
+
             try
             {
-                var result = await _slotService.SpinAsync(userId, request.Bet);
+                var result = await _slotService.SpinAsync(userId, request.Bet, unlimited);
                 return Ok(result); // Zwróć obiekt SpinResultVm
             }
             catch (InvalidOperationException e)

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import '../styles/SinglePokerPage.css';
 import { api } from '../api';
 import type { UserInfo } from '../api';
+import DemoToggle from '../components/DemoToggle';
 import { fireConfetti } from '../utils/confetti';
 import Leaderboard from '../components/Leaderboard';
 import { GameCard } from '../components/GameCard';
@@ -47,6 +48,7 @@ export default function PokerGame() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [betAmount, setBetAmount] = useState<number>(10);
   const [balance, setBalance] = useState<number | null>(null);
+  const [unlimitedMode, setUnlimitedMode] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -78,7 +80,7 @@ export default function PokerGame() {
     setMessage(null);
 
     try {
-      const vm = await api.poker.start(betAmount) as PokerSessionVm;
+      const vm = await api.poker.start(betAmount, unlimitedMode) as PokerSessionVm;
       setSession(vm);
       setSelected(new Set());
       fetchMe();
@@ -98,7 +100,7 @@ export default function PokerGame() {
     setMessage(null);
 
     try {
-      const updated = await api.poker.draw(session.id, indices) as PokerSessionVm;
+      const updated = await api.poker.draw(session.id, indices, unlimitedMode) as PokerSessionVm;
       setSession(updated);
       setSelected(new Set());
       fetchMe();
@@ -145,9 +147,12 @@ export default function PokerGame() {
             <span className="title-word">POKER</span>
           </h1>
 
-          <div className="balance-display">
-             <i className="fas fa-coins"></i>
-             <span>{formatNumberWithSpaces(balance)} PLN</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <DemoToggle checked={unlimitedMode} onChange={setUnlimitedMode} />
+            <div className="balance-display">
+               <i className="fas fa-coins"></i>
+               <span>{formatNumberWithSpaces(balance)} PLN</span>
+            </div>
           </div>
         </div>
 

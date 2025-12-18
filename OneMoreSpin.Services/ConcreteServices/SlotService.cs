@@ -126,7 +126,7 @@ namespace OneMoreSpin.Services.ConcreteServices
             _missionService = missionService;
         }
 
-        public async Task<SpinResultVm> SpinAsync(string userId, decimal bet)
+        public async Task<SpinResultVm> SpinAsync(string userId, decimal bet, bool unlimitedMode = false)
         {
             if (!int.TryParse(userId, out int parsedUserId))
                 throw new ArgumentException("Nieprawidłowy format ID użytkownika");
@@ -135,10 +135,13 @@ namespace OneMoreSpin.Services.ConcreteServices
             if (user == null)
                 throw new KeyNotFoundException("Nie znaleziono użytkownika");
 
-            if (user.Balance < bet)
-                throw new InvalidOperationException("Niewystarczające środki");
+            if (!unlimitedMode)
+            {
+                if (user.Balance < bet)
+                    throw new InvalidOperationException("Niewystarczające środki");
 
-            user.Balance -= bet;
+                user.Balance -= bet;
+            }
 
             // --- GENEROWANIE SIATKI (Weighted Random) ---
             // Nie używamy reelsów/taśm. Każde pole losuje z worka niezależnie.
@@ -164,7 +167,7 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             var (totalWin, winDetails) = CalculateWins(grid, bet);
 
-            if (totalWin > 0)
+            if (totalWin > 0 && !unlimitedMode)
             {
                 user.Balance += totalWin;
             }
