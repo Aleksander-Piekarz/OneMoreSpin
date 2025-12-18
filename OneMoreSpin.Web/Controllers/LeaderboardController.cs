@@ -32,4 +32,12 @@ public class LeaderboardController : ControllerBase
         var result = top.Select(t => new { Email = t.Email, MoneyWon = t.MoneyWon });
         return Ok(result);
     }
+
+    [HttpGet("game/name/{gameName}")]
+    public async Task<IActionResult> GetByGameName([FromRoute] string gameName)
+    {
+        var top = await _service.GetTop10ByWinningsForGameNameAsync(gameName);
+        var result = top.Select(t => new { Email = t.Email, MoneyWon = t.MoneyWon });
+        return Ok(result);
+    }
 }

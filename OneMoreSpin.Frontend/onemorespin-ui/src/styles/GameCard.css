@@ -1,0 +1,246 @@
+/* GameCard.css - Ujednolicone style kart do gry */
+
+/* === PODSTAWOWA KARTA === */
+.game-card {
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  animation: cardDeal 0.3s ease-out;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+  font-family: 'Big Shoulders', 'Arial', sans-serif;
+}
+
+@keyframes cardDeal {
+  from {
+    opacity: 0;
+    transform: translateY(-15px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* === ROZMIARY === */
+.game-card-small {
+  width: 40px;
+  height: 56px;
+  font-size: 12px;
+}
+
+.game-card-medium {
+  width: 52px;
+  height: 72px;
+  font-size: 16px;
+}
+
+.game-card-large {
+  width: 70px;
+  height: 98px;
+  font-size: 22px;
+}
+
+/* === AWERS KARTY === */
+.game-card-front {
+  background: linear-gradient(160deg, #ffffff 0%, #f5f5f5 100%);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+/* Kolory */
+.game-card-red {
+  color: #d32f2f;
+}
+
+.game-card-black {
+  color: #1a1a1a;
+}
+
+/* Narożniki */
+.game-card-corner {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  gap: 0;
+}
+
+.game-card-corner-tl {
+  top: 4px;
+  left: 5px;
+}
+
+.game-card-corner-br {
+  bottom: 4px;
+  right: 5px;
+  transform: rotate(180deg);
+}
+
+.game-card-rank {
+  font-weight: 800;
+  font-size: 1em;
+}
+
+.game-card-suit {
+  font-size: 0.75em;
+  margin-top: -1px;
+}
+
+/* Centrum karty */
+.game-card-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.game-card-suit-large {
+  font-size: 1.6em;
+  opacity: 0.85;
+}
+
+/* === REWERS KARTY === */
+.game-card-back {
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.game-card-back-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* Motywy rewersu */
+.game-card-beginner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.game-card-beginner .game-card-back-pattern {
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 5px,
+      rgba(255, 255, 255, 0.08) 5px,
+      rgba(255, 255, 255, 0.08) 10px
+    );
+}
+
+/* === INTERAKCJE === */
+.game-card-selectable {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.game-card-selectable:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.game-card-selected {
+  transform: translateY(-12px);
+  box-shadow: 0 0 0 3px #f59e0b, 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.game-card-select-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #f59e0b;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.game-card-advanced {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.game-card-advanced .game-card-back-pattern {
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 6px,
+      rgba(255, 255, 255, 0.12) 6px,
+      rgba(255, 255, 255, 0.12) 12px
+    );
+}
+
+.game-card-vip {
+  background: radial-gradient(circle at 30% 30%, #ffd700 0%, #1a1a1a 120%);
+  border-color: #ffd700;
+  box-shadow: 
+    2px 3px 8px rgba(0, 0, 0, 0.4),
+    0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.game-card-vip .game-card-back-pattern {
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 8px,
+      rgba(255, 215, 0, 0.1) 8px,
+      rgba(255, 215, 0, 0.1) 16px
+    );
+}
+
+/* === RESPONSYWNOŚĆ === */
+@media (max-width: 768px) {
+  .game-card-small {
+    width: 28px;
+    height: 40px;
+    font-size: 8px;
+  }
+  
+  .game-card-medium {
+    width: 40px;
+    height: 56px;
+    font-size: 12px;
+  }
+  
+  .game-card-large {
+    width: 50px;
+    height: 70px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-card-small {
+    width: 24px;
+    height: 34px;
+    font-size: 7px;
+    border-radius: 4px;
+  }
+  
+  .game-card-medium {
+    width: 32px;
+    height: 45px;
+    font-size: 10px;
+    border-radius: 5px;
+  }
+  
+  .game-card-large {
+    width: 42px;
+    height: 58px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+}

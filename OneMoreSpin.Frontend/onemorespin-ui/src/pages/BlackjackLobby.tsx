@@ -1,16 +1,16 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as signalR from "@microsoft/signalr";
-import '../styles/PokerLobby.css';
+import '../styles/BlackjackLobby.css';
 
 interface TableInfo {
     id: string;
     name: string;
     playersCount: number;
-    minBuyIn: number;
+    minBet: number;
 }
 
-export const PokerLobby = () => {
+export const BlackjackLobby = () => {
     const navigate = useNavigate();
     const [tables, setTables] = useState<TableInfo[]>([]);
     const [isConnected, setIsConnected] = useState(false);
@@ -23,7 +23,8 @@ export const PokerLobby = () => {
             if (connectionRef.current) return;
 
             const newConnection = new signalR.HubConnectionBuilder()
-                .withUrl("http://91.123.188.186:5000/pokerHub", {
+                .withUrl("http://localhost:5046/blackjackHub", {
+                    //http://91.123.188.186.5173/blackjackHub         dodaj to jak wrzucasz na serwer zamiast localhost
                     accessTokenFactory: () => localStorage.getItem("jwt") || ""
                 })
                 .withAutomaticReconnect()
@@ -33,7 +34,7 @@ export const PokerLobby = () => {
 
             try {
                 await newConnection.start();
-                console.log("Poker Lobby: Połączono z SignalR");
+                console.log("Blackjack Lobby: Połączono z SignalR");
 
                 if (isMounted) {
                     setIsConnected(true);
@@ -42,9 +43,9 @@ export const PokerLobby = () => {
                 }
             } catch (err: any) {
                 if (err.toString().includes("AbortError") || err.toString().includes("invocation canceled")) {
-                    console.log("Poker Lobby: Połączenie anulowane.");
+                    console.log("Blackjack Lobby: Połączenie anulowane.");
                 } else {
-                    console.error("Poker Lobby: Błąd połączenia:", err);
+                    console.error("Blackjack Lobby: Błąd połączenia:", err);
                 }
             }
         };
@@ -64,72 +65,72 @@ export const PokerLobby = () => {
             connectionRef.current.stop();
             connectionRef.current = null;
         }
-        navigate(`/poker/${tableId}`);
+        navigate(`/blackjack-multi/${tableId}`);
     };
 
     const getCardVariantClass = (tableId: string) => {
-        if (tableId.includes('vip')) return 'pk-card-vip';
-        if (tableId.includes('stol-2')) return 'pk-card-advanced';
-        return 'pk-card-beginner';
+        if (tableId.includes('vip')) return 'bj-card-vip';
+        if (tableId.includes('blackjack-2')) return 'bj-card-advanced';
+        return 'bj-card-beginner';
     };
 
     // Sortowanie stołów: Beginner -> Advanced -> VIP
     const sortedTables = [...tables].sort((a, b) => {
         const getOrder = (id: string) => {
             if (id.includes('vip')) return 2;
-            if (id.includes('stol-2')) return 1;
+            if (id.includes('blackjack-2')) return 1;
             return 0;
         };
         return getOrder(a.id) - getOrder(b.id);
     });
 
     return (
-        <div className="pk-lobby-page">
-            <div className="pk-lobby-bg">
-                <div className="pk-lobby-shape pk-lobby-shape-1"></div>
-                <div className="pk-lobby-shape pk-lobby-shape-2"></div>
-                <div className="pk-lobby-shape pk-lobby-shape-3"></div>
+        <div className="bj-lobby-page">
+            <div className="bj-lobby-bg">
+                <div className="bj-lobby-shape bj-lobby-shape-1"></div>
+                <div className="bj-lobby-shape bj-lobby-shape-2"></div>
+                <div className="bj-lobby-shape bj-lobby-shape-3"></div>
             </div>
 
-            <header className="pk-lobby-header">
-                <button onClick={() => navigate('/poker-mode')} className="pk-lobby-back-btn">
+            <header className="bj-lobby-header">
+                <button onClick={() => navigate('/blackjack')} className="bj-lobby-back-btn">
                     <i className="fas fa-arrow-left"></i>
                     <span>Powrót</span>
                 </button>
-                <h1 className="pk-lobby-title">POKER ROOMS</h1>
-                <div className="pk-lobby-spacer"></div>
+                <h1 className="bj-lobby-title">BLACKJACK ROOMS</h1>
+                <div className="bj-lobby-spacer"></div>
             </header>
 
-            <div className="pk-lobby-content">
-                <p className="pk-lobby-subtitle">Wybierz stół i zacznij grać</p>
+            <div className="bj-lobby-content">
+                <p className="bj-lobby-subtitle">Wybierz stół i zacznij grać</p>
 
                 {isConnected ? (
-                    <div className="pk-tables-grid">
+                    <div className="bj-tables-grid">
                         {sortedTables.map((table, index) => {
                             const variantClass = getCardVariantClass(table.id);
                             return (
                                 <div 
                                     key={table.id} 
-                                    className={`pk-table-card ${variantClass}`}
+                                    className={`bj-table-card ${variantClass}`}
                                     style={{ animationDelay: `${0.1 * (index + 1)}s` }}
                                 >
-                                    <div className="pk-card-shine"></div>
-                                    <div className="pk-card-icon-bg">♠</div>
+                                    <div className="bj-card-shine"></div>
+                                    <div className="bj-card-icon-bg">♠</div>
                                     
-                                    <h3 className="pk-table-name">{table.name}</h3>
+                                    <h3 className="bj-table-name">{table.name}</h3>
                                     
-                                    <div className="pk-table-details">
-                                        <div className="pk-detail-item">
+                                    <div className="bj-table-details">
+                                        <div className="bj-detail-item">
                                             <span>👥 Gracze</span>
-                                            <span className="pk-detail-value">{table.playersCount} / 6</span>
+                                            <span className="bj-detail-value">{table.playersCount} / 5</span>
                                         </div>
-                                        <div className="pk-detail-item">
-                                            <span>💰 Min. wejście</span>
-                                            <span className="pk-detail-value">${table.minBuyIn}</span>
+                                        <div className="bj-detail-item">
+                                            <span>💰 Min. zakład</span>
+                                            <span className="bj-detail-value">${table.minBet}</span>
                                         </div>
                                     </div>
                                     
-                                    <button onClick={() => joinTable(table.id)} className="pk-join-btn">
+                                    <button onClick={() => joinTable(table.id)} className="bj-join-btn">
                                         Zagraj Teraz
                                     </button>
                                 </div>
@@ -137,9 +138,9 @@ export const PokerLobby = () => {
                         })}
                     </div>
                 ) : (
-                    <div className="pk-loading-container">
-                        <div className="pk-loading-spinner"></div>
-                        <span className="pk-loading-text">Ładowanie stołów...</span>
+                    <div className="bj-loading-container">
+                        <div className="bj-loading-spinner"></div>
+                        <span className="bj-loading-text">Ładowanie stołów...</span>
                     </div>
                 )}
             </div>

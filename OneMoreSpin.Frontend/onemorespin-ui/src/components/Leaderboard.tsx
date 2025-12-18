@@ -7,7 +7,8 @@ type Entry = {
 };
 
 interface LeaderboardProps {
-  gameId: number;
+  gameId?: number;
+  gameName?: string;
   title?: string;
   className?: string;
 }
@@ -27,7 +28,7 @@ const maskEmail = (email: string) => {
   return `${name.substring(0, 2)}***@${domain}`;
 };
 
-export const Leaderboard: React.FC<LeaderboardProps> = ({ gameId, title = 'TOP WINS', className }) => {
+export const Leaderboard: React.FC<LeaderboardProps> = ({ gameId, gameName, title = 'TOP WINS', className }) => {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,10 +40,22 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ gameId, title = 'TOP W
         setLoading(true);
         setError(null);
         
-        const data = await api.leaderboard.getByGameId(gameId);
+        console.log('[Leaderboard] Fetching data...', { gameId, gameName });
+        
+        let data;
+        if (gameName) {
+          data = await api.leaderboard.getByGameName(gameName);
+        } else if (gameId !== undefined) {
+          data = await api.leaderboard.getByGameId(gameId);
+        } else {
+          throw new Error("Brak gameId lub gameName");
+        }
+
+        console.log('[Leaderboard] Received data:', data);
 
         if (!cancelled) {
           if (!Array.isArray(data)) {
+            console.error("Leaderboard: unexpected data format", data);
             throw new Error("Błąd danych");
           }
 
@@ -52,10 +65,12 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ gameId, title = 'TOP W
           }));
 
           const sorted = normalized.sort((a, b) => b.MoneyWon - a.MoneyWon).slice(0, 10);
+          console.log('[Leaderboard] Sorted entries:', sorted);
           setEntries(sorted);
         }
       } catch (e: any) {
-        if (!cancelled) setError("Błąd ładowania");
+        console.error("Leaderboard error:", e);
+        if (!cancelled) setError(e?.message || "Błąd ładowania");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -66,7 +81,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ gameId, title = 'TOP W
       cancelled = true; 
       clearInterval(interval);
     };
-  }, [gameId]);
+  }, [gameId, gameName]);
 
   return (
     <div className={`casino-leaderboard ${className || ''}`}>

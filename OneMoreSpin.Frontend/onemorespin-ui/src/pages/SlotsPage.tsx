@@ -498,17 +498,18 @@ const SlotsPage: React.FC = () => {
         </div>
 
         <div className={`leaderboard-drawer ${leaderboardOpen ? 'open' : 'closed'}`}>
+          <div className="leaderboard-panel">
+            <Leaderboard gameId={3} title="🏆 TOP WINS" className="leaderboard-widget" />
+          </div>
           <button
             className="leaderboard-toggle"
             onClick={() => setLeaderboardOpen((prev) => !prev)}
             aria-expanded={leaderboardOpen}
+            title={leaderboardOpen ? 'Schowaj ranking' : 'Pokaż ranking'}
           >
-            <i className={`fas ${leaderboardOpen ? 'fa-chevron-right' : 'fa-chevron-left'}`}></i>
-            <span>{leaderboardOpen ? 'Schowaj' : 'Top wins'}</span>
+            <i className="fas fa-trophy"></i>
+            <span>TOP</span>
           </button>
-          <div className="leaderboard-panel">
-            <Leaderboard gameId={3} title="TOP WINS" className="leaderboard-widget" />
-          </div>
         </div>
 
         {error && (

@@ -5,6 +5,7 @@ import type { UserInfo } from '../api';
 import DemoToggle from '../components/DemoToggle';
 import { fireConfetti } from '../utils/confetti';
 import Leaderboard from '../components/Leaderboard';
+import { GameCard } from '../components/GameCard';
 
 type CardVm = { id: number; rank: string; suit: string };
 type PokerSessionVm = {
@@ -51,7 +52,7 @@ export default function PokerGame() {
   
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [leaderboardOpen, setLeaderboardOpen] = useState(true);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   
   const hasWon = session ? (session.isWin || session.playerWon || session.winAmount > 0) : false;
   const isGameFinished = Boolean(session?.playerHandRank && session?.dealerHandRank);
@@ -158,7 +159,6 @@ export default function PokerGame() {
         {/* STÓŁ DO GRY */}
         <div className="sp-poker-table-wrapper">
           <div className="sp-poker-table-felt">
-            <div className="sp-table-logo">POKER</div>
 
             {/* --- SEKCJA DEALERA (GÓRA) --- */}
             <div className="sp-dealer-section">
@@ -167,9 +167,10 @@ export default function PokerGame() {
                   <div className="sp-dealer-label">Karty Krupiera</div>
                   <div className="sp-dealer-hand-wrapper">
                     {session.dealerHand.map((card, idx) => (
-                      <PokerCard 
-                        key={`d-${idx}`} card={card} 
-                        index={idx} mini disabled
+                      <GameCard 
+                        key={`d-${idx}`} 
+                        card={card}
+                        size="small"
                       />
                     ))}
                   </div>
@@ -217,13 +218,13 @@ export default function PokerGame() {
               <div className="sp-hand-display">
                 {session ? (
                   session.playerHand.map((card, idx) => (
-                    <PokerCard 
+                    <GameCard 
                       key={`${card.rank}-${card.suit}-${idx}`} 
                       card={card}
+                      size="medium"
                       selected={selected.has(idx)}
+                      selectable={!isGameFinished && !loading}
                       onClick={() => toggleSelect(idx)}
-                      disabled={isGameFinished || loading}
-                      index={idx}
                     />
                   ))
                 ) : (
@@ -267,69 +268,19 @@ export default function PokerGame() {
       </div>
 
       <div className={`leaderboard-drawer ${leaderboardOpen ? 'open' : 'closed'}`}>
+        <div className="leaderboard-panel">
+          <Leaderboard gameId={4} title="🏆 TOP WINS" className="leaderboard-widget" />
+        </div>
         <button
           className="leaderboard-toggle"
           onClick={() => setLeaderboardOpen((prev) => !prev)}
           aria-expanded={leaderboardOpen}
+          title={leaderboardOpen ? 'Schowaj ranking' : 'Pokaż ranking'}
         >
-          <i className={`fas ${leaderboardOpen ? 'fa-chevron-right' : 'fa-chevron-left'}`}></i>
-          <span>{leaderboardOpen ? 'Schowaj' : 'Top wins'}</span>
+          <i className="fas fa-trophy"></i>
+          <span>TOP</span>
         </button>
-        <div className="leaderboard-panel">
-          <Leaderboard gameId={4} title="TOP WINS" className="leaderboard-widget" />
-        </div>
       </div>
     </div>
   );
 }
-
-// --- Komponent Karty ---
-function PokerCard({ card, selected, onClick, disabled, index, mini }: any) {
-  const isRed = card.suit === 'Hearts' || card.suit === 'Diamonds';
-  const suitIcon = getSuitIcon(card.suit);
-  
-  return (
-    <div 
-      className={`sp-poker-card ${selected ? 'sp-selected' : ''} ${isRed ? 'sp-red' : 'sp-black'} ${mini ? 'sp-mini' : ''}`}
-      onClick={!disabled ? onClick : undefined}
-      style={{ animationDelay: `${index * 0.1}s` }} 
-    >
-      {selected && !mini && <div className="sp-discard-badge">WYMIEŃ</div>}
-      
-      <div className="sp-card-inner">
-        <div className="sp-card-top">
-          <span className="sp-rank">{translateRank(card.rank)}</span>
-          <span className="sp-suit">{suitIcon}</span>
-        </div>
-        
-        <div className="sp-card-center-suit">{suitIcon}</div>
-        
-        <div className="sp-card-bottom">
-          <span className="sp-rank">{translateRank(card.rank)}</span>
-          <span className="sp-suit">{suitIcon}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function getSuitIcon(suit: string) {
-  const s = suit.toLowerCase();
-  if (s.includes('heart') || s.includes('kier')) return '♥';
-  if (s.includes('diamond') || s.includes('daro')) return '♦';
-  if (s.includes('club') || s.includes('trefl')) return '♣';
-  if (s.includes('spade') || s.includes('pik')) return '♠';
-  return '?';
-}
-
-function translateRank(rank: string) {
-  const map: Record<string, string> = {
-    'Ace': 'A', 'King': 'K', 'Queen': 'Q', 'Jack': 'J'
-  };
-  return map[rank] || rank;
-}
-
-
-
-
-
