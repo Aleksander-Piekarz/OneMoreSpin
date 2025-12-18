@@ -403,34 +403,36 @@
 
 .game-table {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-radius: 30px;
-  padding: 25px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: clamp(20px, 3vw, 30px);
   box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.5),
-    0 0 50px rgba(102, 126, 234, 0.3),
-    inset 0 0 50px rgba(255, 255, 255, 0.05);
+    0 15px 40px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(102, 126, 234, 0.3),
+    inset 0 0 40px rgba(255, 255, 255, 0.05);
   position: relative;
   overflow: visible;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: clamp(15px, 3vh, 25px);
   width: 100%;
-  max-width: 800px;
-  height: 460px;
+  max-width: min(800px, 95vw);
+  height: clamp(400px, 55vh, 520px);
 }
 
 .dealer-section,
 .player-section {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 20px;
+  gap: 5px;
+  padding: clamp(10px, 2vw, 15px);
   background: rgba(10, 14, 39, 0.5);
-  border-radius: 15px;
+  border-radius: 10px;
   border: 2px solid rgba(255, 255, 255, 0.2);
-  height: 190px;
+  flex: 1;
+  min-height: 120px;
+  overflow: visible;
 }
 
 .section-label {
@@ -439,7 +441,7 @@
   align-items: center;
   color: #ffffff;
   font-weight: 800;
-  font-size: 18px;
+  font-size: clamp(14px, 2vw, 16px);
   letter-spacing: 2px;
   text-transform: uppercase;
   font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
@@ -448,33 +450,36 @@
 
 .section-label .score {
   color: #43e97b;
+  font-size: clamp(20px, 3vw, 24px);
   font-size: 26px;
   text-shadow: 0 0 20px rgba(67, 233, 123, 0.6);
 }
 
 .card-hand {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  padding: 5px;
-  height: 120px;
+  padding: 10px;
+  flex: 1;
+  min-height: 100px;
   overflow: visible;
 }
 
 .playing-card {
-  width: 100px;
-  height: 140px;
+  width: clamp(65px, 8vw, 85px);
+  height: clamp(91px, 11.2vw, 119px);
   background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   transition: all 0.3s ease;
   opacity: 1;
+  flex-shrink: 0;
 }
 
 .playing-card.dealing {
@@ -503,19 +508,19 @@
   align-items: center;
   justify-content: center;
   height: 100%;
-  gap: 8px;
-  padding: 10px;
+  gap: 2px;
+  padding: 4px;
 }
 
 .card-rank {
-  font-size: 38px;
+  font-size: clamp(14px, 2vw, 20px);
   font-weight: 900;
   font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
   line-height: 1;
 }
 
 .card-suit {
-  font-size: 62px;
+  font-size: clamp(22px, 3vw, 32px);
   line-height: 1;
 }
 

@@ -4,8 +4,6 @@ import slotMachineIcon from "../assets/img/slot-machine.png";
 import rouletteIcon from "../assets/img/roulette.png";
 import blackjackIcon from "../assets/img/black-jack.png";
 import cardsIcon from "../assets/img/cards.png";
-// Pamiętaj o imporcie komponentu wyboru!
-import PokerModeSelector from "../components/PokerModeSelector";
 import "../styles/HomePage.css";
 
 const HomePage: React.FC = () => {
@@ -13,9 +11,6 @@ const HomePage: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hoveredTile, setHoveredTile] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  
-  // NOWOŚĆ: Stan decydujący co wyświetlamy (siatka gier CZY wybór pokera)
-  const [view, setView] = useState<'grid' | 'poker-select'>('grid');
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
@@ -118,8 +113,7 @@ const HomePage: React.FC = () => {
       iconImage: cardsIcon,
       gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
       particles: ["🃏", "💵", "🏆", "♦️", "♠️", "💎"],
-      // ZMIANA: Kliknięcie zmienia widok na selector, zamiast nawigować
-      onClick: () => setView('poker-select')
+      onClick: () => navigate('/poker-mode')
     },
   ];
 
@@ -134,15 +128,9 @@ const HomePage: React.FC = () => {
       </div>
 
       <header className="home-header">
-        {/* LEWA STRONA NAGŁÓWKA - PRZYCISK POWROTU */}
+        {/* LEWA STRONA NAGŁÓWKA */}
         <div className="header-left">
-          {view === 'poker-select' ? (
-             <button className="back-btn-home" onClick={() => setView('grid')}>
-               <i className="fas fa-arrow-left"></i> <span>Powrót</span>
-             </button>
-          ) : (
-             <div className="header-spacer"></div>
-          )}
+          <div className="header-spacer"></div>
         </div>
         
         <h1 className="home-page-title">
@@ -193,10 +181,8 @@ const HomePage: React.FC = () => {
       </div>
 
       <main className="game-tiles-container">
-        {/* WARUNEK WYŚWIETLANIA: SIATKA GIER vs WYBÓR POKERA */}
-        {view === 'grid' ? (
-          <div className="game-tiles-grid">
-            {tiles.map((tile, index) => (
+        <div className="game-tiles-grid">
+          {tiles.map((tile, index) => (
               <div 
                 key={tile.id} 
                 className={`game-tile ${hoveredTile === tile.id ? 'hovered' : ''}`}
@@ -257,12 +243,6 @@ const HomePage: React.FC = () => {
               </div>
             ))}
           </div>
-        ) : (
-          /* WIDOK WYBORU POKERA */
-          <div className="poker-selection-wrapper" style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-             <PokerModeSelector />
-          </div>
-        )}
       </main>
     </div>
   );

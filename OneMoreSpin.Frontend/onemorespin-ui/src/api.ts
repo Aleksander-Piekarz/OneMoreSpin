@@ -343,6 +343,16 @@ export const api = {
         }))
       );
     },
+    getByGameName(gameName: string) {
+      return request<{ email?: string; Email?: string; moneyWon?: number; MoneyWon?: number }[]>(
+        `/leaderboard/game/name/${encodeURIComponent(gameName)}`
+      ).then((rows) =>
+        rows.map((r) => ({
+          Email: r.Email ?? r.email ?? "",
+          MoneyWon: r.MoneyWon ?? r.moneyWon ?? 0,
+        }))
+      );
+    },
     getGlobal() {
       return request<{ email?: string;  moneyWon?: number }[]>(
         `/leaderboard`

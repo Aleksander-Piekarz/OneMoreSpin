@@ -113,6 +113,7 @@ public class Program
         builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
         builder.Services.AddSignalR();
         builder.Services.AddSingleton<IPokerService, PokerService>();
+        builder.Services.AddSingleton<IMultiplayerBlackjackService, MultiplayerBlackjackService>();
 
         builder
             .Services.AddControllers()
@@ -206,6 +207,7 @@ public class Program
 
         app.MapControllers();
         app.MapHub<PokerHub>("/pokerHub");
+        app.MapHub<BlackjackHub>("/blackjackHub");
 
         app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
