@@ -11,6 +11,8 @@ import { PokerLobby } from "./pages/PokerLobby";
 import { PokerPage } from "./pages/PokerPage";
 import SinglePokerPage  from "./pages/SinglePokerPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import { BlackjackLobby } from "./pages/BlackjackLobby";
+import { MultiplayerBlackjackPage } from "./pages/MultiplayerBlackjackPage";
 
 
 export default function App() {
@@ -26,6 +28,8 @@ export default function App() {
         <Route path="/slots" element={<SlotsPage />} />
         <Route path="/roulette" element={<RoulettePage />} />
         <Route path="/blackjack" element={<BlackjackPage />} />
+        <Route path="/blackjack-lobby" element={<BlackjackLobby />} />
+        <Route path="/blackjack-multi/:tableId" element={<MultiplayerBlackjackPage />} />
         <Route path="/poker" element={<PokerLobby />} />
         <Route path="/poker/:tableId" element={<PokerPage />} />
         <Route path="/single-poker/" element={<SinglePokerPage />} />
