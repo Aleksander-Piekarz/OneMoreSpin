@@ -1,11 +1,11 @@
 .roulette-page {
-  min-height: 100vh;
   height: 100vh;
   width: 100%;
   background: #0a0e27;
   position: relative;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .roulette-page .animated-bg {
@@ -95,13 +95,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 25px 40px;
+  padding: 15px 30px;
   background: rgba(10, 14, 39, 0.8);
   backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 100;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-  margin-bottom: 2rem;
+  flex-shrink: 0;
 }
 
 .back-btn {

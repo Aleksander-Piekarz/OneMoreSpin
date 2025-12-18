@@ -45,4 +45,21 @@ public class LeaderboardService : ILeaderboardService
             ))
             .ToListAsync();
     }
+
+    public async Task<List<(string Email, decimal MoneyWon)>> GetTop10ByWinningsForGameNameAsync(
+        string gameName
+    )
+    {
+        return await _db
+            .UserScores.Include(us => us.User)
+            .Include(us => us.Game)
+            .Where(us => us.Game.Name == gameName)
+            .OrderByDescending(us => us.MoneyWon)
+            .Take(10)
+            .Select(us => new ValueTuple<string, decimal>(
+                us.User.Email ?? string.Empty,
+                us.MoneyWon
+            ))
+            .ToListAsync();
+    }
 }

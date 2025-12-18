@@ -1,32 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useBlackjackGame } from '../hooks/useBlackjackGame';
-import { Suit, type Card } from '../types/blackjack';
 import Leaderboard from '../components/Leaderboard';
+import { GameCard, type ThemeType } from '../components/GameCard';
+import { fireConfetti } from '../utils/confetti';
 import '../styles/MultiplayerBlackjackPage.css';
-
-// --- TYPY MOTYWÓW ---
-type ThemeType = 'beginner' | 'advanced' | 'vip';
-
-// --- KOMPONENT KARTY ---
-const CardView = ({ card, hidden, theme }: { card?: Card, hidden?: boolean, theme: ThemeType }) => {
-    const themeClass = `card-theme-${theme}`;
-
-    if (!card || hidden) return <div className={`blackjack-card ${themeClass}`}><div className="card-back" /></div>;
-
-    const suitSymbols = ["♥", "♦", "♣", "♠"];
-    const rankSymbols: { [key: number]: string } = { 11: "J", 12: "Q", 13: "K", 14: "A" };
-    const rankDisplay = rankSymbols[card.rank] || card.rank;
-    const isRed = (card.suit === Suit.Hearts || card.suit === Suit.Diamonds);
-    const suitClass = isRed ? "red" : "black";
-
-    return (
-        <div className={`blackjack-card ${suitClass} ${themeClass}`}>
-            <div className="card-rank">{rankDisplay}</div>
-            <div className="card-suit">{suitSymbols[card.suit]}</div>
-        </div>
-    );
-};
 
 export const MultiplayerBlackjackPage = () => {
     const { tableId } = useParams();
@@ -48,8 +26,12 @@ export const MultiplayerBlackjackPage = () => {
     } = useBlackjackGame(currentTableId);
 
     const [betAmount, setBetAmount] = useState(10);
-    const [leaderboardOpen, setLeaderboardOpen] = useState(true);
+    const [leaderboardOpen, setLeaderboardOpen] = useState(false);
     const [newMessage, setNewMessage] = useState("");
+    const [showResultOverlay, setShowResultOverlay] = useState(false);
+    const [resultMessage, setResultMessage] = useState("");
+    const [isWin, setIsWin] = useState(false);
+    const prevResultRef = useRef<string>("");
     const logsEndRef = useRef<HTMLDivElement>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -72,6 +54,45 @@ export const MultiplayerBlackjackPage = () => {
         }
     }, [chatMessages]);
 
+    // Obsługa powiadomień wygranej/przegranej
+    useEffect(() => {
+        const myPlayer = table?.players.find(p => p.userId === myUserId);
+        if (!myPlayer || !myPlayer.result || myPlayer.result === prevResultRef.current) return;
+
+        prevResultRef.current = myPlayer.result;
+
+        let message = "";
+        let won = false;
+
+        if (myPlayer.result === "Win") {
+            message = "WYGRANA!";
+            won = true;
+        } else if (myPlayer.result === "Blackjack") {
+            message = "BLACKJACK!";
+            won = true;
+        } else if (myPlayer.result === "Lose") {
+            message = "PRZEGRANA";
+            won = false;
+        } else if (myPlayer.result === "Push") {
+            message = "REMIS";
+            won = false;
+        }
+
+        if (message) {
+            setResultMessage(message);
+            setIsWin(won);
+            setShowResultOverlay(true);
+
+            if (won) {
+                fireConfetti();
+            }
+
+            setTimeout(() => {
+                setShowResultOverlay(false);
+            }, 3000);
+        }
+    }, [table, myUserId]);
+
     const handleSend = () => {
         if (!newMessage.trim()) return;
         sendChatMessage(newMessage);
@@ -84,8 +105,25 @@ export const MultiplayerBlackjackPage = () => {
         }
     };
 
-    if (!isConnected) return <div className="blackjack-mp-container" style={{ justifyContent: 'center' }}><h2>🔌 Łączenie z kasynem...</h2></div>;
-    if (!table) return <div className="blackjack-mp-container" style={{ justifyContent: 'center' }}><h2>🚀 Wchodzenie do stołu...</h2></div>;
+    if (!isConnected) {
+        return (
+            <div className="bj-game-page">
+                <div className="bj-game-status">
+                    <div className="bj-game-status-text">🔌 Łączenie z kasynem...</div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!table) {
+        return (
+            <div className="bj-game-page">
+                <div className="bj-game-status">
+                    <div className="bj-game-status-text">🚀 Wchodzenie do stołu...</div>
+                </div>
+            </div>
+        );
+    }
 
     const myPlayer = table.players.find(p => p.userId === myUserId);
     const currentPlayer = table.currentPlayerIndex >= 0 ? table.players[table.currentPlayerIndex] : null;
@@ -93,17 +131,6 @@ export const MultiplayerBlackjackPage = () => {
     const canBet = !table.gameInProgress && (!myPlayer?.currentBet || myPlayer.currentBet === 0);
     const hasBet = myPlayer && myPlayer.currentBet > 0;
     const showDealerSecondCard = table.stage === "DealerTurn" || table.stage === "Showdown";
-
-    // Pozycjonowanie graczy (półkole nad stołem)
-    const getPosition = (index: number, total: number) => {
-        // Gracze siedzą w półkolu na górze stołu
-        const baseAngle = Math.PI; // Zaczynamy od lewej strony
-        const angleSpan = Math.PI; // Półkole
-        const angle = baseAngle + (index / (total - 1 || 1)) * angleSpan;
-        const x = 50 + 40 * Math.cos(angle);
-        const y = 65 + 30 * Math.sin(angle);
-        return { top: `${y}%`, left: `${x}%`, transform: 'translate(-50%, -50%)' };
-    };
 
     // Sortuj graczy tak, żeby mój był na środku
     let sortedPlayers = [...table.players];
@@ -117,102 +144,125 @@ export const MultiplayerBlackjackPage = () => {
     }
 
     return (
-        <div className="blackjack-mp-container leaderboard-host">
-            {/* PASEK STATUSU */}
-            <div className="status-bar">
-                <button onClick={() => navigate('/blackjack-lobby')} style={{ background: 'transparent', border: '1px solid #555', color: '#aaa', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>
-                    ← Wyjście
-                </button>
-                <div className="brand-title">ONE MORE SPIN - BLACKJACK</div>
-                <div>Stół: <span style={{ color: '#fff' }}>{table.id}</span> | Etap: {table.stage}</div>
-            </div>
-
-            {/* STÓŁ BLACKJACKOWY */}
-            <div className={`blackjack-table table-theme-${currentTheme}`}>
-                {/* DEALER */}
-                <div className="dealer-area">
-                    <div className="dealer-label">DEALER</div>
-                    <div className="dealer-cards">
-                        {table.dealerHand.map((c, i) => (
-                            <CardView
-                                key={i}
-                                card={c}
-                                hidden={i === 1 && !showDealerSecondCard}
-                                theme={currentTheme}
-                            />
-                        ))}
-                        {table.dealerHand.length === 0 && (
-                            <>
-                                <CardView theme={currentTheme} hidden />
-                                <CardView theme={currentTheme} hidden />
-                            </>
-                        )}
+        <div className="bj-game-page leaderboard-host">
+            {/* HEADER */}
+            <header className="bj-game-header">
+                <div className="bj-game-brand">MULTIPLAYER 21</div>
+                <div className="bj-game-info">
+                    <div className="bj-game-stat">
+                        <span className="bj-game-stat-label">Stół:</span>
+                        <span className="bj-game-stat-value">{table.id}</span>
                     </div>
-                    {showDealerSecondCard && (
-                        <div className="dealer-score">
-                            {table.dealerBusted ? "BUST!" : table.dealerScore}
-                        </div>
-                    )}
+                    <div className="bj-game-stat">
+                        <span className="bj-game-stat-label">Etap:</span>
+                        <span className="bj-game-stat-value">{table.stage}</span>
+                    </div>
+                </div>
+                <button onClick={() => navigate('/blackjack-lobby')} className="bj-leave-btn">
+                    <i className="fas fa-sign-out-alt"></i>
+                    <span>Wyjdź</span>
+                </button>
+            </header>
+
+            {/* MAIN GAME AREA */}
+            <main className="bj-game-main">
+                {/* ANIMOWANE TŁO */}
+                <div className="bj-animated-bg">
+                    <div className="bj-floating-shape bj-shape-1"></div>
+                    <div className="bj-floating-shape bj-shape-2"></div>
+                    <div className="bj-floating-shape bj-shape-3"></div>
                 </div>
 
-                {/* GRACZE */}
-                {sortedPlayers.map((p, i) => {
-                    const isActiveTurn = table.currentPlayerIndex >= 0 && table.players[table.currentPlayerIndex]?.userId === p.userId;
-                    const isMe = p.userId === myUserId;
-                    const pos = getPosition(i, sortedPlayers.length);
-
-                    let seatClasses = "player-seat";
-                    if (isMe) seatClasses += " is-me";
-                    if (isActiveTurn) seatClasses += " active-turn";
-                    if (p.hasBusted) seatClasses += " busted";
-
-                    return (
-                        <div key={p.userId} className={seatClasses} style={pos}>
-                            {isActiveTurn && <div className="badge-turn">Ruch</div>}
-
-                            <div className="player-name">{p.username} {isMe && "(Ty)"}</div>
-
-                            <div className="player-cards">
-                                {p.hand && p.hand.length > 0 ? (
-                                    p.hand.map((c, idx) => <CardView key={idx} card={c} theme={currentTheme} />)
-                                ) : (
-                                    <div className="empty-hand">Oczekiwanie...</div>
+                {/* STÓŁ BLACKJACKOWY */}
+                <div className="bj-table-container">
+                    <div className={`bj-table bj-table-${currentTheme}`}>
+                        {/* DEALER */}
+                        <div className="bj-dealer-area">
+                            <div className="bj-dealer-label">Dealer</div>
+                            <div className="bj-dealer-cards">
+                                {table.dealerHand.map((c, i) => (
+                                    <GameCard
+                                        key={i}
+                                        card={c}
+                                        hidden={i === 1 && !showDealerSecondCard}
+                                        theme={currentTheme}
+                                    />
+                                ))}
+                                {table.dealerHand.length === 0 && (
+                                    <>
+                                        <GameCard theme={currentTheme} hidden />
+                                        <GameCard theme={currentTheme} hidden />
+                                    </>
                                 )}
                             </div>
-
-                            <div className="player-info">
-                                {p.hand && p.hand.length > 0 && (
-                                    <span className="score">{p.hasBusted ? "BUST" : p.score}</span>
-                                )}
-                                <span className="chips-count">${p.chips}</span>
-                                {p.currentBet > 0 && <span className="bet-amount">Zakład: ${p.currentBet}</span>}
-                            </div>
-
-                            {p.result && (
-                                <div className={`result-badge ${p.result.toLowerCase()}`}>
-                                    {p.result === "Win" && "🏆 WYGRANA"}
-                                    {p.result === "Lose" && "❌ PRZEGRANA"}
-                                    {p.result === "Push" && "🤝 REMIS"}
-                                    {p.result === "Blackjack" && "🎰 BLACKJACK!"}
+                            {showDealerSecondCard && (
+                                <div className="bj-dealer-score">
+                                    {table.dealerBusted ? "BUST!" : table.dealerScore}
                                 </div>
                             )}
-
-                            {p.hasBlackjack && !p.result && <div className="badge-blackjack">BLACKJACK!</div>}
                         </div>
-                    );
-                })}
-            </div>
+                    </div>
+
+                    {/* GRACZE - poza stołem, pod nim */}
+                    <div className="bj-players-container">
+                        {sortedPlayers.map((p) => {
+                            const isActiveTurn = table.currentPlayerIndex >= 0 && table.players[table.currentPlayerIndex]?.userId === p.userId;
+                            const isMe = p.userId === myUserId;
+
+                            let seatClasses = "bj-player-seat";
+                            if (isMe) seatClasses += " bj-is-me";
+                            if (isActiveTurn) seatClasses += " bj-active-turn";
+                            if (p.hasBusted) seatClasses += " bj-busted";
+
+                            return (
+                                <div key={p.userId} className={seatClasses}>
+                                    {isActiveTurn && <div className="bj-badge-turn">Twój ruch</div>}
+
+                                    <div className="bj-player-name">{p.username.split('@')[0]} {isMe && "(Ty)"}</div>
+
+                                    <div className="bj-player-cards">
+                                        {p.hand && p.hand.length > 0 ? (
+                                            p.hand.map((c, idx) => <GameCard key={idx} card={c} theme={currentTheme} />)
+                                        ) : (
+                                            <div className="bj-empty-hand">Oczekiwanie...</div>
+                                        )}
+                                    </div>
+
+                                    <div className="bj-player-info">
+                                        {p.hand && p.hand.length > 0 && (
+                                            <span className="bj-player-score">{p.hasBusted ? "BUST" : p.score}</span>
+                                        )}
+                                        <span className="bj-player-chips">${p.chips}</span>
+                                        {p.currentBet > 0 && <span className="bj-player-bet">${p.currentBet}</span>}
+                                    </div>
+
+                                    {p.result && (
+                                        <div className={`bj-result-badge bj-${p.result.toLowerCase()}`}>
+                                            {p.result === "Win" && "🏆 WYGRANA"}
+                                            {p.result === "Lose" && "❌ PRZEGRANA"}
+                                            {p.result === "Push" && "🤝 REMIS"}
+                                            {p.result === "Blackjack" && "🎰 BLACKJACK!"}
+                                        </div>
+                                    )}
+
+                                    {p.hasBlackjack && !p.result && <div className="bj-badge-blackjack">BLACKJACK!</div>}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </main>
 
             {/* PANEL LOGÓW */}
-            <div className="log-panel">
-                <div className="log-header">
-                    <span>HISTORIA GRY</span><span style={{ color: '#66bb6a' }}>● Live</span>
+            <div className="bj-log-panel">
+                <div className="bj-log-header">
+                    Historia gry <span style={{ color: '#4caf50' }}>● Live</span>
                 </div>
-                <div className="log-content">
+                <div className="bj-log-content">
                     {logs.map((log, i) => {
-                        let c = '#bbb';
-                        if (log.includes("WYGRANA") || log.includes("Wygrana") || log.includes("BLACKJACK")) c = '#66bb6a';
-                        if (log.includes("PRZEGRANA") || log.includes("Przegrana") || log.includes("BUST")) c = '#ef5350';
+                        let c = 'rgba(255,255,255,0.7)';
+                        if (log.includes("WYGRANA") || log.includes("Wygrana") || log.includes("BLACKJACK")) c = '#4caf50';
+                        if (log.includes("PRZEGRANA") || log.includes("Przegrana") || log.includes("BUST")) c = '#f44336';
                         if (log.includes("Remis")) c = '#ffd700';
                         return <div key={i} style={{ color: c }}>{log}</div>
                     })}
@@ -221,67 +271,66 @@ export const MultiplayerBlackjackPage = () => {
             </div>
 
             {/* PANEL CZATU */}
-            <div className="chat-panel-widget">
-                <div className="chat-header">
-                    <span>💬 CZAT STOŁU</span>
-                </div>
-                <div className="chat-messages">
+            <div className="bj-chat-panel">
+                <div className="bj-chat-header">💬 Czat stołu</div>
+                <div className="bj-chat-messages">
                     {chatMessages && chatMessages.length > 0 ? (
                         chatMessages.map((msg, i) => (
-                            <div key={i} className="chat-message">
-                                <span className="chat-username" style={{ color: msg.username === myPlayer?.username ? '#66bb6a' : '#ffd700' }}>
+                            <div key={i} className="bj-chat-message">
+                                <span className="bj-chat-username" style={{ color: msg.username === myPlayer?.username ? '#667eea' : '#ffd700' }}>
                                     {msg.username}:
                                 </span>
-                                <span className="chat-text">{msg.text}</span>
+                                <span className="bj-chat-text">{msg.text}</span>
                             </div>
                         ))
                     ) : (
-                        <div className="chat-empty">Rozpocznij rozmowę...</div>
+                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>Rozpocznij rozmowę...</div>
                     )}
                     <div ref={chatEndRef} />
                 </div>
-                <div className="chat-input-area">
+                <div className="bj-chat-input-area">
                     <input
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                         placeholder="Napisz wiadomość..."
+                        className="bj-chat-input"
                     />
-                    <button onClick={handleSend}>➤</button>
+                    <button onClick={handleSend} className="bj-chat-send-btn">
+                        <i className="fas fa-paper-plane"></i>
+                    </button>
                 </div>
             </div>
 
             {/* PANEL STEROWANIA */}
-            <div className="controls-bar">
+            <div className="bj-controls-bar">
                 {!table.gameInProgress ? (
                     <>
                         {canBet && (
-                            <div className="bet-control">
-                                <button onClick={() => setBetAmount(prev => Math.max(table.minBet, prev - 10))} className="bet-adjust-btn">-</button>
-                                <input
-                                    type="number"
-                                    value={betAmount}
-                                    onChange={e => setBetAmount(Number(e.target.value))}
-                                    className="bet-input"
-                                    min={table.minBet}
-                                />
-                                <button onClick={() => setBetAmount(prev => prev + 10)} className="bet-adjust-btn">+</button>
-                                <button onClick={handlePlaceBet} className="blackjack-btn btn-bet">
-                                    POSTAW ${betAmount}
-                                </button>
+                            <div className="bj-bet-control">
+                                <span className="bj-bet-label">Zakład:</span>
+                                <button onClick={() => setBetAmount(prev => Math.max(table.minBet, prev - 10))} className="bj-bet-btn">-</button>
+                                <span className="bj-bet-value">${betAmount}</span>
+                                <button onClick={() => setBetAmount(prev => prev + 10)} className="bj-bet-btn">+</button>
                             </div>
                         )}
 
+                        {canBet && (
+                            <button onClick={handlePlaceBet} className="bj-game-btn bj-btn-double">
+                                Postaw ${betAmount}
+                            </button>
+                        )}
+
                         {hasBet && (
-                            <div className="waiting-message">
+                            <div style={{ color: '#4caf50', fontWeight: 600 }}>
                                 ✅ Postawiłeś ${myPlayer?.currentBet}. Czekaj na innych graczy...
                             </div>
                         )}
 
                         {table.players.some(p => p.currentBet > 0) && (
-                            <button onClick={startRound} className="blackjack-btn btn-start">
-                                {table.stage === 'Showdown' ? "NASTĘPNA RUNDA" : "ROZPOCZNIJ GRĘ"}
+                            <button onClick={startRound} className="bj-game-btn bj-btn-start">
+                                {table.stage === 'Showdown' ? "Następna runda" : "Rozpocznij grę"}
                             </button>
                         )}
                     </>
@@ -291,21 +340,21 @@ export const MultiplayerBlackjackPage = () => {
                             <>
                                 {isMyTurn ? (
                                     <>
-                                        <button onClick={hit} className="blackjack-btn btn-hit">DOBIERZ</button>
-                                        <button onClick={stand} className="blackjack-btn btn-stand">STÓJ</button>
+                                        <button onClick={hit} className="bj-game-btn bj-btn-hit">Dobierz</button>
+                                        <button onClick={stand} className="bj-game-btn bj-btn-stand">Stój</button>
                                         {myPlayer.hand?.length === 2 && myPlayer.chips >= myPlayer.currentBet && (
-                                            <button onClick={double} className="blackjack-btn btn-double">PODWÓJ</button>
+                                            <button onClick={double} className="bj-game-btn bj-btn-double">Podwój</button>
                                         )}
                                     </>
                                 ) : (
-                                    <div className="waiting-message">
-                                        Czekaj na ruch gracza: <span style={{ color: '#fff', fontWeight: 'bold' }}>{currentPlayer?.username}</span>
+                                    <div style={{ color: 'rgba(255,255,255,0.7)' }}>
+                                        Czekaj na ruch gracza: <span style={{ color: '#ffd700', fontWeight: 'bold' }}>{currentPlayer?.username}</span>
                                     </div>
                                 )}
                             </>
                         )}
                         {myPlayer && (myPlayer.hasStood || myPlayer.hasBusted) && (
-                            <div className="waiting-message">
+                            <div style={{ color: myPlayer.hasBusted ? '#f44336' : '#4caf50' }}>
                                 {myPlayer.hasBusted ? "💥 Przekroczyłeś 21!" : "✋ Stoisz. Czekaj na innych..."}
                             </div>
                         )}
@@ -313,20 +362,30 @@ export const MultiplayerBlackjackPage = () => {
                 )}
             </div>
 
-            {/* LEADERBOARD */}
-            <div className={`leaderboard-drawer left ${leaderboardOpen ? 'open' : 'closed'}`}>
+            {/* LEADERBOARD - wysuwany panel z lewej strony */}
+            <div className={`leaderboard-drawer ${leaderboardOpen ? 'open' : 'closed'}`}>
+                <div className="leaderboard-panel">
+                    <Leaderboard gameId={2} title="🏆 TOP WINS" className="leaderboard-widget" />
+                </div>
                 <button
                     className="leaderboard-toggle"
                     onClick={() => setLeaderboardOpen(prev => !prev)}
                     aria-expanded={leaderboardOpen}
+                    title={leaderboardOpen ? 'Schowaj ranking' : 'Pokaż ranking'}
                 >
-                    <i className={`fas ${leaderboardOpen ? 'fa-chevron-left' : 'fa-chevron-right'}`}></i>
-                    <span>{leaderboardOpen ? 'Schowaj' : 'Top wins'}</span>
+                    <i className={`fas fa-trophy`}></i>
+                    <span>TOP</span>
                 </button>
-                <div className="leaderboard-panel">
-                    <Leaderboard gameId={2} title="TOP WINS" className="leaderboard-widget" />
-                </div>
             </div>
+
+            {/* RESULT OVERLAY - identyczny jak w singleplayer */}
+            {showResultOverlay && (
+                <div className="sp-result-overlay">
+                    <div className={`sp-result-text ${isWin ? 'sp-win' : 'sp-lose'}`}>
+                        {resultMessage}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

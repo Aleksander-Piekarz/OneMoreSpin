@@ -7,6 +7,8 @@ import AdminPage from "./pages/AdminPage";
 import SlotsPage from "./pages/SlotsPage";
 import RoulettePage from "./pages/RoulettePage";
 import BlackjackPage from "./pages/BlackjackPage";
+import BlackjackModePage from "./pages/BlackjackModePage";
+import PokerModePage from "./pages/PokerModePage";
 import { PokerLobby } from "./pages/PokerLobby";
 import { PokerPage } from "./pages/PokerPage";
 import SinglePokerPage  from "./pages/SinglePokerPage";
@@ -27,9 +29,11 @@ export default function App() {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/slots" element={<SlotsPage />} />
         <Route path="/roulette" element={<RoulettePage />} />
-        <Route path="/blackjack" element={<BlackjackPage />} />
+        <Route path="/blackjack" element={<BlackjackModePage />} />
+        <Route path="/blackjack-single" element={<BlackjackPage />} />
         <Route path="/blackjack-lobby" element={<BlackjackLobby />} />
         <Route path="/blackjack-multi/:tableId" element={<MultiplayerBlackjackPage />} />
+        <Route path="/poker-mode" element={<PokerModePage />} />
         <Route path="/poker" element={<PokerLobby />} />
         <Route path="/poker/:tableId" element={<PokerPage />} />
         <Route path="/single-poker/" element={<SinglePokerPage />} />
