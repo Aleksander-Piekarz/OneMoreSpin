@@ -34,6 +34,7 @@ export interface BlackjackPlayer {
     hasBusted: boolean;
     hasBlackjack: boolean;
     hasDoubledDown: boolean;
+    isVip: boolean; // VIP status for crown display
     result: string;
     payout: number;
 }

@@ -63,6 +63,7 @@ namespace OneMoreSpin.Services.ConcreteServices
     
     decimal playerChips = 0;
     string dbUsername = "Nieznany";
+    bool isVip = false;
 
     using (var scope = _scopeFactory.CreateScope())
     {
@@ -70,19 +71,19 @@ namespace OneMoreSpin.Services.ConcreteServices
         if (int.TryParse(userId, out int idAsInt))
         {
             var user = db.Users.FirstOrDefault(u => u.Id == idAsInt);
-            if (user != null) { playerChips = user.Balance; dbUsername = user.UserName; }
+            if (user != null) { playerChips = user.Balance; dbUsername = user.UserName; isVip = user.IsVip; }
             else { dbUsername = $"Guest_{idAsInt}"; }
         }
         else
         {
             var user = db.Users.FirstOrDefault(u => u.UserName == userId);
-            if (user != null) { playerChips = user.Balance; dbUsername = user.UserName; }
+            if (user != null) { playerChips = user.Balance; dbUsername = user.UserName; isVip = user.IsVip; }
             else { dbUsername = userId ?? "Guest"; }
         }
     }
 
     
-    Console.WriteLine($"[JOIN] User: {dbUsername}, Pobrane żetony z bazy: {playerChips}");
+    Console.WriteLine($"[JOIN] User: {dbUsername}, Pobrane żetony z bazy: {playerChips}, VIP: {isVip}");
 
     lock (table)
     {
@@ -92,7 +93,7 @@ namespace OneMoreSpin.Services.ConcreteServices
         {
             existing.ConnectionId = connectionId;
             existing.Username = dbUsername;
-            
+            existing.IsVip = isVip;
             existing.Chips = playerChips; 
         }
         else
@@ -118,7 +119,8 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             var newPlayer = new PokerPlayer(connectionId, dbUsername, playerChips);
             newPlayer.UserId = userId;
-            newPlayer.SeatIndex = freeSeat; 
+            newPlayer.SeatIndex = freeSeat;
+            newPlayer.IsVip = isVip;
             if (table.GameInProgress)
             {
                 newPlayer.IsFolded = true; 
@@ -127,7 +129,7 @@ namespace OneMoreSpin.Services.ConcreteServices
             }
 
             table.Players.Add(newPlayer);
-            Console.WriteLine($"[JOIN] Dodano {dbUsername} na miejsce {freeSeat}.");
+            Console.WriteLine($"[JOIN] Dodano {dbUsername} na miejsce {freeSeat}. VIP: {isVip}");
         }
         
         _playerTables.TryAdd(connectionId, tableId);
@@ -135,58 +137,79 @@ namespace OneMoreSpin.Services.ConcreteServices
 }
 
         public void LeaveTable(string connectionId)
-{
-    
-    if (!_playerTables.TryRemove(connectionId, out string tableId)) return;
-
-    var table = GetTable(tableId);
-    if (table == null) return;
-
-    lock (table)
-    {
-        var player = table.Players.FirstOrDefault(p => p.ConnectionId == connectionId);
-        if (player == null) return;
-
-        
-        _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"🚪 {player.Username} opuścił stół.");
-
-        
-        if (table.GameInProgress)
         {
+            if (string.IsNullOrEmpty(connectionId)) return;
             
+            // Try to find table by connectionId in player tables mapping
+            _playerTables.TryRemove(connectionId, out string tableId);
             
-            
-            
-            if (!player.IsFolded)
+            // Also search all tables for this connectionId (backup)
+            if (string.IsNullOrEmpty(tableId))
             {
-                player.IsFolded = true;
-                
-                
-                if (table.Players[table.CurrentPlayerIndex].ConnectionId == connectionId)
+                foreach (var t in _tables.Values)
                 {
-                    MoveTurnToNextPlayer(table);
+                    var p = t.Players.FirstOrDefault(pl => pl.ConnectionId == connectionId);
+                    if (p != null)
+                    {
+                        tableId = t.Id;
+                        break;
+                    }
+                }
+            }
+            
+            if (string.IsNullOrEmpty(tableId)) return;
+
+            var table = GetTable(tableId);
+            if (table == null) return;
+
+            lock (table)
+            {
+                var player = table.Players.FirstOrDefault(p => p.ConnectionId == connectionId);
+                if (player == null) return;
+
+                string playerName = player.Username;
+                
+                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"🚪 {playerName} opuścił stół.");
+
+                if (table.GameInProgress)
+                {
+                    // Mark player as folded
+                    if (!player.IsFolded)
+                    {
+                        player.IsFolded = true;
+                        
+                        // If it was this player's turn, move to next
+                        if (table.CurrentPlayerIndex >= 0 && 
+                            table.CurrentPlayerIndex < table.Players.Count &&
+                            table.Players[table.CurrentPlayerIndex].ConnectionId == connectionId)
+                        {
+                            MoveTurnToNextPlayer(table);
+                        }
+                        
+                        CheckIfRoundEnded(table);
+                    }
+                    
+                    // REMOVE player immediately but keep game going if others remain
+                    table.Players.Remove(player);
+                    Console.WriteLine($"[LEAVE] Usunięto gracza {playerName} ze stołu (Gra aktywna - spasował).");
+                    
+                    // Recalculate current player index after removal
+                    if (table.CurrentPlayerIndex >= table.Players.Count)
+                    {
+                        table.CurrentPlayerIndex = 0;
+                    }
+                }
+                else
+                {
+                    // Game not in progress - remove immediately
+                    table.Players.Remove(player);
+                    Console.WriteLine($"[LEAVE] Usunięto gracza {playerName} ze stołu (Gra nieaktywna).");
                 }
                 
-                
-                CheckIfRoundEnded(table);
+                _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
+                _hubContext.Clients.Group(tableId).SendAsync("PlayerLeft", playerName);
             }
         }
-        else
-        {
-            
-            
-            table.Players.Remove(player);
-            Console.WriteLine($"[LEAVE] Usunięto gracza {player.Username} ze stołu (Gra nieaktywna).");
-        }
-
-        
-        
-        _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
-        
-        
-        _hubContext.Clients.Group(tableId).SendAsync("PlayerLeft", player.Username);
-    }
-}
 
         public void StartNewHand(string tableId)
 {
@@ -200,12 +223,21 @@ namespace OneMoreSpin.Services.ConcreteServices
         
         foreach (var p in table.Players)
         {
-            Console.WriteLine($" - Gracz {p.Username} (Seat: {p.SeatIndex}): Chips = {p.Chips}");
+            Console.WriteLine($" - Gracz {p.Username} (Seat: {p.SeatIndex}): Chips = {p.Chips}, VIP: {p.IsVip}");
         }
 
+        // Ante - pobierz 100$ od każdego gracza
+        decimal anteAmount = 100m;
+        foreach (var p in table.Players)
+        {
+            if (p.Chips < anteAmount)
+            {
+                Console.WriteLine($"[START] Gracz {p.Username} nie ma wystarczająco żetonów na ante ({p.Chips} < {anteAmount}).");
+            }
+        }
         
-        int removedCount = table.Players.RemoveAll(p => p.Chips <= 0);
-        if (removedCount > 0) Console.WriteLine($"[START] Usunięto {removedCount} graczy bez żetonów.");
+        int removedCount = table.Players.RemoveAll(p => p.Chips < anteAmount);
+        if (removedCount > 0) Console.WriteLine($"[START] Usunięto {removedCount} graczy bez wystarczających żetonów na ante.");
 
         if (table.Players.Count < 2)
         {
@@ -213,14 +245,24 @@ namespace OneMoreSpin.Services.ConcreteServices
             return;
         }
 
+        // Pobierz ante od wszystkich graczy
+        table.Pot = 0;
+        foreach (var p in table.Players)
+        {
+            p.Chips -= anteAmount;
+            p.CurrentBet = anteAmount;
+            table.Pot += anteAmount;
+            Console.WriteLine($"   -> Pobrano ante {anteAmount}$ od {p.Username}. Pozostało: {p.Chips}$");
+        }
         
+        _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"💰 Ante: każdy gracz wpłaca {anteAmount}$ do puli. Pula startowa: {table.Pot}$");
+
         table.Deck = GenerateDeck();
         ShuffleDeck(table.Deck);
         table.CommunityCards.Clear();
-        table.Pot = 0;
         table.Stage = "PreFlop";
         table.GameInProgress = true;
-        table.CurrentMinBet = 0;
+        table.CurrentMinBet = anteAmount;
         table.ActionsTakenInRound = 0;
 
         
@@ -228,7 +270,7 @@ namespace OneMoreSpin.Services.ConcreteServices
         {
             p.Hand.Clear();
             p.IsFolded = false;
-            p.CurrentBet = 0;
+            // CurrentBet już ustawiony na ante
             p.Hand.Add(DrawCard(table.Deck));
             p.Hand.Add(DrawCard(table.Deck));
             Console.WriteLine($"   -> Rozdano karty dla {p.Username}");
@@ -240,7 +282,7 @@ namespace OneMoreSpin.Services.ConcreteServices
         
         table.CurrentPlayerIndex = (table.DealerIndex + 1) % table.Players.Count;
 
-        Console.WriteLine($"[START] Rozdanie rozpoczęte! Dealer: {table.DealerIndex}, Aktywny: {table.CurrentPlayerIndex}");
+        Console.WriteLine($"[START] Rozdanie rozpoczęte! Dealer: {table.DealerIndex}, Aktywny: {table.CurrentPlayerIndex}, Pula: {table.Pot}$");
     }
 }
 
@@ -432,12 +474,28 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             if (winner != null)
             {
+                // VIP BONUS: +10% do wygranej puli dla użytkowników VIP
+                decimal vipBonus = 0;
+                using (var scope = _scopeFactory.CreateScope())
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    if (int.TryParse(winner.UserId, out int winnerId))
+                    {
+                        var winnerUser = db.Users.FirstOrDefault(u => u.Id == winnerId);
+                        if (winnerUser != null && winnerUser.IsVip)
+                        {
+                            vipBonus = table.Pot * 0.10m; // 10% bonus
+                            winner.Chips += vipBonus;
+                        }
+                    }
+                }
+                
                 winner.Chips += table.Pot;
                 
                 _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", "=========================");
                 _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🏆 WYGRAŁ: {winner.Username}");
                 _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🃏 Układ: {winHandName}");
-                _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"💰 +{table.Pot} $");
+                _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"💰 +{table.Pot} $" + (vipBonus > 0 ? $" (+{vipBonus:F0}$ VIP BONUS)" : ""));
                 _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", "=========================");
             }
 

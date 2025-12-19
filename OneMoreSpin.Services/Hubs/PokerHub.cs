@@ -57,6 +57,22 @@ namespace OneMoreSpin.Services.Hubs
             }
         }
 
+        public async Task LeaveTable(string tableId)
+        {
+            // First leave the table (this sends update to group)
+            _pokerService.LeaveTable(Context.ConnectionId);
+            
+            // Then remove from SignalR group
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, tableId);
+            
+            // Send final update to remaining players
+            var table = _pokerService.GetTable(tableId);
+            if (table != null)
+            {
+                await Clients.Group(tableId).SendAsync("UpdateGameState", table);
+            }
+        }
+
         public async Task StartGame(string tableId)
         {
             _pokerService.StartNewHand(tableId);

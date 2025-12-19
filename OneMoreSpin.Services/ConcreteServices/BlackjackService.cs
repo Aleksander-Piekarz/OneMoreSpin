@@ -98,7 +98,15 @@ public class BlackjackService : BaseService, IBlackjackService
             {
                 session.Result = BlackjackResult.Blackjack;
                 session.Payout = bet * 2.5m; // 3:2 payout
-                    if (!unlimitedMode) user.Balance += session.Payout;
+                
+                // VIP BONUS: +10% do wygranych za Blackjacka dla użytkowników VIP
+                if (user.IsVip)
+                {
+                    decimal vipBonus = (session.Payout - bet) * 0.10m;
+                    session.Payout += vipBonus;
+                }
+                
+                if (!unlimitedMode) user.Balance += session.Payout;
             }
             session.FinishedAt = DateTime.UtcNow;
             await RecordGameHistory(parsedUserId, bet, session.Payout - bet);
@@ -243,6 +251,14 @@ public class BlackjackService : BaseService, IBlackjackService
         {
             session.Result = BlackjackResult.Push;
             session.Payout = session.Bet;
+        }
+
+        // VIP BONUS: +10% do wygranych dla użytkowników VIP
+        decimal vipBonus = 0;
+        if (session.Result == BlackjackResult.PlayerWin && user.IsVip)
+        {
+            vipBonus = (session.Payout - session.Bet) * 0.10m; // 10% od zysku
+            session.Payout += vipBonus;
         }
 
         if (!unlimitedMode) user.Balance += session.Payout;

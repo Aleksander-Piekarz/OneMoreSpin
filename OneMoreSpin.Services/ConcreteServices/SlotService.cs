@@ -167,6 +167,14 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             var (totalWin, winDetails) = CalculateWins(grid, bet);
 
+            // VIP BONUS: +15% do wygranych dla użytkowników VIP
+            decimal vipBonus = 0;
+            if (totalWin > 0 && user.IsVip)
+            {
+                vipBonus = totalWin * 0.15m;
+                totalWin += vipBonus;
+            }
+
             if (totalWin > 0 && !unlimitedMode)
             {
                 user.Balance += totalWin;
@@ -203,6 +211,8 @@ namespace OneMoreSpin.Services.ConcreteServices
                 IsWin = totalWin > 0,
                 Balance = user.Balance,
                 WinDetails = winDetails,
+                VipBonus = vipBonus,
+                IsVip = user.IsVip,
             };
         }
 

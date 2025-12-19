@@ -29,6 +29,7 @@ export interface PokerPlayer {
     currentBet: number;
     isFolded: boolean;
     isActive: boolean;
+    isVip: boolean; // VIP status for crown display
     hand: Card[]; 
 }
 

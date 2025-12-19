@@ -9,4 +9,5 @@ public interface IAdminService
     Task<UserProfileVm?> GetUserByIdAsync(int userId);
     Task<bool> DeleteUserAsync(int userId, int adminId);
     Task<bool> UpdateUserBalanceAsync(int userId, decimal balance, int adminId);
+    Task<bool> SetUserVipAsync(int userId, bool isVip);
 }
