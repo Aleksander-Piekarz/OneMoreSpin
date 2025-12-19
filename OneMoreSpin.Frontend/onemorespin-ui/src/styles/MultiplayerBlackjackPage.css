@@ -391,6 +391,53 @@
   filter: grayscale(0.6);
 }
 
+/* === STYLE VIP === */
+.bj-game-page .bj-player-seat.bj-is-vip {
+  border-color: rgba(255, 215, 0, 0.6);
+  background: linear-gradient(145deg, rgba(50, 40, 10, 0.95), rgba(30, 25, 15, 0.9));
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(255, 215, 0, 0.3),
+    inset 0 0 15px rgba(255, 215, 0, 0.1);
+}
+
+.bj-game-page .bj-badge-vip {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  color: #1a1a2e;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+  z-index: 10;
+  animation: bjVipBadgePulse 2s infinite;
+}
+
+@keyframes bjVipBadgePulse {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.05); }
+}
+
+.bj-game-page .bj-vip-name {
+  color: #ffd700 !important;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.bj-game-page .bj-vip-crown {
+  display: inline-block;
+  margin-right: 4px;
+  animation: bjCrownBounce 2s infinite ease-in-out;
+}
+
+@keyframes bjCrownBounce {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-3px) rotate(5deg); }
+}
+
 /* Nazwa gracza */
 .bj-game-page .bj-player-name {
   font-weight: 700;

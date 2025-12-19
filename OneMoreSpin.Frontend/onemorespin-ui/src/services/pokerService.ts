@@ -6,7 +6,8 @@ class PokerService {
     private connection: signalR.HubConnection;
 
     constructor() {
-        const hubUrl = "http://91.123.188.186:5000/pokerHub";
+        const hubUrl = "http://localhost:5046/pokerHub";
+        // http://91.123.188.186:5000/pokerHub - dla serwera produkcyjnego
 
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl(hubUrl, {
@@ -56,6 +57,10 @@ class PokerService {
         if (this.connection.state === signalR.HubConnectionState.Connected) {
             await this.connection.stop();
         }
+    }
+      public async leaveTable(tableId: string) {
+        if (this.connection.state !== signalR.HubConnectionState.Connected) return;
+        await this.connection.invoke("LeaveTable", tableId);
     }
 
     // --- ZABEZPIECZONE METODY ---

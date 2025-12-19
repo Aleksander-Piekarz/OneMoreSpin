@@ -213,12 +213,17 @@ export const MultiplayerBlackjackPage = () => {
                             if (isMe) seatClasses += " bj-is-me";
                             if (isActiveTurn) seatClasses += " bj-active-turn";
                             if (p.hasBusted) seatClasses += " bj-busted";
+                            if (p.isVip) seatClasses += " bj-is-vip";
 
                             return (
                                 <div key={p.userId} className={seatClasses}>
                                     {isActiveTurn && <div className="bj-badge-turn">Twój ruch</div>}
+                                    {p.isVip && <div className="bj-badge-vip">👑 VIP</div>}
 
-                                    <div className="bj-player-name">{p.username.split('@')[0]} {isMe && "(Ty)"}</div>
+                                    <div className={`bj-player-name ${p.isVip ? 'bj-vip-name' : ''}`}>
+                                        {p.isVip && <span className="bj-vip-crown">👑</span>}
+                                        {p.username.split('@')[0]} {isMe && "(Ty)"}
+                                    </div>
 
                                     <div className="bj-player-cards">
                                         {p.hand && p.hand.length > 0 ? (

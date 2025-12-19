@@ -60,6 +60,7 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             decimal playerChips = 0;
             string dbUsername = "Nieznany";
+            bool isVip = false;
 
             using (var scope = _scopeFactory.CreateScope())
             {
@@ -67,18 +68,18 @@ namespace OneMoreSpin.Services.ConcreteServices
                 if (int.TryParse(userId, out int idAsInt))
                 {
                     var user = db.Users.FirstOrDefault(u => u.Id == idAsInt);
-                    if (user != null) { playerChips = user.Balance; dbUsername = user.UserName ?? "Nieznany"; }
+                    if (user != null) { playerChips = user.Balance; dbUsername = user.UserName ?? "Nieznany"; isVip = user.IsVip; }
                     else { dbUsername = $"Guest_{idAsInt}"; }
                 }
                 else
                 {
                     var user = db.Users.FirstOrDefault(u => u.UserName == userId);
-                    if (user != null) { playerChips = user.Balance; dbUsername = user.UserName ?? "Nieznany"; }
+                    if (user != null) { playerChips = user.Balance; dbUsername = user.UserName ?? "Nieznany"; isVip = user.IsVip; }
                     else { dbUsername = userId ?? "Guest"; }
                 }
             }
 
-            Console.WriteLine($"[BLACKJACK JOIN] User: {dbUsername}, Żetony: {playerChips}");
+            Console.WriteLine($"[BLACKJACK JOIN] User: {dbUsername}, Żetony: {playerChips}, VIP: {isVip}");
 
             lock (table)
             {
@@ -89,6 +90,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                     existing.ConnectionId = connectionId;
                     existing.Username = dbUsername;
                     existing.Chips = playerChips;
+                    existing.IsVip = isVip;
                 }
                 else
                 {
@@ -113,9 +115,10 @@ namespace OneMoreSpin.Services.ConcreteServices
                     var newPlayer = new BlackjackPlayer(connectionId, dbUsername, playerChips);
                     newPlayer.UserId = userId ?? "";
                     newPlayer.SeatIndex = freeSeat;
+                    newPlayer.IsVip = isVip;
 
                     table.Players.Add(newPlayer);
-                    Console.WriteLine($"[BLACKJACK JOIN] Dodano {dbUsername} na miejsce {freeSeat}.");
+                    Console.WriteLine($"[BLACKJACK JOIN] Dodano {dbUsername} na miejsce {freeSeat}. VIP: {isVip}");
                 }
 
                 _playerTables.TryAdd(connectionId, tableId);

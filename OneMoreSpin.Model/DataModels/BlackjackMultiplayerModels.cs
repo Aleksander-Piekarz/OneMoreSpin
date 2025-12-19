@@ -18,6 +18,7 @@ namespace OneMoreSpin.Model.DataModels
         public bool HasBusted { get; set; }
         public bool HasBlackjack { get; set; }
         public bool HasDoubledDown { get; set; }
+        public bool IsVip { get; set; } // VIP status for special display
         public string Result { get; set; } = ""; // "Win", "Lose", "Push", "Blackjack"
         public decimal Payout { get; set; }
 

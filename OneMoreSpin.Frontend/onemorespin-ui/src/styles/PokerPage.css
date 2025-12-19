@@ -316,6 +316,54 @@
   filter: grayscale(0.6);
 }
 
+/* === VIP PLAYER STYLING === */
+.player-seat.is-vip {
+  border-color: rgba(255, 215, 0, 0.6);
+  background: linear-gradient(145deg, rgba(40, 30, 15, 0.95), rgba(25, 20, 10, 0.9));
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.5),
+    0 0 25px rgba(255, 215, 0, 0.25),
+    inset 0 0 20px rgba(255, 215, 0, 0.05);
+}
+
+.player-seat.is-vip.active-turn {
+  box-shadow: 
+    0 0 40px rgba(255, 215, 0, 0.5),
+    0 10px 30px rgba(0, 0, 0, 0.5),
+    inset 0 0 25px rgba(255, 215, 0, 0.1);
+}
+
+.badge-vip {
+  position: absolute;
+  top: -18px;
+  right: -8px;
+  font-size: 20px;
+  filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.6));
+  animation: crown-float 3s ease-in-out infinite;
+  z-index: 50;
+}
+
+@keyframes crown-float {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-3px) rotate(5deg); }
+}
+
+.vip-crown {
+  margin-right: 4px;
+  font-size: 14px;
+  filter: drop-shadow(0 1px 2px rgba(255, 215, 0, 0.5));
+}
+
+.vip-name {
+  color: #ffd700 !important;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+
+.player-seat.is-me.is-vip .player-name {
+  color: #ffd700;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
 .player-name {
   color: #fff;
   font-weight: 700;

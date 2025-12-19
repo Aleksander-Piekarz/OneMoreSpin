@@ -10,5 +10,9 @@ namespace OneMoreSpin.ViewModels.VM
         public decimal Balance { get; set; } 
         public bool IsWin { get; set; }
         public List<WinDetailVm> WinDetails { get; set; } = new List<WinDetailVm>();
+        
+        // VIP Bonuses
+        public decimal VipBonus { get; set; }
+        public bool IsVip { get; set; }
     }
 }

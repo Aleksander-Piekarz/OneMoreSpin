@@ -105,4 +105,22 @@ public class AdminService : BaseService, IAdminService
 
         return false;
     }
+
+    public async Task<bool> SetUserVipAsync(int userId, bool isVip)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
+            return false;
+
+        user.IsVip = isVip;
+        var result = await _userManager.UpdateAsync(user);
+
+        if (result.Succeeded)
+        {
+            Logger.LogInformation("User {UserId} VIP status set to {IsVip}", userId, isVip);
+            return true;
+        }
+
+        return false;
+    }
 }

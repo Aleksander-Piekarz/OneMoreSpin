@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePokerGame } from '../hooks/usePokerGame';
 import Leaderboard from '../components/Leaderboard';
@@ -13,7 +13,7 @@ export const PokerPage = () => {
     const currentTableId = tableId || "stol-1";
     
     // Rozszerzamy destrukturyzację o chatMessages i sendChatMessage
-    const { table, logs, isConnected, startGame, move, myUserId, chatMessages, sendChatMessage } = usePokerGame(currentTableId);
+    const { table, logs, isConnected, startGame, move, myUserId, chatMessages, sendChatMessage, leaveTable } = usePokerGame(currentTableId);
     
     const [raiseAmount, setRaiseAmount] = useState(100);
     const [leaderboardOpen, setLeaderboardOpen] = useState(false);
@@ -140,7 +140,15 @@ export const PokerPage = () => {
                         <span className="poker-stat-value-gold">{table.stage}</span>
                     </div>
                 </div>
-                <button onClick={() => navigate('/poker')} className="poker-leave-btn">
+                <button onClick={async () => { 
+                    try {
+                        await leaveTable(); 
+                    } catch (e) {
+                        console.error("Error leaving table:", e);
+                    } finally {
+                        navigate('/poker'); 
+                    }
+                }} className="poker-leave-btn">
                     <i className="fas fa-sign-out-alt"></i>
                     <span>Wyjdź</span>
                 </button>
@@ -176,12 +184,17 @@ export const PokerPage = () => {
                     if (isMe) seatClasses += " is-me";
                     if (isActiveTurn) seatClasses += " active-turn";
                     if (p.isFolded) seatClasses += " folded";
+                    if (p.isVip) seatClasses += " is-vip";
 
                     return (
                         <div key={p.userId} className={seatClasses} style={pos}>
                             {isActiveTurn && <div className="badge-turn">Ruch</div>}
+                            {p.isVip && <div className="badge-vip">👑</div>}
                             
-                            <div className="player-name">{p.username.split('@')[0]} {isMe && "(Ty)"}</div>
+                            <div className={`player-name ${p.isVip ? 'vip-name' : ''}`}>
+                                {p.isVip && <span className="vip-crown">👑</span>}
+                                {p.username.split('@')[0]} {isMe && "(Ty)"}
+                            </div>
                             
                             <div className="player-cards">
                                 {p.hand && p.hand.length > 0 ? (
