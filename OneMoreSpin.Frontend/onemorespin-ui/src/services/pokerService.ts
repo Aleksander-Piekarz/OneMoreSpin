@@ -6,8 +6,8 @@ class PokerService {
     private connection: signalR.HubConnection;
 
     constructor() {
-        const hubUrl = "http://localhost:5046/pokerHub";
-        // http://91.123.188.186:5000/pokerHub - dla serwera produkcyjnego
+        //const hubUrl = "http://localhost:5046/pokerHub";
+        const hubUrl = "http://91.123.188.186:5000/pokerHub";
 
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl(hubUrl, {
