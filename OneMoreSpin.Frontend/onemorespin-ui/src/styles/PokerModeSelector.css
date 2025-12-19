@@ -1,165 +1,252 @@
-/* Kontener główny - teraz responsywny */
-.poker-mode-selector {
-  display: flex;
-  width: 90%;
-  max-width: 1200px;
-  height: 60vh; /* Wysokość zależna od ekranu */
-  min-height: 500px;
-  margin: 20px auto;
+/* PokerModeSelector.css - Identyczny z BlackjackModeSelector */
+
+.pk-mode-selector {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+  max-width: 900px;
+  width: 100%;
+  padding: 0 20px;
+}
+
+/* Tile - jak game-tile z HomePage */
+.pk-mode-tile {
+  position: relative;
   border-radius: 30px;
-  overflow: hidden;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  position: relative;
-  animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.mode-panel {
-  flex: 1;
-  position: relative;
-  transition: flex 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  height: 380px;
   cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  opacity: 0;
+  animation: pkTileEntrance 0.8s ease forwards;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.pk-mode-tile:nth-child(1) { animation-delay: 0.1s; }
+.pk-mode-tile:nth-child(2) { animation-delay: 0.2s; }
+
+@keyframes pkTileEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(50px) rotateX(-20deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+  }
+}
+
+/* Single Player - fioletowy motyw */
+.pk-mode-tile.pk-single {
+  background: linear-gradient(135deg, #1a1a3a 0%, #0d0d2a 60%, #05051a 100%);
+  border: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+.pk-mode-tile.pk-single:hover {
+  transform: translateY(-15px) scale(1.02);
+  box-shadow: 
+    0 20px 60px rgba(102, 126, 234, 0.3),
+    0 0 0 3px rgba(102, 126, 234, 0.5);
+}
+
+/* Multiplayer - różowy motyw */
+.pk-mode-tile.pk-multiplayer {
+  background: linear-gradient(135deg, #2a1a2a 0%, #1a0d1a 60%, #0d050d 100%);
+  border: 2px solid rgba(240, 147, 251, 0.3);
+}
+
+.pk-mode-tile.pk-multiplayer:hover {
+  transform: translateY(-15px) scale(1.02);
+  box-shadow: 
+    0 20px 60px rgba(240, 147, 251, 0.25),
+    0 0 0 3px rgba(240, 147, 251, 0.5);
+}
+
+/* Shine effect */
+.pk-mode-tile .pk-tile-shine {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 70%
+  );
+  transform: rotate(45deg);
+  transition: all 0.6s ease;
+  pointer-events: none;
+}
+
+.pk-mode-tile:hover .pk-tile-shine {
+  left: 150%;
+}
+
+/* Content */
+.pk-mode-tile .pk-tile-content {
+  position: relative;
+  z-index: 5;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  text-decoration: none;
+  gap: 15px;
+  padding: 30px;
+  transition: all 0.6s ease;
 }
 
-/* Tła */
-.mode-panel.single {
-  background: radial-gradient(circle at center, #2c5364 0%, #203a43 50%, #0f2027 100%);
-  border-right: 1px solid rgba(255,255,255,0.1);
+.pk-mode-tile:hover .pk-tile-content {
+  transform: translateY(-10px);
 }
 
-.mode-panel.multiplayer {
-  background: radial-gradient(circle at center, #4b1d68 0%, #1a0b2e 100%);
-}
-
-.panel-overlay {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  transition: background 0.4s;
-  z-index: 1;
-}
-
-/* --- EFEKT HOVER --- */
-.mode-panel:hover {
-  flex: 2.5; /* Panel rośnie */
-}
-
-.mode-panel:hover .panel-overlay {
-  background: rgba(0, 0, 0, 0.1); /* Rozjaśnia się */
-}
-
-/* --- TREŚĆ --- */
-.mode-content {
+/* Icon */
+.pk-mode-tile .pk-icon-wrapper {
   position: relative;
-  z-index: 10;
-  text-align: center;
-  padding: 20px;
-  transition: transform 0.4s ease;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.mode-icon-container {
-  margin-bottom: 20px;
-  transform: scale(0.8);
-  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
-}
-.mode-icon {
-  width: 100px; height: auto;
+.pk-mode-tile .pk-icon-bg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  transition: all 0.4s ease;
 }
 
-.mode-title {
+.pk-mode-tile:hover .pk-icon-bg {
+  transform: scale(1.3) rotate(180deg);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+}
+
+.pk-mode-tile .pk-tile-icon {
+  width: 70px;
+  height: auto;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
+  transition: all 0.8s ease-in-out;
+}
+
+.pk-mode-tile:hover .pk-tile-icon {
+  transform: scale(1.2) rotateY(360deg);
+  filter: drop-shadow(0 10px 30px rgba(255, 255, 255, 0.3));
+}
+
+/* Title */
+.pk-mode-tile .pk-tile-title {
   font-family: 'Big Shoulders', sans-serif;
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: 900;
   color: #fff;
   margin: 0;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  white-space: nowrap;
-  text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+  text-align: center;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
 }
 
-.mode-description {
+.pk-mode-tile.pk-single .pk-tile-title {
+  text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+}
+
+.pk-mode-tile.pk-multiplayer .pk-tile-title {
+  text-shadow: 0 0 20px rgba(240, 147, 251, 0.5);
+}
+
+/* Description */
+.pk-mode-tile .pk-tile-description {
   font-family: 'Poppins', sans-serif;
-  color: rgba(226, 232, 240, 0.9);
-  font-size: 1.1rem;
-  margin-top: 15px;
-  max-width: 300px;
-  margin-left: auto; margin-right: auto;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.5s ease 0.1s;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  text-align: center;
+  max-width: 280px;
+  line-height: 1.5;
 }
 
-.mode-action {
-  margin-top: 30px;
-  z-index: 10;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.5s ease 0.2s;
-  
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-.mode-play-btn {
-  padding: 14px 40px;
-  background: #fff;
-  color: #000;
+/* Button */
+.pk-mode-tile .pk-tile-btn {
+  margin-top: 10px;
+  padding: 14px 35px;
   border: none;
   border-radius: 50px;
   font-weight: 800;
   font-family: 'Big Shoulders', sans-serif;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   letter-spacing: 1px;
   cursor: pointer;
-  display: flex; align-items: center; gap: 10px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
 }
 
-.mode-play-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 15px 30px rgba(255,255,255,0.2);
+.pk-mode-tile.pk-single .pk-tile-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
 }
 
-/* Animacje przy Hover */
-.mode-panel:hover .mode-icon-container {
-  transform: scale(1.1) translateY(-10px);
-}
-.mode-panel:hover .mode-description,
-.mode-panel:hover .mode-action {
-  opacity: 1;
-  transform: translateY(0);
+.pk-mode-tile.pk-multiplayer .pk-tile-btn {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  color: #fff;
+  box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
 }
 
-/* Nieaktywny panel */
-.poker-mode-selector:hover .mode-panel:not(:hover) {
-  filter: brightness(0.6) blur(2px);
+.pk-mode-tile .pk-tile-btn:hover {
+  transform: scale(1.08);
+  filter: brightness(1.1);
 }
 
-/* RWD - Telefon */
+/* Particles */
+.pk-mode-tile .pk-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.pk-mode-tile .pk-particle {
+  position: absolute;
+  top: -50px;
+  font-size: 20px;
+  opacity: 0;
+  animation: pkParticleFall linear infinite;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.4));
+}
+
+@keyframes pkParticleFall {
+  0% { transform: translateY(-50px) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.4; }
+  100% { transform: translateY(450px) rotate(180deg); opacity: 0; }
+}
+
+/* RWD */
 @media (max-width: 768px) {
-  .poker-mode-selector {
-    flex-direction: column;
-    height: auto;
-    min-height: 80vh;
+  .pk-mode-selector {
+    grid-template-columns: 1fr;
+    gap: 25px;
   }
-  .mode-panel { min-height: 300px; width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
-  .mode-panel:hover { flex: 1.5; }
-  .mode-title { font-size: 2rem; }
-  
-  /* Na telefonie pokazujemy opis od razu, bo nie ma "hover" */
-  .mode-description, .mode-action { opacity: 1; transform: translateY(0); }
+
+  .pk-mode-tile {
+    height: 320px;
+  }
+
+  .pk-mode-tile .pk-tile-title {
+    font-size: 1.6rem;
+  }
 }

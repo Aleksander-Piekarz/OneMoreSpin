@@ -1,0 +1,1096 @@
+/* MultiplayerBlackjackPage.css - Responsywny design spójny z resztą projektu */
+
+/* === GŁÓWNA STRONA - bez scrollowania === */
+.bj-game-page {
+  height: 100vh;
+  width: 100%;
+  background: #0a0e27;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* === ANIMOWANE TŁO === */
+.bj-game-page .bj-animated-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bj-game-page .bj-floating-shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.15;
+  animation: bjFloatShapes 20s infinite ease-in-out;
+}
+
+.bj-game-page .bj-shape-1 {
+  width: min(400px, 40vw);
+  height: min(400px, 40vw);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  top: -10%;
+  left: -10%;
+  animation-duration: 25s;
+}
+
+.bj-game-page .bj-shape-2 {
+  width: min(300px, 30vw);
+  height: min(300px, 30vw);
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  top: 20%;
+  right: -5%;
+  animation-duration: 30s;
+  animation-delay: 5s;
+}
+
+.bj-game-page .bj-shape-3 {
+  width: min(350px, 35vw);
+  height: min(350px, 35vw);
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  bottom: -10%;
+  left: 40%;
+  animation-duration: 28s;
+  animation-delay: 10s;
+}
+
+@keyframes bjFloatShapes {
+  0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  25% { transform: translate(30px, 60px) rotate(90deg) scale(1.1); }
+  50% { transform: translate(-20px, 30px) rotate(180deg) scale(0.9); }
+  75% { transform: translate(50px, -30px) rotate(270deg) scale(1.05); }
+}
+
+/* === HEADER === */
+.bj-game-page .bj-game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 25px;
+  background: rgba(10, 14, 39, 0.9);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 100;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.bj-game-page .bj-game-brand {
+  font-family: 'Big Shoulders', 'Bebas Neue', sans-serif;
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 3px;
+  text-shadow: 
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(102, 126, 234, 0.6);
+}
+
+.bj-game-page .bj-game-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bj-game-page .bj-game-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+.bj-game-page .bj-game-stat-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.bj-game-page .bj-game-stat-value {
+  color: #43e97b;
+  font-weight: 700;
+}
+
+/* Przycisk wyjścia - spójny z back-btn */
+.bj-game-page .bj-leave-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.4) 0%, rgba(118, 75, 162, 0.4) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.bj-game-page .bj-leave-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.bj-game-page .bj-leave-btn:hover::before {
+  left: 100%;
+}
+
+.bj-game-page .bj-leave-btn:hover {
+  transform: translateX(-3px);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 25px rgba(102, 126, 234, 0.5);
+}
+
+/* === GŁÓWNY OBSZAR GRY - bez scrollowania === */
+.bj-game-page .bj-game-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+  min-height: 0;
+  padding: 10px;
+}
+
+/* === STÓŁ - RESPONSYWNY KONTENER === */
+.bj-game-page .bj-table-container {
+  width: 100%;
+  max-width: 850px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  gap: 10px;
+}
+
+.bj-game-page .bj-table {
+  position: relative;
+  width: 100%;
+  max-width: 700px;
+  aspect-ratio: 16 / 9;
+  max-height: calc(100vh - 320px);
+  border-radius: 50% 50% 30px 30px / 40% 40% 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.3s ease;
+  box-shadow: 
+    inset 0 0 60px rgba(0, 0, 0, 0.6),
+    0 15px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 5px rgba(40, 40, 40, 0.8),
+    0 0 0 8px rgba(60, 60, 60, 0.3);
+}
+
+/* Warianty stołów */
+.bj-game-page .bj-table.bj-table-beginner {
+  background: radial-gradient(ellipse at 50% 30%, #2d5a3d 0%, #1a3a28 50%, #0f2218 100%);
+  border: 10px solid #2a2a2a;
+}
+
+.bj-game-page .bj-table.bj-table-advanced {
+  background: radial-gradient(ellipse at 50% 30%, #6b2040 0%, #4a1530 50%, #2a0a1a 100%);
+  border: 10px solid #3a2020;
+}
+
+.bj-game-page .bj-table.bj-table-vip {
+  background: radial-gradient(ellipse at 50% 30%, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%);
+  border: 10px solid #3a3000;
+  box-shadow: 
+    inset 0 0 80px rgba(0, 0, 0, 0.6),
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    0 0 0 6px rgba(60, 50, 20, 0.8),
+    0 0 0 10px rgba(255, 215, 0, 0.2),
+    0 0 40px rgba(255, 215, 0, 0.1);
+}
+
+/* Wzór na stole */
+.bj-game-page .bj-table::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50%;
+  height: 35%;
+  border: 2px solid rgba(255, 255, 255, 0.06);
+  border-radius: 100px;
+  pointer-events: none;
+}
+
+/* === DEALER === */
+.bj-game-page .bj-dealer-area {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10;
+}
+
+.bj-game-page .bj-dealer-label {
+  font-family: 'Big Shoulders', sans-serif;
+  font-size: clamp(10px, 2vw, 14px);
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.bj-game-page .bj-dealer-cards {
+  display: flex;
+  gap: clamp(4px, 1vw, 8px);
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.bj-game-page .bj-dealer-score {
+  font-size: clamp(20px, 4vw, 28px);
+  font-weight: 800;
+  color: #ffd700;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* === KARTY === */
+.bj-game-page .bj-card {
+  width: clamp(45px, 6vw, 60px);
+  height: clamp(63px, 8.4vw, 84px);
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+  border-radius: 6px;
+  box-shadow: 
+    2px 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  animation: bjCardDeal 0.4s ease;
+  flex-shrink: 0;
+}
+
+@keyframes bjCardDeal {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) rotateY(90deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateY(0);
+  }
+}
+
+.bj-game-page .bj-card.bj-red { color: #d32f2f; }
+.bj-game-page .bj-card.bj-black { color: #1a1a1a; }
+
+.bj-game-page .bj-card-rank {
+  font-size: clamp(16px, 2.5vw, 22px);
+  line-height: 1;
+}
+
+.bj-game-page .bj-card-suit {
+  font-size: clamp(20px, 3vw, 26px);
+  line-height: 1;
+}
+
+/* Tył karty */
+.bj-game-page .bj-card-back {
+  width: clamp(45px, 6vw, 60px);
+  height: clamp(63px, 8.4vw, 84px);
+  border-radius: 6px;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid #fff;
+  flex-shrink: 0;
+}
+
+.bj-game-page .bj-table-beginner .bj-card-back {
+  background: repeating-linear-gradient(45deg, #667eea 0, #667eea 8px, #764ba2 8px, #764ba2 16px);
+}
+
+.bj-game-page .bj-table-advanced .bj-card-back {
+  background: repeating-linear-gradient(45deg, #f093fb 0, #f093fb 8px, #f5576c 8px, #f5576c 16px);
+}
+
+.bj-game-page .bj-table-vip .bj-card-back {
+  background: radial-gradient(circle, #ffd700 0%, #1a1a1a 150%);
+  border-color: #ffd700;
+}
+
+/* === MIEJSCA GRACZY - FLEXBOX ZAMIAST ABSOLUTE === */
+.bj-game-page .bj-players-container {
+  position: relative;
+  width: 100%;
+  max-width: 850px;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  gap: 10px;
+  z-index: 20;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+.bj-game-page .bj-player-seat {
+  flex: 0 1 auto;
+  width: clamp(100px, 15vw, 145px);
+  padding: clamp(6px, 1vw, 10px);
+  border-radius: 12px;
+  background: rgba(15, 20, 40, 0.85);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.bj-game-page .bj-player-seat.bj-is-me {
+  border-color: rgba(102, 126, 234, 0.6);
+  background: linear-gradient(145deg, rgba(20, 30, 60, 0.95), rgba(15, 20, 40, 0.9));
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.4),
+    0 0 15px rgba(102, 126, 234, 0.2);
+}
+
+.bj-game-page .bj-player-seat.bj-active-turn {
+  border-color: #ffd700;
+  box-shadow: 
+    0 0 25px rgba(255, 215, 0, 0.4),
+    0 8px 25px rgba(0, 0, 0, 0.4);
+  animation: bjPulseBorder 2s infinite;
+}
+
+@keyframes bjPulseBorder {
+  0%, 100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); }
+}
+
+.bj-game-page .bj-player-seat.bj-busted {
+  opacity: 0.5;
+  filter: grayscale(0.6);
+}
+
+/* === STYLE VIP === */
+.bj-game-page .bj-player-seat.bj-is-vip {
+  border-color: rgba(255, 215, 0, 0.6);
+  background: linear-gradient(145deg, rgba(50, 40, 10, 0.95), rgba(30, 25, 15, 0.9));
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(255, 215, 0, 0.3),
+    inset 0 0 15px rgba(255, 215, 0, 0.1);
+}
+
+.bj-game-page .bj-badge-vip {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ffd700, #ffb347);
+  color: #1a1a2e;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+  z-index: 10;
+  animation: bjVipBadgePulse 2s infinite;
+}
+
+@keyframes bjVipBadgePulse {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.05); }
+}
+
+.bj-game-page .bj-vip-name {
+  color: #ffd700 !important;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.bj-game-page .bj-vip-crown {
+  display: inline-block;
+  margin-right: 4px;
+  animation: bjCrownBounce 2s infinite ease-in-out;
+}
+
+@keyframes bjCrownBounce {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-3px) rotate(5deg); }
+}
+
+/* Nazwa gracza */
+.bj-game-page .bj-player-name {
+  font-weight: 700;
+  font-size: clamp(11px, 1.5vw, 14px);
+  color: #fff;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bj-game-page .bj-player-seat.bj-is-me .bj-player-name {
+  color: #667eea;
+}
+
+/* Karty gracza */
+.bj-game-page .bj-player-cards {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  min-height: clamp(50px, 8vw, 70px);
+  margin-bottom: 8px;
+}
+
+.bj-game-page .bj-player-cards .bj-card {
+  width: clamp(35px, 5vw, 48px);
+  height: clamp(49px, 7vw, 68px);
+}
+
+.bj-game-page .bj-player-cards .bj-card-rank {
+  font-size: clamp(12px, 1.8vw, 18px);
+}
+
+.bj-game-page .bj-player-cards .bj-card-suit {
+  font-size: clamp(14px, 2vw, 20px);
+}
+
+.bj-game-page .bj-empty-hand {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: clamp(10px, 1.2vw, 12px);
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: clamp(50px, 8vw, 68px);
+}
+
+/* Informacje gracza */
+.bj-game-page .bj-player-info {
+  display: flex;
+  justify-content: space-around;
+  background: rgba(0, 0, 0, 0.3);
+  padding: clamp(5px, 1vw, 8px);
+  border-radius: 8px;
+  font-size: clamp(10px, 1.2vw, 12px);
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.bj-game-page .bj-player-score {
+  color: #fff;
+  font-weight: 700;
+  font-size: clamp(12px, 1.5vw, 16px);
+}
+
+.bj-game-page .bj-player-chips {
+  color: #43e97b;
+  font-weight: 600;
+}
+
+.bj-game-page .bj-player-bet {
+  color: #ffd700;
+  font-weight: 600;
+}
+
+/* Znaczniki */
+.bj-game-page .bj-badge-turn {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  color: #000;
+  font-size: clamp(8px, 1vw, 10px);
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(255, 215, 0, 0.4);
+  z-index: 30;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.bj-game-page .bj-badge-blackjack {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ffd700, #ff6f00);
+  color: #000;
+  font-size: clamp(8px, 1vw, 10px);
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 6px;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+  z-index: 30;
+  animation: bjGlow 1.5s infinite;
+}
+
+@keyframes bjGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+  50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.8); }
+}
+
+/* Wynik */
+.bj-game-page .bj-result-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: clamp(10px, 1.3vw, 13px);
+  z-index: 40;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  animation: bjResultPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes bjResultPop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.bj-game-page .bj-result-badge.bj-win {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  color: #0a0e27;
+  box-shadow: 0 5px 20px rgba(67, 233, 123, 0.5);
+}
+
+.bj-game-page .bj-result-badge.bj-lose {
+  background: linear-gradient(135deg, #f5576c, #f093fb);
+  color: #fff;
+  box-shadow: 0 5px 20px rgba(245, 87, 108, 0.5);
+}
+
+.bj-game-page .bj-result-badge.bj-push {
+  background: linear-gradient(135deg, #ffc107, #ff8f00);
+  color: #000;
+  box-shadow: 0 5px 20px rgba(255, 193, 7, 0.5);
+}
+
+.bj-game-page .bj-result-badge.bj-blackjack {
+  background: linear-gradient(135deg, #ffd700, #ff6f00);
+  color: #000;
+  box-shadow: 0 5px 25px rgba(255, 215, 0, 0.6);
+}
+
+/* === PASEK KONTROLI - kompaktowy === */
+.bj-game-page .bj-controls-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  min-height: 80px;
+  height: auto;
+  background: rgba(10, 14, 39, 0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  z-index: 200;
+  padding: 15px 20px;
+  box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Przyciski gry - kompaktowe */
+.bj-game-page .bj-game-btn {
+  padding: 10px 22px;
+  border-radius: 50px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  min-width: 100px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Big Shoulders', 'Bebas Neue', sans-serif;
+}
+
+.bj-game-page .bj-game-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.4s;
+}
+
+.bj-game-page .bj-game-btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.bj-game-page .bj-game-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.bj-game-page .bj-game-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Kolory przycisków - spójne z projektem */
+.bj-game-page .bj-btn-hit {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.bj-game-page .bj-btn-hit:hover:not(:disabled) {
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+  transform: translateY(-2px);
+}
+
+.bj-game-page .bj-btn-stand {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 5px 20px rgba(240, 147, 251, 0.4);
+}
+
+.bj-game-page .bj-btn-stand:hover:not(:disabled) {
+  box-shadow: 0 8px 30px rgba(240, 147, 251, 0.6);
+  transform: translateY(-2px);
+}
+
+.bj-game-page .bj-btn-double {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  color: #0a0e27;
+  box-shadow: 0 5px 20px rgba(250, 112, 154, 0.4);
+}
+
+.bj-game-page .bj-btn-double:hover:not(:disabled) {
+  box-shadow: 0 8px 30px rgba(250, 112, 154, 0.6);
+  transform: translateY(-2px);
+}
+
+.bj-game-page .bj-btn-start {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: #0a0e27;
+  box-shadow: 0 5px 20px rgba(67, 233, 123, 0.4);
+  min-width: clamp(150px, 20vw, 200px);
+  font-size: clamp(14px, 2vw, 18px);
+}
+
+.bj-game-page .bj-btn-start:hover:not(:disabled) {
+  box-shadow: 0 8px 30px rgba(67, 233, 123, 0.6);
+  transform: translateY(-3px);
+}
+
+/* Kontrola zakładów */
+.bj-game-page .bj-bet-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 15px;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bj-game-page .bj-bet-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: clamp(11px, 1.3vw, 13px);
+}
+
+.bj-game-page .bj-bet-input {
+  width: clamp(60px, 8vw, 80px);
+  background: transparent;
+  border: none;
+  color: #43e97b;
+  font-size: clamp(14px, 2vw, 18px);
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+}
+
+.bj-game-page .bj-bet-value {
+  min-width: clamp(60px, 8vw, 80px);
+  color: #43e97b;
+  font-size: clamp(16px, 2.5vw, 20px);
+  font-weight: 700;
+  text-align: center;
+}
+
+.bj-game-page .bj-bet-btn {
+  width: clamp(28px, 4vw, 32px);
+  height: clamp(28px, 4vw, 32px);
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: clamp(14px, 2vw, 18px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bj-game-page .bj-bet-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+/* === PANELE BOCZNE - PO LEWEJ STRONIE === */
+.bj-game-page .bj-log-panel,
+.bj-game-page .bj-chat-panel {
+  position: fixed;
+  left: 15px;
+  width: 220px;
+  background: rgba(15, 20, 40, 0.95);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.bj-game-page .bj-log-panel {
+  top: 80px;
+  max-height: 180px;
+}
+
+.bj-game-page .bj-chat-panel {
+  top: 275px;
+  height: 200px;
+}
+
+.bj-game-page .bj-log-header,
+.bj-game-page .bj-chat-header {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bj-game-page .bj-log-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 10px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bj-game-page .bj-log-content::-webkit-scrollbar,
+.bj-game-page .bj-chat-messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+.bj-game-page .bj-log-content::-webkit-scrollbar-track,
+.bj-game-page .bj-chat-messages::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.bj-game-page .bj-log-content::-webkit-scrollbar-thumb,
+.bj-game-page .bj-chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.3);
+  border-radius: 2px;
+}
+
+/* Chat */
+.bj-game-page .bj-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bj-game-page .bj-chat-message {
+  font-size: 11px;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.bj-game-page .bj-chat-username {
+  font-weight: 700;
+  margin-right: 5px;
+}
+
+.bj-game-page .bj-chat-text {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.bj-game-page .bj-chat-input-area {
+  display: flex;
+  padding: 8px;
+  gap: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bj-game-page .bj-chat-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: #fff;
+  font-size: 11px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.bj-game-page .bj-chat-input:focus {
+  border-color: rgba(102, 126, 234, 0.5);
+}
+
+.bj-game-page .bj-chat-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.bj-game-page .bj-chat-send-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: none;
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: #0a0e27;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.bj-game-page .bj-chat-send-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(67, 233, 123, 0.4);
+}
+
+/* === STATUS GRY === */
+.bj-game-page .bj-game-status {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(10, 14, 39, 0.9);
+  backdrop-filter: blur(10px);
+  padding: 20px 40px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: center;
+  z-index: 50;
+}
+
+.bj-game-page .bj-game-status-text {
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* === LOADING === */
+.bj-game-page .bj-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 20px;
+}
+
+.bj-game-page .bj-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(102, 126, 234, 0.2);
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: bjSpin 1s linear infinite;
+}
+
+@keyframes bjSpin {
+  to { transform: rotate(360deg); }
+}
+
+.bj-game-page .bj-loading-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+}
+
+/* === RESPONSYWNOŚĆ === */
+
+/* === RESULT OVERLAY - dla powiadomień wygranej/przegranej === */
+.sp-result-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sp-result-text {
+  font-family: 'Big Shoulders', sans-serif;
+  font-size: 80px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.sp-result-text.sp-win {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sp-result-text.sp-lose {
+  color: #ef4444;
+}
+
+/* === RESPONSYWNOŚĆ === */
+
+/* Ukryj panele boczne na mniejszych ekranach */
+@media (max-width: 1200px) {
+  .bj-game-page .bj-log-panel,
+  .bj-game-page .bj-chat-panel {
+    display: none;
+  }
+}
+
+/* Tablety */
+@media (max-width: 768px) {
+  .bj-game-page .bj-game-header {
+    padding: 12px 15px;
+  }
+  
+  .bj-game-page .bj-game-info {
+    display: none;
+  }
+  
+  .bj-game-page .bj-table {
+    border-width: 8px;
+  }
+  
+  .bj-game-page .bj-controls-bar {
+    min-height: 70px;
+    padding: 12px 15px;
+  }
+  
+  .bj-game-page .bj-leave-btn span {
+    display: none;
+  }
+}
+
+/* Telefony */
+@media (max-width: 600px) {
+  .bj-game-page .bj-game-header {
+    padding: 10px 12px;
+  }
+  
+  .bj-game-page .bj-table {
+    border-width: 6px;
+  }
+  
+  .bj-game-page .bj-players-container {
+    gap: 4px;
+    padding: 5px;
+  }
+  
+  .bj-game-page .bj-player-seat {
+    padding: 5px;
+    border-radius: 10px;
+  }
+  
+  .bj-game-page .bj-controls-bar {
+    min-height: 60px;
+    gap: 8px;
+    padding: 10px 15px;
+  }
+  
+  .bj-game-page .bj-game-btn {
+    padding: 8px 16px;
+    min-width: 80px;
+    font-size: 11px;
+  }
+  
+  .bj-game-page .bj-bet-control {
+    padding: 5px 8px;
+  }
+}
+
+/* Bardzo małe telefony */
+@media (max-width: 400px) {
+  .bj-game-page .bj-player-seat {
+    width: 70px;
+    padding: 4px;
+  }
+  
+  .bj-game-page .bj-player-cards .bj-card {
+    width: 26px;
+    height: 36px;
+  }
+  
+  .bj-game-page .bj-game-btn {
+    padding: 6px 12px;
+    min-width: 65px;
+    font-size: 10px;
+  }
+}

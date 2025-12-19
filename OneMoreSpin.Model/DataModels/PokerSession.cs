@@ -7,19 +7,23 @@ namespace OneMoreSpin.Model.DataModels
     public class PokerPlayer
     {
         public string ConnectionId { get; set; }
-        public string UserId { get; set; } // <--- DODAJ TO POLE
-        public string Username { get; set; }
+        public string UserId { get; set; } = "";
+        public string Username { get; set; } = "";
         public decimal Chips { get; set; }
         public decimal CurrentBet { get; set; }
-        public bool IsFolded { get; set; }
+        public bool IsFolded { get; set; } = false;
+        public bool IsVip { get; set; } = false; // VIP status for special display
         public List<Card> Hand { get; set; } = new List<Card>();
         public int SeatIndex { get; set; } = -1;
 
+        public PokerPlayer() { } // Parameterless constructor for serialization
+        
         public PokerPlayer(string connectionId, string username, decimal initialChips)
         {
             ConnectionId = connectionId;
             Username = username;
             Chips = initialChips;
+            IsVip = false;
         }
     }
 

@@ -7,6 +7,6 @@ namespace OneMoreSpin.Services.Interfaces
 {
     public interface ISlotService
     {
-        Task<SpinResultVm> SpinAsync(string userId, decimal bet);
+        Task<SpinResultVm> SpinAsync(string userId, decimal bet, bool unlimitedMode = false);
     }
 }

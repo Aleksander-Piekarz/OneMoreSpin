@@ -27,7 +27,7 @@ public class BlackjackService : BaseService, IBlackjackService
         _missionService = missionService;
     }
 
-    public async Task<BlackjackGameVm> StartGameAsync(string userId, decimal bet)
+    public async Task<BlackjackGameVm> StartGameAsync(string userId, decimal bet, bool unlimitedMode = false)
     {
         if (!int.TryParse(userId, out int parsedUserId))
             throw new ArgumentException("Nieprawidłowy format ID użytkownika");
@@ -36,10 +36,13 @@ public class BlackjackService : BaseService, IBlackjackService
         if (user == null)
             throw new KeyNotFoundException("Nie znaleziono użytkownika");
 
-        if (user.Balance < bet)
-            throw new InvalidOperationException("Niewystarczające środki");
+        if (!unlimitedMode)
+        {
+            if (user.Balance < bet)
+                throw new InvalidOperationException("Niewystarczające środki");
 
-        user.Balance -= bet;
+            user.Balance -= bet;
+        }
 
         // Create new deck and shuffle
         var deck = CreateAndShuffleDeck();
@@ -79,7 +82,7 @@ public class BlackjackService : BaseService, IBlackjackService
         };
 
         // Check for blackjack
-        if (playerScore == 21)
+            if (playerScore == 21)
         {
             var dealerScore = CalculateScore(dealerHand);
             session.DealerScore = dealerScore;
@@ -89,13 +92,21 @@ public class BlackjackService : BaseService, IBlackjackService
             {
                 session.Result = BlackjackResult.Push;
                 session.Payout = bet; // Return bet
-                user.Balance += bet;
+                    if (!unlimitedMode) user.Balance += bet;
             }
             else
             {
                 session.Result = BlackjackResult.Blackjack;
                 session.Payout = bet * 2.5m; // 3:2 payout
-                user.Balance += session.Payout;
+                
+                // VIP BONUS: +10% do wygranych za Blackjacka dla użytkowników VIP
+                if (user.IsVip)
+                {
+                    decimal vipBonus = (session.Payout - bet) * 0.10m;
+                    session.Payout += vipBonus;
+                }
+                
+                if (!unlimitedMode) user.Balance += session.Payout;
             }
             session.FinishedAt = DateTime.UtcNow;
             await RecordGameHistory(parsedUserId, bet, session.Payout - bet);
@@ -125,7 +136,7 @@ public class BlackjackService : BaseService, IBlackjackService
         return MapToVm(session, playerHand, dealerHand, user.Balance);
     }
 
-    public async Task<BlackjackGameVm> HitAsync(string userId, int sessionId)
+    public async Task<BlackjackGameVm> HitAsync(string userId, int sessionId, bool unlimitedMode = false)
     {
         if (!int.TryParse(userId, out int parsedUserId))
             throw new ArgumentException("Nieprawidłowy format ID użytkownika");
@@ -162,8 +173,11 @@ public class BlackjackService : BaseService, IBlackjackService
             session.FinishedAt = DateTime.UtcNow;
             session.DealerScore = CalculateScore(dealerHand);
             
-            // Balance already decreased at start, no need to change it
-            await RecordGameHistory(parsedUserId, session.Bet, -session.Bet);
+            // Balance already decreased at start (unless unlimitedMode)
+            if (!unlimitedMode)
+            {
+                await RecordGameHistory(parsedUserId, session.Bet, -session.Bet);
+            }
             
             // Update missions
             var blackjackGame = await DbContext.Games.FirstOrDefaultAsync(g => g.Name == "Blackjack");
@@ -180,7 +194,7 @@ public class BlackjackService : BaseService, IBlackjackService
         return MapToVm(session, playerHand, dealerHand, user.Balance);
     }
 
-    public async Task<BlackjackGameVm> StandAsync(string userId, int sessionId)
+    public async Task<BlackjackGameVm> StandAsync(string userId, int sessionId, bool unlimitedMode = false)
     {
         if (!int.TryParse(userId, out int parsedUserId))
             throw new ArgumentException("Nieprawidłowy format ID użytkownika");
@@ -239,7 +253,15 @@ public class BlackjackService : BaseService, IBlackjackService
             session.Payout = session.Bet;
         }
 
-        user.Balance += session.Payout;
+        // VIP BONUS: +10% do wygranych dla użytkowników VIP
+        decimal vipBonus = 0;
+        if (session.Result == BlackjackResult.PlayerWin && user.IsVip)
+        {
+            vipBonus = (session.Payout - session.Bet) * 0.10m; // 10% od zysku
+            session.Payout += vipBonus;
+        }
+
+        if (!unlimitedMode) user.Balance += session.Payout;
         session.GameState = BlackjackGameState.Finished;
         session.FinishedAt = DateTime.UtcNow;
 
@@ -266,7 +288,7 @@ public class BlackjackService : BaseService, IBlackjackService
         return MapToVm(session, playerHand, dealerHand, user.Balance);
     }
 
-    public async Task<BlackjackGameVm> DoubleDownAsync(string userId, int sessionId)
+    public async Task<BlackjackGameVm> DoubleDownAsync(string userId, int sessionId, bool unlimitedMode = false)
     {
         if (!int.TryParse(userId, out int parsedUserId))
             throw new ArgumentException("Nieprawidłowy format ID użytkownika");
@@ -287,11 +309,14 @@ public class BlackjackService : BaseService, IBlackjackService
         if (playerHand.Count != 2)
             throw new InvalidOperationException("Można podwoić tylko przy pierwszym ruchu");
 
-        if (user.Balance < session.Bet)
-            throw new InvalidOperationException("Niewystarczające środki na podwojenie");
+        if (!unlimitedMode)
+        {
+            if (user.Balance < session.Bet)
+                throw new InvalidOperationException("Niewystarczające środki na podwojenie");
 
-        user.Balance -= session.Bet;
-        session.Bet *= 2;
+            user.Balance -= session.Bet;
+            session.Bet *= 2;
+        }
 
         var dealerHand = JsonSerializer.Deserialize<List<BlackjackCardVm>>(session.DealerHandJson) ?? new();
         var deck = JsonSerializer.Deserialize<List<BlackjackCardVm>>(session.DeckJson) ?? new();
@@ -364,7 +389,7 @@ public class BlackjackService : BaseService, IBlackjackService
             session.Payout = session.Bet;
         }
 
-        user.Balance += session.Payout;
+        if (!unlimitedMode) user.Balance += session.Payout;
         session.GameState = BlackjackGameState.Finished;
         session.FinishedAt = DateTime.UtcNow;
 

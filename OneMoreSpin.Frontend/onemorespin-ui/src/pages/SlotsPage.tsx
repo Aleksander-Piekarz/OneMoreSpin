@@ -5,6 +5,7 @@ import { refreshMissions } from "../events";
 import { fireConfetti } from "../utils/confetti";
 import Leaderboard from "../components/Leaderboard";
 import "../styles/SlotsPage.css";
+import DemoToggle from "../components/DemoToggle";
 
 import lemonImg from "../assets/img/slots/lemon.png";
 import cherriesImg from "../assets/img/slots/cherries.png";
@@ -40,6 +41,7 @@ const SlotsPage: React.FC = () => {
   const [remainingSpins, setRemainingSpins] = useState<number>(Infinity);
   const [isShowingWin, setIsShowingWin] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(true);
+  const [unlimitedMode, setUnlimitedMode] = useState(false);
 
 
   const leverAudioRef = React.useRef<HTMLAudioElement>(new Audio(leverSoundDefault));
@@ -219,7 +221,7 @@ const SlotsPage: React.FC = () => {
     }, 100);
 
     try {
-      const result = await api.slots.spin(bet);
+      const result = await api.slots.spin(bet, unlimitedMode);
 
       setTimeout(() => {
         clearInterval(spinInterval);
@@ -294,9 +296,14 @@ const SlotsPage: React.FC = () => {
         </h1>
 
         <div className="header-right-cluster">
-          <div className="balance-display">
-            <i className="fas fa-coins"></i>
-            <span>{balance.toLocaleString()} PLN</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <DemoToggle checked={unlimitedMode} onChange={setUnlimitedMode} />
+            </div>
+            <div className="balance-display">
+              <i className="fas fa-coins"></i>
+              <span>{balance.toLocaleString()} PLN</span>
+            </div>
           </div>
         </div>
       </header>
@@ -491,17 +498,18 @@ const SlotsPage: React.FC = () => {
         </div>
 
         <div className={`leaderboard-drawer ${leaderboardOpen ? 'open' : 'closed'}`}>
+          <div className="leaderboard-panel">
+            <Leaderboard gameId={3} title="🏆 TOP WINS" className="leaderboard-widget" />
+          </div>
           <button
             className="leaderboard-toggle"
             onClick={() => setLeaderboardOpen((prev) => !prev)}
             aria-expanded={leaderboardOpen}
+            title={leaderboardOpen ? 'Schowaj ranking' : 'Pokaż ranking'}
           >
-            <i className={`fas ${leaderboardOpen ? 'fa-chevron-right' : 'fa-chevron-left'}`}></i>
-            <span>{leaderboardOpen ? 'Schowaj' : 'Top wins'}</span>
+            <i className="fas fa-trophy"></i>
+            <span>TOP</span>
           </button>
-          <div className="leaderboard-panel">
-            <Leaderboard gameId={3} title="TOP WINS" className="leaderboard-widget" />
-          </div>
         </div>
 
         {error && (

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { pokerService } from "../services/pokerService";
 import { type PokerTable } from "../types/poker";
 
@@ -34,10 +34,12 @@ export const usePokerGame = (tableId: string) => {
     const [isConnected, setIsConnected] = useState(false);
     const [myUserId, setMyUserId] = useState("");
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+    const hasLeftRef = useRef(false);
    
 
     useEffect(() => {
         let isMounted = true;
+        hasLeftRef.current = false;
         
         // 1. Ustaw ID
         const id = getMyId();
@@ -45,7 +47,15 @@ export const usePokerGame = (tableId: string) => {
 
         // 2. Rejestruj listenery PRZED połączeniem
         pokerService.onUpdateGameState((updatedTable) => {
-            if (isMounted) setTable(updatedTable);
+            if (isMounted) {
+                console.log("[POKER] Otrzymano stan stołu:", updatedTable);
+                console.log("[POKER] Gracze:", updatedTable.players.map(p => ({
+                    username: p.username,
+                    isVip: p.isVip,
+                    chips: p.chips
+                })));
+                setTable(updatedTable);
+            }
         });
 
         pokerService.onPlayerJoined((username) => {
@@ -68,7 +78,7 @@ export const usePokerGame = (tableId: string) => {
                 // To wywołanie teraz bezpiecznie poczeka, jeśli połączenie już trwa
                 await pokerService.startConnection();
                 
-                if (isMounted) {
+                if (isMounted && !hasLeftRef.current) {
                     console.log("Hook: Połączono! Ustawiam stan isConnected.");
                     setIsConnected(true);
                     
@@ -84,9 +94,23 @@ export const usePokerGame = (tableId: string) => {
 
         return () => {
             isMounted = false;
+            // Only call leaveTable on unmount if user hasn't already left explicitly
+            if (!hasLeftRef.current) {
+                pokerService.leaveTable(tableId).catch(console.error);
+            }
             pokerService.offEvents();
         };
     }, [tableId]);
+
+    const leaveTable = async () => {
+        if (!isConnected || hasLeftRef.current) return;
+        hasLeftRef.current = true; // Mark that we're leaving to prevent double leave
+        try {
+            await pokerService.leaveTable(tableId);
+        } catch (e) {
+            console.error("Error in leaveTable:", e);
+        }
+    };
 
     const startGame = async () => {
         if (!isConnected) return;
@@ -101,5 +125,5 @@ export const usePokerGame = (tableId: string) => {
             if (!isConnected) return;
             await pokerService.sendMessage(tableId, msg);
         };
-    return { table, logs, isConnected, startGame, move, myUserId, chatMessages, sendChatMessage };
+    return { table, logs, isConnected, startGame, move, myUserId, chatMessages, sendChatMessage, leaveTable };
 };

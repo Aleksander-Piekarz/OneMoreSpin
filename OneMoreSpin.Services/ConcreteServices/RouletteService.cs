@@ -30,7 +30,7 @@ namespace OneMoreSpin.Services.ConcreteServices
             _logger = logger;
         }
 
-        public async Task<RouletteSpinResultVm> SpinAsync(string userId, List<RouletteBetVm> bets)
+        public async Task<RouletteSpinResultVm> SpinAsync(string userId, List<RouletteBetVm> bets, bool unlimitedMode = false)
         {
             if (!int.TryParse(userId, out var parsedUserId))
             {
@@ -49,9 +49,12 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             decimal totalStake = bets.Sum(b => b.Amount);
             if (totalStake <= 0) throw new ArgumentException("Stawka musi być > 0");
-            if (user.Balance < totalStake) throw new InvalidOperationException("Niewystarczające środki");
+            if (!unlimitedMode && user.Balance < totalStake) throw new InvalidOperationException("Niewystarczające środki");
 
-            user.Balance -= totalStake;
+            if (!unlimitedMode)
+            {
+                user.Balance -= totalStake;
+            }
 
             int winNumber = _rng.Next(0, 37);
             string winColor = winNumber == 0 ? "GREEN" : (RedNumbers.Contains(winNumber) ? "RED" : "BLACK");
@@ -106,14 +109,18 @@ namespace OneMoreSpin.Services.ConcreteServices
                 }
             }
 
-            user.Balance += totalWinAmount;
+            if (!unlimitedMode)
+            {
+                user.Balance += totalWinAmount;
+            }
 
-            var rouletteGame = await _dbContext.Games.FirstOrDefaultAsync(g => g.Name == Game.RouletteGameName);
+            const string rouletteName = "Ruletka";
+            var rouletteGame = await _dbContext.Games.FirstOrDefaultAsync(g => g.Name == rouletteName);
             if (rouletteGame == null)
             {
                 rouletteGame = new Game
                 {
-                    Name = Game.RouletteGameName,
+                    Name = rouletteName,
                     Description = "Klasyczna ruletka europejska",
                     ImageUrl = "roulette.png"
                 };

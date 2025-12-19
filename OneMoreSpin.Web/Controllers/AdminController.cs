@@ -82,4 +82,18 @@ public class AdminController : ControllerBase
 
         return Ok(new { message = "Balance updated successfully" });
     }
+
+    [HttpPut("users/{id}/vip")]
+    public async Task<IActionResult> SetUserVip(int id, [FromBody] bool isVip)
+    {
+        var adminId = await GetCurrentUserIdAsync();
+        if (adminId == null)
+            return Forbid();
+
+        var result = await _adminService.SetUserVipAsync(id, isVip);
+        if (!result)
+            return BadRequest(new { error = "Failed to update VIP status" });
+
+        return Ok(new { message = $"VIP status set to {isVip}" });
+    }
 }

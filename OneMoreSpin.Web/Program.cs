@@ -111,14 +111,21 @@ public class Program
             builder.Configuration.GetSection("EmailSender")
         );
         builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
-        builder.Services.AddSignalR();
+        builder.Services.AddSignalR()
+            .AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                options.PayloadSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never;
+            });
         builder.Services.AddSingleton<IPokerService, PokerService>();
+        builder.Services.AddSingleton<IMultiplayerBlackjackService, MultiplayerBlackjackService>();
 
         builder
             .Services.AddControllers()
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
             });
 
         builder.Services.AddEndpointsApiExplorer();
@@ -206,6 +213,7 @@ public class Program
 
         app.MapControllers();
         app.MapHub<PokerHub>("/pokerHub");
+        app.MapHub<BlackjackHub>("/blackjackHub");
 
         app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 

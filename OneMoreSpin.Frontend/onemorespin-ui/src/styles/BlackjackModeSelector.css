@@ -1,0 +1,252 @@
+/* BlackjackModeSelector.css - Jak game-tiles z HomePage */
+
+.bj-mode-selector {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+  max-width: 900px;
+  width: 100%;
+  padding: 0 20px;
+}
+
+/* Tile - jak game-tile z HomePage */
+.bj-mode-tile {
+  position: relative;
+  border-radius: 30px;
+  height: 380px;
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  opacity: 0;
+  animation: bjTileEntrance 0.8s ease forwards;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.bj-mode-tile:nth-child(1) { animation-delay: 0.1s; }
+.bj-mode-tile:nth-child(2) { animation-delay: 0.2s; }
+
+@keyframes bjTileEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(50px) rotateX(-20deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+  }
+}
+
+/* Single Player - fioletowy motyw (jak poker) */
+.bj-mode-tile.bj-single {
+  background: linear-gradient(135deg, #1a1a3a 0%, #0d0d2a 60%, #05051a 100%);
+  border: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+.bj-mode-tile.bj-single:hover {
+  transform: translateY(-15px) scale(1.02);
+  box-shadow: 
+    0 20px 60px rgba(102, 126, 234, 0.3),
+    0 0 0 3px rgba(102, 126, 234, 0.5);
+}
+
+/* Multiplayer - różowy motyw (jak poker) */
+.bj-mode-tile.bj-multiplayer {
+  background: linear-gradient(135deg, #2a1a2a 0%, #1a0d1a 60%, #0d050d 100%);
+  border: 2px solid rgba(240, 147, 251, 0.3);
+}
+
+.bj-mode-tile.bj-multiplayer:hover {
+  transform: translateY(-15px) scale(1.02);
+  box-shadow: 
+    0 20px 60px rgba(240, 147, 251, 0.25),
+    0 0 0 3px rgba(240, 147, 251, 0.5);
+}
+
+/* Shine effect */
+.bj-mode-tile .bj-tile-shine {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 70%
+  );
+  transform: rotate(45deg);
+  transition: all 0.6s ease;
+  pointer-events: none;
+}
+
+.bj-mode-tile:hover .bj-tile-shine {
+  left: 150%;
+}
+
+/* Content */
+.bj-mode-tile .bj-tile-content {
+  position: relative;
+  z-index: 5;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 30px;
+  transition: all 0.6s ease;
+}
+
+.bj-mode-tile:hover .bj-tile-content {
+  transform: translateY(-10px);
+}
+
+/* Icon */
+.bj-mode-tile .bj-icon-wrapper {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bj-mode-tile .bj-icon-bg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  transition: all 0.4s ease;
+}
+
+.bj-mode-tile:hover .bj-icon-bg {
+  transform: scale(1.3) rotate(180deg);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+}
+
+.bj-mode-tile .bj-tile-icon {
+  width: 70px;
+  height: auto;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
+  transition: all 0.8s ease-in-out;
+}
+
+.bj-mode-tile:hover .bj-tile-icon {
+  transform: scale(1.2) rotateY(360deg);
+  filter: drop-shadow(0 10px 30px rgba(255, 255, 255, 0.3));
+}
+
+/* Title */
+.bj-mode-tile .bj-tile-title {
+  font-family: 'Big Shoulders', sans-serif;
+  font-size: 2rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+}
+
+.bj-mode-tile.bj-single .bj-tile-title {
+  text-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+}
+
+.bj-mode-tile.bj-multiplayer .bj-tile-title {
+  text-shadow: 0 0 20px rgba(240, 147, 251, 0.5);
+}
+
+/* Description */
+.bj-mode-tile .bj-tile-description {
+  font-family: 'Poppins', sans-serif;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  text-align: center;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+/* Button */
+.bj-mode-tile .bj-tile-btn {
+  margin-top: 10px;
+  padding: 14px 35px;
+  border: none;
+  border-radius: 50px;
+  font-weight: 800;
+  font-family: 'Big Shoulders', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+.bj-mode-tile.bj-single .bj-tile-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.bj-mode-tile.bj-multiplayer .bj-tile-btn {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  color: #fff;
+  box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
+}
+
+.bj-mode-tile .bj-tile-btn:hover {
+  transform: scale(1.08);
+  filter: brightness(1.1);
+}
+
+/* Particles */
+.bj-mode-tile .bj-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.bj-mode-tile .bj-particle {
+  position: absolute;
+  top: -50px;
+  font-size: 20px;
+  opacity: 0;
+  animation: bjParticleFall linear infinite;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.4));
+}
+
+@keyframes bjParticleFall {
+  0% { transform: translateY(-50px) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.4; }
+  100% { transform: translateY(450px) rotate(180deg); opacity: 0; }
+}
+
+/* RWD */
+@media (max-width: 768px) {
+  .bj-mode-selector {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+
+  .bj-mode-tile {
+    height: 320px;
+  }
+
+  .bj-mode-tile .bj-tile-title {
+    font-size: 1.6rem;
+  }
+}

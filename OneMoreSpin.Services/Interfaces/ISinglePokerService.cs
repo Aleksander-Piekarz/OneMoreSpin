@@ -7,7 +7,7 @@ namespace OneMoreSpin.Services.Interfaces;
 
 public interface ISinglePokerService
 {
-    Task<PokerGameSessionVm> StartSessionAsync(string userId, decimal betAmount);
-    Task<PokerGameSessionVm> DrawAsync(int sessionId, IEnumerable<int> cardIndicesToDiscard);
+    Task<PokerGameSessionVm> StartSessionAsync(string userId, decimal betAmount, bool unlimitedMode = false);
+    Task<PokerGameSessionVm> DrawAsync(int sessionId, IEnumerable<int> cardIndicesToDiscard, bool unlimitedMode = false);
     Task<PokerGameSessionVm?> GetSessionAsync(int sessionId);
 }

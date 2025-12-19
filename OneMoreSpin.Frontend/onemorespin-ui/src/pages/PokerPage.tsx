@@ -1,37 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePokerGame } from '../hooks/usePokerGame';
-import { Suit, type Card } from '../types/poker'; 
 import Leaderboard from '../components/Leaderboard';
+import { GameCard, type ThemeType } from '../components/GameCard';
+import { fireConfetti } from '../utils/confetti';
 import '../styles/PokerPage.css';
-
-// --- TYPY MOTYWÓW ---
-type ThemeType = 'beginner' | 'advanced' | 'vip';
-
-// --- KOMPONENT KARTY ---
-// Przyjmuje props 'theme', żeby wiedzieć jaki rewers wyświetlić
-const CardView = ({ card, theme }: { card?: Card, theme: ThemeType }) => {
-    // Klasa determinująca wygląd rewersu
-    const themeClass = `card-theme-${theme}`;
-
-    if (!card) return <div className={`poker-card ${themeClass}`}><div className="card-back" /></div>;
-
-    const suitSymbols = ["♥", "♦", "♣", "♠"];
-    // @ts-ignore
-    const rankSymbols = { 11: "J", 12: "Q", 13: "K", 14: "A" };
-    // @ts-ignore
-    const rankDisplay = rankSymbols[card.rank] || card.rank;
-    // @ts-ignore
-    const isRed = (card.suit === Suit.Hearts || card.suit === Suit.Diamonds);
-    const suitClass = isRed ? "red" : "black";
-
-    return (
-        <div className={`poker-card ${suitClass} ${themeClass}`}>
-            <div className="card-rank">{rankDisplay}</div>
-            <div className="card-suit">{suitSymbols[card.suit]}</div>
-        </div>
-    );
-};
 
 export const PokerPage = () => {
     const { tableId } = useParams();
@@ -40,10 +13,14 @@ export const PokerPage = () => {
     const currentTableId = tableId || "stol-1";
     
     // Rozszerzamy destrukturyzację o chatMessages i sendChatMessage
-    const { table, logs, isConnected, startGame, move, myUserId, chatMessages, sendChatMessage } = usePokerGame(currentTableId);
+    const { table, logs, isConnected, startGame, move, myUserId, chatMessages, sendChatMessage, leaveTable } = usePokerGame(currentTableId);
     
     const [raiseAmount, setRaiseAmount] = useState(100);
-    const [leaderboardOpen, setLeaderboardOpen] = useState(true);
+    const [leaderboardOpen, setLeaderboardOpen] = useState(false);
+    const [showResultOverlay, setShowResultOverlay] = useState(false);
+    const [resultMessage, setResultMessage] = useState("");
+    const [isWin, setIsWin] = useState(false);
+    const prevStageRef = useRef<string>("");
     
     // --- STAN I REF DLA CZATU ---
     const [newMessage, setNewMessage] = useState("");
@@ -69,6 +46,41 @@ export const PokerPage = () => {
         }
     }, [chatMessages]);
 
+    // Obsługa powiadomień wygranej/przegranej dla pokera
+    useEffect(() => {
+        if (!table || table.stage !== 'Showdown' || prevStageRef.current === 'Showdown') return;
+        
+        prevStageRef.current = table.stage;
+        
+        const myPlayer = table.players.find(p => p.userId === myUserId);
+        if (!myPlayer || myPlayer.isFolded) return;
+
+        // Sprawdzamy czy ktoś wygrał
+        const activePlayers = table.players.filter(p => !p.isFolded);
+        if (activePlayers.length === 0) return;
+
+        // Znajdź gracza z największą pulą (najprostszy sposób - możesz to ulepszyć)
+        // W prawdziwym pokerze backend powinien wysyłać info o zwycięzcy
+        const maxChips = Math.max(...activePlayers.map(p => p.chips));
+        const winners = activePlayers.filter(p => p.chips === maxChips);
+        
+        const didIWin = winners.some(w => w.userId === myUserId);
+        
+        if (didIWin) {
+            setResultMessage("WYGRANA!");
+            setIsWin(true);
+            fireConfetti();
+        } else {
+            setResultMessage("PRZEGRANA");
+            setIsWin(false);
+        }
+
+        setShowResultOverlay(true);
+        setTimeout(() => {
+            setShowResultOverlay(false);
+        }, 3000);
+    }, [table, myUserId]);
+
     // Obsługa wysyłania wiadomości
     const handleSend = () => {
         if (!newMessage.trim()) return;
@@ -89,11 +101,12 @@ export const PokerPage = () => {
     const myBet = myPlayer?.currentBet || 0;
     const toCall = minBet - myBet;
 
-    // Pozycjonowanie graczy (Elipsa)
+    // Pozycjonowanie graczy (Elipsa) - gracze względem wrappera
     const getPosition = (index: number, total: number) => {
         const angle = (index / total) * 2 * Math.PI + (Math.PI / 2);
+        // Promień dostosowany do wrappera (gracze na zewnątrz stołu)
         const x = 50 + 42 * Math.cos(angle); 
-        const y = 50 + 38 * Math.sin(angle);
+        const y = 50 + 42 * Math.sin(angle);
         return { top: `${y}%`, left: `${x}%`, transform: 'translate(-50%, -50%)' };
     };
 
@@ -107,27 +120,55 @@ export const PokerPage = () => {
 
     return (
         <div className="poker-container leaderboard-host">
-            {/* PASEK STATUSU */}
-            <div className="status-bar">
-                <button onClick={() => navigate('/poker')} style={{background:'transparent', border:'1px solid #555', color:'#aaa', padding:'5px 10px', borderRadius:'5px', cursor:'pointer'}}>
-                    ← Wyjście
-                </button>
-                <div className="brand-title">ONE MORE SPIN</div>
-                <div>Stół: <span style={{color:'#fff'}}>{table.id}</span> | Etap: {table.stage}</div>
+            {/* ANIMOWANE TŁO */}
+            <div className="animated-bg">
+                <div className="floating-shape shape-1"></div>
+                <div className="floating-shape shape-2"></div>
+                <div className="floating-shape shape-3"></div>
             </div>
 
-            {/* STÓŁ Z KLASĄ MOTYWU */}
-            <div className={`poker-table table-theme-${currentTheme}`}>
-                
-                <div className="table-center-content">
-                    <div className="pot-display">PULA <span className="pot-amount">${table.pot}</span></div>
-                    
-                    <div className="community-cards">
-                        {table.communityCards.map((c, i) => <CardView key={i} card={c} theme={currentTheme} />)}
-                        {table.communityCards.length === 0 && <div className="empty-flop-slot">FLOP</div>}
+            {/* HEADER - identyczny jak Blackjack */}
+            <header className="poker-header">
+                <div className="poker-brand">TEXAS HOLD'EM</div>
+                <div className="poker-info">
+                    <div className="poker-stat">
+                        <span className="poker-stat-label">Stół:</span>
+                        <span className="poker-stat-value">{table.id}</span>
+                    </div>
+                    <div className="poker-stat">
+                        <span className="poker-stat-label">Etap:</span>
+                        <span className="poker-stat-value-gold">{table.stage}</span>
+                    </div>
+                </div>
+                <button onClick={async () => { 
+                    try {
+                        await leaveTable(); 
+                    } catch (e) {
+                        console.error("Error leaving table:", e);
+                    } finally {
+                        navigate('/poker'); 
+                    }
+                }} className="poker-leave-btn">
+                    <i className="fas fa-sign-out-alt"></i>
+                    <span>Wyjdź</span>
+                </button>
+            </header>
+
+            {/* WRAPPER NA STÓŁ I GRACZY */}
+            <div className="poker-game-wrapper">
+                {/* STÓŁ Z KLASĄ MOTYWU */}
+                <div className={`poker-table table-theme-${currentTheme}`}>
+                    <div className="table-center-content">
+                        <div className="pot-display">PULA <span className="pot-amount">${table.pot}</span></div>
+                        
+                        <div className="community-cards">
+                            {table.communityCards.map((c, i) => <GameCard key={i} card={c} theme={currentTheme} />)}
+                            {table.communityCards.length === 0 && <div className="empty-flop-slot">FLOP</div>}
+                        </div>
                     </div>
                 </div>
 
+                {/* GRACZE - pozycjonowani względem wrappera */}
                 {sortedPlayers.map((p, i) => {
                     const isActiveTurn = table.players[table.currentPlayerIndex]?.userId === p.userId;
                     
@@ -143,18 +184,23 @@ export const PokerPage = () => {
                     if (isMe) seatClasses += " is-me";
                     if (isActiveTurn) seatClasses += " active-turn";
                     if (p.isFolded) seatClasses += " folded";
+                    if (p.isVip) seatClasses += " is-vip";
 
                     return (
                         <div key={p.userId} className={seatClasses} style={pos}>
                             {isActiveTurn && <div className="badge-turn">Ruch</div>}
+                            {p.isVip && <div className="badge-vip">👑</div>}
                             
-                            <div className="player-name">{p.username} {isMe && "(Ty)"}</div>
+                            <div className={`player-name ${p.isVip ? 'vip-name' : ''}`}>
+                                {p.isVip && <span className="vip-crown">👑</span>}
+                                {p.username.split('@')[0]} {isMe && "(Ty)"}
+                            </div>
                             
                             <div className="player-cards">
                                 {p.hand && p.hand.length > 0 ? (
-                                    p.hand.map((c, idx) => <CardView key={idx} card={showCards ? c : undefined} theme={currentTheme} />)
+                                    p.hand.map((c, idx) => <GameCard key={idx} card={showCards ? c : undefined} theme={currentTheme} />)
                                 ) : (
-                                    <><CardView theme={currentTheme} /><CardView theme={currentTheme} /></>
+                                    <><GameCard theme={currentTheme} /><GameCard theme={currentTheme} /></>
                                 )}
                             </div>
 
@@ -187,101 +233,42 @@ export const PokerPage = () => {
                 </div>
             </div>
 
-            {/* PANEL CZATU (NOWY - PRAWA STRONA, NAD KONTROLKAMI LUB PO BOKU) */}
-            <div className="chat-panel-widget" style={{
-                position: 'absolute',
-                bottom: '100px',
-                right: '20px',
-                width: '320px',
-                height: '250px',
-                backgroundColor: 'rgba(20, 20, 20, 0.95)',
-                border: '1px solid #444',
-                borderRadius: '8px',
-                display: 'flex',
-                flexDirection: 'column',
-                zIndex: 50,
-                boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
-            }}>
-                <div className="chat-header" style={{
-                    padding: '8px 12px',
-                    borderBottom: '1px solid #444',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    color: '#fff',
-                    fontWeight: 'bold',
-                    fontSize: '0.9rem',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    borderTopLeftRadius: '8px',
-                    borderTopRightRadius: '8px'
-                }}>
+            {/* PANEL CZATU - PO LEWEJ STRONIE POD LOGAMI */}
+            <div className="chat-panel-widget">
+                <div className="chat-header">
                     <span>💬 CZAT STOŁU</span>
                 </div>
 
-                <div className="chat-messages" style={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    padding: '10px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px',
-                    scrollbarWidth: 'thin',
-                }}>
+                <div className="chat-messages">
                     {chatMessages && chatMessages.length > 0 ? (
                         chatMessages.map((msg, i) => (
-                            <div key={i} style={{ fontSize: '0.85rem', lineHeight: '1.3', wordBreak: 'break-word' }}>
-                                <span style={{ color: msg.username === myPlayer?.username ? '#66bb6a' : '#ffd700', fontWeight: 'bold', marginRight: '5px' }}>
-                                    {msg.username}:
+                            <div key={i} className="chat-message">
+                                <span className={`chat-username ${msg.username === myPlayer?.username ? 'is-me' : ''}`}>
+                                    {msg.username.split('@')[0]}:
                                 </span>
-                                <span style={{ color: '#eee' }}>{msg.text}</span>
+                                <span className="chat-text">{msg.text}</span>
                             </div>
                         ))
                     ) : (
-                        <div style={{color: '#666', fontStyle: 'italic', fontSize: '0.8rem', textAlign: 'center', marginTop: '10px'}}>
+                        <div className="chat-empty">
                             Rozpocznij rozmowę...
                         </div>
                     )}
                     <div ref={chatEndRef} />
                 </div>
 
-                <div className="chat-input-area" style={{
-                    padding: '8px',
-                    borderTop: '1px solid #444',
-                    display: 'flex',
-                    gap: '5px',
-                    background: 'rgba(0,0,0,0.3)',
-                    borderBottomLeftRadius: '8px',
-                    borderBottomRightRadius: '8px'
-                }}>
+                <div className="chat-input-area">
                     <input 
                         type="text" 
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                         placeholder="Napisz wiadomość..."
-                        style={{
-                            flex: 1,
-                            background: '#333',
-                            border: '1px solid #555',
-                            borderRadius: '4px',
-                            color: 'white',
-                            padding: '6px 10px',
-                            fontSize: '0.9rem',
-                            outline: 'none'
-                        }}
+                        className="chat-input"
                     />
                     <button 
                         onClick={handleSend}
-                        style={{
-                            background: '#66bb6a',
-                            border: 'none',
-                            borderRadius: '4px',
-                            padding: '0 12px',
-                            color: 'white',
-                            cursor: 'pointer',
-                            fontWeight: 'bold',
-                            fontSize: '1.1rem'
-                        }}
+                        className="chat-send-btn"
                     >
                         ➤
                     </button>
@@ -319,7 +306,7 @@ export const PokerPage = () => {
                                     </>
                                 ) : (
                                     <div style={{color: '#888', fontStyle: 'italic', alignSelf: 'center'}}>
-                                        Czekaj na ruch gracza: <span style={{color:'#fff', fontWeight:'bold'}}>{currentPlayer?.username}</span>
+                                        Czekaj na ruch gracza: <span style={{color:'#fff', fontWeight:'bold'}}>{currentPlayer?.username.split('@')[0]}</span>
                                     </div>
                                 )}
                             </>
@@ -329,19 +316,29 @@ export const PokerPage = () => {
                 )}
             </div>
 
-            <div className={`leaderboard-drawer left ${leaderboardOpen ? 'open' : 'closed'}`}>
+            <div className={`leaderboard-drawer ${leaderboardOpen ? 'open' : 'closed'}`}>
+                <div className="leaderboard-panel">
+                    <Leaderboard gameId={4} title="🏆 TOP WINS" className="leaderboard-widget" />
+                </div>
                 <button
                     className="leaderboard-toggle"
                     onClick={() => setLeaderboardOpen(prev => !prev)}
                     aria-expanded={leaderboardOpen}
+                    title={leaderboardOpen ? 'Schowaj ranking' : 'Pokaż ranking'}
                 >
-                    <i className={`fas ${leaderboardOpen ? 'fa-chevron-left' : 'fa-chevron-right'}`}></i>
-                    <span>{leaderboardOpen ? 'Schowaj' : 'Top wins'}</span>
+                    <i className="fas fa-trophy"></i>
+                    <span>TOP</span>
                 </button>
-                <div className="leaderboard-panel">
-                    <Leaderboard gameId={4} title="TOP WINS" className="leaderboard-widget" />
-                </div>
             </div>
+
+            {/* RESULT OVERLAY - identyczny jak w singleplayer */}
+            {showResultOverlay && (
+                <div className="sp-result-overlay">
+                    <div className={`sp-result-text ${isWin ? 'sp-win' : 'sp-lose'}`}>
+                        {resultMessage}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
