@@ -23,8 +23,8 @@ export const PokerLobby = () => {
             if (connectionRef.current) return;
 
             const newConnection = new signalR.HubConnectionBuilder()
-                .withUrl("http://localhost:5046/pokerHub", {
-                    // http://91.123.188.186:5000/pokerHub - dla serwera produkcyjnego
+               // .withUrl("http://localhost:5046/pokerHub", {
+            .withUrl("http://91.123.188.186:5000/pokerHub", { 
                     accessTokenFactory: () => localStorage.getItem("jwt") || ""
                 })
                 .withAutomaticReconnect()

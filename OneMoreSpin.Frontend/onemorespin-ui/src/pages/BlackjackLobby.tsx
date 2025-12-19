@@ -23,8 +23,8 @@ export const BlackjackLobby = () => {
             if (connectionRef.current) return;
 
             const newConnection = new signalR.HubConnectionBuilder()
-                .withUrl("http://localhost:5046/blackjackHub", {
-                    //http://91.123.188.186.5173/blackjackHub         dodaj to jak wrzucasz na serwer zamiast localhost
+                //.withUrl("http://localhost:5046/blackjackHub", {
+                .withUrl("http://91.123.188.186:5173/blackjackHub", { 
                     accessTokenFactory: () => localStorage.getItem("jwt") || ""
                 })
                 .withAutomaticReconnect()
