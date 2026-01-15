@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../contexts/LanguageContext";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 import slotMachineIcon from "../assets/img/slot-machine.png";
 import rouletteIcon from "../assets/img/roulette.png";
 import blackjackIcon from "../assets/img/black-jack.png";
@@ -8,6 +10,7 @@ import "../styles/HomePage.css";
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hoveredTile, setHoveredTile] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -85,7 +88,7 @@ const HomePage: React.FC = () => {
   const tiles = [
     { 
       id: 1, 
-      title: "SLOTS", 
+      title: t('nav.slots').toUpperCase(), 
       iconImage: slotMachineIcon,
       gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
       particles: ["💎", "🍒", "⭐", "7️⃣", "💰", "🎰"],
@@ -93,7 +96,7 @@ const HomePage: React.FC = () => {
     },
     { 
       id: 2, 
-      title: "RULETKA", 
+      title: t('nav.roulette').toUpperCase(), 
       iconImage: rouletteIcon,
       gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
       particles: ["🔴", "⚫", "💰", "🎲", "💵", "🎯"],
@@ -101,7 +104,7 @@ const HomePage: React.FC = () => {
     },
     { 
       id: 3, 
-      title: "BLACKJACK", 
+      title: t('nav.blackjack').toUpperCase(), 
       iconImage: blackjackIcon,
       gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
       particles: ["♠️", "♥️", "♦️", "♣️", "🃏", "🎴"],
@@ -109,7 +112,7 @@ const HomePage: React.FC = () => {
     },
     { 
       id: 4, 
-      title: "POKER", 
+      title: t('nav.poker').toUpperCase(), 
       iconImage: cardsIcon,
       gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
       particles: ["🃏", "💵", "🏆", "♦️", "♠️", "💎"],
@@ -130,7 +133,7 @@ const HomePage: React.FC = () => {
       <header className="home-header">
         {/* LEWA STRONA NAGŁÓWKA */}
         <div className="header-left">
-          <div className="header-spacer"></div>
+          <LanguageSwitcher />
         </div>
         
         <h1 className="home-page-title">
@@ -166,16 +169,16 @@ const HomePage: React.FC = () => {
               setIsMenuOpen(false);
             }}>
               <i className="fas fa-shield-alt"></i>
-              <span>Panel Admina</span>
+              <span>{t('common.admin')}</span>
             </button>
           )}
           <button className="menu-item" onClick={() => console.log("Settings")}>
             <i className="fas fa-cog"></i>
-            <span>Ustawienia</span>
+            <span>{t('common.settings')}</span>
           </button>
           <button className="menu-item logout" onClick={handleLogout}>
             <i className="fas fa-sign-out-alt"></i>
-            <span>Wyloguj się</span>
+            <span>{t('common.logout')}</span>
           </button>
         </div>
       </div>
@@ -230,7 +233,7 @@ const HomePage: React.FC = () => {
                   {/* Zawsze wyświetlamy przycisk ZAGRAJ (usunięto logikę isDoubleButton) */}
                   <div className="tile-play-btn">
                     <i className="fas fa-play"></i>
-                    <span>ZAGRAJ</span>
+                    <span>{t('common.play').toUpperCase()}</span>
                   </div>
                 </div>
 

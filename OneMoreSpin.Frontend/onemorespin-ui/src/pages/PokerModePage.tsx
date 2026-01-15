@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import PokerModeSelector from '../components/PokerModeSelector';
 import '../styles/PokerModePage.css';
 
 const PokerModePage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <div className="poker-mode-page">
@@ -27,7 +29,7 @@ const PokerModePage: React.FC = () => {
       </header>
 
       <main className="poker-mode-main">
-        <h2 className="poker-select-title">Wybierz tryb gry</h2>
+        <h2 className="poker-select-title">{t('games.poker.selectMode')}</h2>
         <PokerModeSelector />
       </main>
     </div>

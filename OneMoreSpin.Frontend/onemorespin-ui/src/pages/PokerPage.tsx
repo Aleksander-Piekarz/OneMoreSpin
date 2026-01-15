@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import { usePokerGame } from '../hooks/usePokerGame';
 import Leaderboard from '../components/Leaderboard';
 import { GameCard, type ThemeType } from '../components/GameCard';
 import { fireConfetti } from '../utils/confetti';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import '../styles/PokerPage.css';
 
 export const PokerPage = () => {
     const { tableId } = useParams();
     const navigate = useNavigate();
+    const { t } = useLanguage();
     // Używamy ID z URL lub domyślnego
     const currentTableId = tableId || "stol-1";
     
@@ -278,7 +281,7 @@ export const PokerPage = () => {
             <div className="controls-bar">
                 {!table.gameInProgress ? (
                     <button onClick={startGame} className="poker-btn btn-start">
-                        {table.stage === 'Showdown' ? "NASTĘPNE ROZDANIE" : "ROZDAJ KARTY"}
+                        {table.stage === 'Showdown' ? t('games.poker.nextRound') : t('games.poker.dealCards')}
                     </button>
                 ) : (
                     <>
@@ -286,12 +289,12 @@ export const PokerPage = () => {
                             <>
                                 {isMyTurn ? (
                                     <>
-                                        <button onClick={() => move("FOLD", 0)} className="poker-btn btn-fold">PAS</button>
+                                        <button onClick={() => move("FOLD", 0)} className="poker-btn btn-fold">{t('games.poker.fold')}</button>
                                         
                                         {toCall === 0 ? (
-                                            <button onClick={() => move("CHECK", 0)} className="poker-btn btn-check">CZEKAJ</button>
+                                            <button onClick={() => move("CHECK", 0)} className="poker-btn btn-check">{t('games.poker.check')}</button>
                                         ) : (
-                                            <button onClick={() => move("CALL", 0)} className="poker-btn btn-call">SPRAWDŹ (${toCall})</button>
+                                            <button onClick={() => move("CALL", 0)} className="poker-btn btn-call">{t('games.poker.call')} (${toCall})</button>
                                         )}
                                         
                                         <div className="raise-control">
@@ -301,12 +304,12 @@ export const PokerPage = () => {
                                                 onChange={e => setRaiseAmount(Number(e.target.value))}
                                                 className="raise-input"
                                             />
-                                            <button onClick={() => move("RAISE", raiseAmount)} className="poker-btn btn-raise">PODBIJ</button>
+                                            <button onClick={() => move("RAISE", raiseAmount)} className="poker-btn btn-raise">{t('games.poker.raise')}</button>
                                         </div>
                                     </>
                                 ) : (
                                     <div style={{color: '#888', fontStyle: 'italic', alignSelf: 'center'}}>
-                                        Czekaj na ruch gracza: <span style={{color:'#fff', fontWeight:'bold'}}>{currentPlayer?.username.split('@')[0]}</span>
+                                        {t('common.loading')} <span style={{color:'#fff', fontWeight:'bold'}}>{currentPlayer?.username.split('@')[0]}</span>
                                     </div>
                                 )}
                             </>
@@ -324,7 +327,7 @@ export const PokerPage = () => {
                     className="leaderboard-toggle"
                     onClick={() => setLeaderboardOpen(prev => !prev)}
                     aria-expanded={leaderboardOpen}
-                    title={leaderboardOpen ? 'Schowaj ranking' : 'Pokaż ranking'}
+                    title={leaderboardOpen ? t('games.poker.hideLeaderboard') : t('games.poker.showLeaderboard')}
                 >
                     <i className="fas fa-trophy"></i>
                     <span>TOP</span>

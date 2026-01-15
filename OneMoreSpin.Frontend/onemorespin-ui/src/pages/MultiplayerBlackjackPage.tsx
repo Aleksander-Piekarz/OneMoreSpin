@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useBlackjackGame } from '../hooks/useBlackjackGame';
 import Leaderboard from '../components/Leaderboard';
 import { GameCard, type ThemeType } from '../components/GameCard';
 import { fireConfetti } from '../utils/confetti';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import '../styles/MultiplayerBlackjackPage.css';
 
 export const MultiplayerBlackjackPage = () => {
     const { tableId } = useParams();
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const currentTableId = tableId || "blackjack-1";
 
     const {
@@ -65,16 +68,16 @@ export const MultiplayerBlackjackPage = () => {
         let won = false;
 
         if (myPlayer.result === "Win") {
-            message = "WYGRANA!";
+            message = t('games.blackjack.win');
             won = true;
         } else if (myPlayer.result === "Blackjack") {
-            message = "BLACKJACK!";
+            message = t('games.blackjack.blackjack');
             won = true;
         } else if (myPlayer.result === "Lose") {
-            message = "PRZEGRANA";
+            message = t('games.blackjack.lose');
             won = false;
         } else if (myPlayer.result === "Push") {
-            message = "REMIS";
+            message = t('games.blackjack.push');
             won = false;
         }
 
@@ -243,9 +246,9 @@ export const MultiplayerBlackjackPage = () => {
 
                                     {p.result && (
                                         <div className={`bj-result-badge bj-${p.result.toLowerCase()}`}>
-                                            {p.result === "Win" && "🏆 WYGRANA"}
-                                            {p.result === "Lose" && "❌ PRZEGRANA"}
-                                            {p.result === "Push" && "🤝 REMIS"}
+                                            {p.result === "Win" && `🏆 ${t('games.blackjack.win')}`}
+                                            {p.result === "Lose" && `❌ ${t('games.blackjack.lose')}`}
+                                            {p.result === "Push" && `🤝 ${t('games.blackjack.push')}`}
                                             {p.result === "Blackjack" && "🎰 BLACKJACK!"}
                                         </div>
                                     )}
@@ -329,13 +332,13 @@ export const MultiplayerBlackjackPage = () => {
 
                         {hasBet && (
                             <div style={{ color: '#4caf50', fontWeight: 600 }}>
-                                ✅ Postawiłeś ${myPlayer?.currentBet}. Czekaj na innych graczy...
+                                ✅ {t('common.bet')}: ${myPlayer?.currentBet}. {t('common.loading')}
                             </div>
                         )}
 
                         {table.players.some(p => p.currentBet > 0) && (
                             <button onClick={startRound} className="bj-game-btn bj-btn-start">
-                                {table.stage === 'Showdown' ? "Następna runda" : "Rozpocznij grę"}
+                                {table.stage === 'Showdown' ? t('games.blackjack.nextRound') : t('games.blackjack.dealCards')}
                             </button>
                         )}
                     </>
@@ -345,22 +348,22 @@ export const MultiplayerBlackjackPage = () => {
                             <>
                                 {isMyTurn ? (
                                     <>
-                                        <button onClick={hit} className="bj-game-btn bj-btn-hit">Dobierz</button>
-                                        <button onClick={stand} className="bj-game-btn bj-btn-stand">Stój</button>
+                                        <button onClick={hit} className="bj-game-btn bj-btn-hit">{t('games.blackjack.hit')}</button>
+                                        <button onClick={stand} className="bj-game-btn bj-btn-stand">{t('games.blackjack.stand')}</button>
                                         {myPlayer.hand?.length === 2 && myPlayer.chips >= myPlayer.currentBet && (
-                                            <button onClick={double} className="bj-game-btn bj-btn-double">Podwój</button>
+                                            <button onClick={double} className="bj-game-btn bj-btn-double">{t('games.blackjack.double')}</button>
                                         )}
                                     </>
                                 ) : (
                                     <div style={{ color: 'rgba(255,255,255,0.7)' }}>
-                                        Czekaj na ruch gracza: <span style={{ color: '#ffd700', fontWeight: 'bold' }}>{currentPlayer?.username}</span>
+                                        {t('common.loading')} <span style={{ color: '#ffd700', fontWeight: 'bold' }}>{currentPlayer?.username}</span>
                                     </div>
                                 )}
                             </>
                         )}
                         {myPlayer && (myPlayer.hasStood || myPlayer.hasBusted) && (
                             <div style={{ color: myPlayer.hasBusted ? '#f44336' : '#4caf50' }}>
-                                {myPlayer.hasBusted ? "💥 Przekroczyłeś 21!" : "✋ Stoisz. Czekaj na innych..."}
+                                {myPlayer.hasBusted ? "💥 BUST" : "✋ {t('games.blackjack.stand')}. {t('common.loading')}"}
                             </div>
                         )}
                     </>

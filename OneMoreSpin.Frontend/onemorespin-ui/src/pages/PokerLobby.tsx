@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import * as signalR from "@microsoft/signalr";
 import '../styles/PokerLobby.css';
 
@@ -12,6 +13,7 @@ interface TableInfo {
 
 export const PokerLobby = () => {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const [tables, setTables] = useState<TableInfo[]>([]);
     const [isConnected, setIsConnected] = useState(false);
     const connectionRef = useRef<signalR.HubConnection | null>(null);

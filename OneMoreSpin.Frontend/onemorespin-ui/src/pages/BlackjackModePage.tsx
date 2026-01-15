@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import BlackjackModeSelector from '../components/BlackjackModeSelector';
 import '../styles/BlackjackModePage.css';
 
 const BlackjackModePage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <div className="bj-mode-page">
@@ -28,7 +30,7 @@ const BlackjackModePage: React.FC = () => {
       </header>
 
       <main className="bj-mode-main">
-        <h2 className="bj-select-title">Wybierz tryb gry</h2>
+        <h2 className="bj-select-title">{t('games.blackjack.selectMode')}</h2>
         <BlackjackModeSelector />
       </main>
     </div>
