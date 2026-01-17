@@ -324,11 +324,23 @@ namespace OneMoreSpin.Services.ConcreteServices
                         }
                         break;
                     case "RAISE":
+                        // Minimalna kwota podbicia = wyrównanie do CurrentMinBet + przynajmniej 1 żeton więcej
+                        decimal minRaiseAmount = table.CurrentMinBet - player.CurrentBet + 1;
                         
-                        decimal raiseTotal = player.CurrentBet + amount; 
-                        if (amount > player.Chips) amount = player.Chips; 
+                        // Jeśli gracz próbuje podbić o mniej niż wymagane minimum, odrzuć ruch
+                        // (chyba że idzie all-in)
+                        if (amount < minRaiseAmount && amount < player.Chips) {
+                            // Podbicie zbyt małe - nie akceptujemy
+                            _hubContext.Clients.Client(player.ConnectionId).SendAsync("ActionLog", 
+                                $"⚠️ Minimalne podbicie to {minRaiseAmount}$. Wpisz większą kwotę lub zrób all-in.");
+                            moveResult = false;
+                            break;
+                        }
+                        
+                        // All-in: jeśli gracz stawia wszystko co ma
+                        if (amount > player.Chips) amount = player.Chips;
 
-                        if (player.Chips >= amount) {
+                        if (player.Chips >= amount && amount > 0) {
                             player.Chips -= amount;
                             player.CurrentBet += amount;
                             table.Pot += amount;

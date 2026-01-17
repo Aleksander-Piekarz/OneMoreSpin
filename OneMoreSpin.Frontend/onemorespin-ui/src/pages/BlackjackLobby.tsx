@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as signalR from "@microsoft/signalr";
+import { GameHelpModal, BLACKJACK_MULTIPLAYER_HELP } from '../components/GameHelpModal';
 import '../styles/BlackjackLobby.css';
 
 interface TableInfo {
@@ -24,7 +25,7 @@ export const BlackjackLobby = () => {
 
             const newConnection = new signalR.HubConnectionBuilder()
                 //.withUrl("http://localhost:5046/blackjackHub", {
-                .withUrl("http://91.123.188.186:5173/blackjackHub", { 
+                .withUrl("http://91.123.188.186:5000/blackjackHub", { 
                     accessTokenFactory: () => localStorage.getItem("jwt") || ""
                 })
                 .withAutomaticReconnect()
@@ -102,7 +103,10 @@ export const BlackjackLobby = () => {
             </header>
 
             <div className="bj-lobby-content">
-                <p className="bj-lobby-subtitle">Wybierz stół i zacznij grać</p>
+                <div className="bj-lobby-intro">
+                    <p className="bj-lobby-subtitle">Wybierz stół i zacznij grać</p>
+                    <GameHelpModal content={BLACKJACK_MULTIPLAYER_HELP} position="prominent" />
+                </div>
 
                 {isConnected ? (
                     <div className="bj-tables-grid">

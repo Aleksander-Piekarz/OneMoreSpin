@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { usePokerGame } from '../hooks/usePokerGame';
 import Leaderboard from '../components/Leaderboard';
 import { GameCard, type ThemeType } from '../components/GameCard';
+import { GameHelpModal, POKER_MULTIPLAYER_HELP } from '../components/GameHelpModal';
 import { fireConfetti } from '../utils/confetti';
 import '../styles/PokerPage.css';
 
@@ -140,18 +141,21 @@ export const PokerPage = () => {
                         <span className="poker-stat-value-gold">{table.stage}</span>
                     </div>
                 </div>
-                <button onClick={async () => { 
-                    try {
-                        await leaveTable(); 
-                    } catch (e) {
-                        console.error("Error leaving table:", e);
-                    } finally {
-                        navigate('/poker'); 
-                    }
-                }} className="poker-leave-btn">
-                    <i className="fas fa-sign-out-alt"></i>
-                    <span>Wyjdź</span>
-                </button>
+                <div className="poker-header-actions">
+                    <GameHelpModal content={POKER_MULTIPLAYER_HELP} position="header" />
+                    <button onClick={async () => { 
+                        try {
+                            await leaveTable(); 
+                        } catch (e) {
+                            console.error("Error leaving table:", e);
+                        } finally {
+                            navigate('/poker'); 
+                        }
+                    }} className="poker-leave-btn">
+                        <i className="fas fa-sign-out-alt"></i>
+                        <span>Wyjdź</span>
+                    </button>
+                </div>
             </header>
 
             {/* WRAPPER NA STÓŁ I GRACZY */}

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as signalR from "@microsoft/signalr";
+import { GameHelpModal, POKER_MULTIPLAYER_HELP } from '../components/GameHelpModal';
 import '../styles/PokerLobby.css';
 
 interface TableInfo {
@@ -102,7 +103,10 @@ export const PokerLobby = () => {
             </header>
 
             <div className="pk-lobby-content">
-                <p className="pk-lobby-subtitle">Wybierz stół i zacznij grać</p>
+                <div className="pk-lobby-intro">
+                    <p className="pk-lobby-subtitle">Wybierz stół i zacznij grać</p>
+                    <GameHelpModal content={POKER_MULTIPLAYER_HELP} position="prominent" />
+                </div>
 
                 {isConnected ? (
                     <div className="pk-tables-grid">

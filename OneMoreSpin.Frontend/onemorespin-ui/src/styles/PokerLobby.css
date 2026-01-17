@@ -150,11 +150,20 @@
   overflow: auto;
 }
 
+/* Intro section with subtitle and help button */
+.pk-lobby-page .pk-lobby-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: clamp(20px, 4vh, 40px);
+}
+
 .pk-lobby-page .pk-lobby-subtitle {
   font-family: 'Poppins', sans-serif;
   font-size: clamp(0.9rem, 1.5vw, 1rem);
   color: rgba(255, 255, 255, 0.5);
-  margin-bottom: clamp(20px, 4vh, 40px);
+  margin: 0;
   letter-spacing: 3px;
   text-transform: uppercase;
 }

@@ -6,6 +6,63 @@ import DemoToggle from '../components/DemoToggle';
 import { fireConfetti } from '../utils/confetti';
 import Leaderboard from '../components/Leaderboard';
 import { GameCard } from '../components/GameCard';
+import { GameHelpModal, POKER_HELP, type GameHelpContent } from '../components/GameHelpModal';
+
+// Pomoc dla Video Pokera (Singleplayer)
+const VIDEO_POKER_HELP: GameHelpContent = {
+  title: "Video Poker",
+  shortDescription: "Klasyczny poker wideo - wymień karty i zbierz najlepszy układ! Graj przeciwko maszynie.",
+  rules: [
+    {
+      title: "Cel gry",
+      description: "Zbierz jak najlepszy układ 5 kart. Im lepszy układ, tym wyższa wygrana!",
+      icon: "🎯"
+    },
+    {
+      title: "Przebieg gry",
+      description: "Otrzymujesz 5 kart, wybierasz które chcesz zatrzymać, reszta jest wymieniana.",
+      icon: "🎮"
+    },
+    {
+      title: "Układy kart",
+      description: "Od najsłabszego: Para (min. Walety), Dwie pary, Trójka, Strit, Kolor, Full, Kareta, Poker, Poker królewski.",
+      icon: "🃏"
+    },
+    {
+      title: "Wypłaty",
+      description: "Para Waletów+ = 1x, Dwie pary = 2x, Trójka = 3x, Strit = 4x, Kolor = 6x, Full = 9x, Kareta = 25x, Poker = 50x, Poker Królewski = 800x.",
+      icon: "💰"
+    }
+  ],
+  actions: [
+    {
+      name: "ROZDAJ KARTY",
+      description: "Rozpocznij nową grę. Ustaw najpierw wysokość zakładu.",
+      icon: "🎴"
+    },
+    {
+      name: "Kliknij kartę",
+      description: "Zaznacz/odznacz kartę do wymiany. Zaznaczone karty zostaną wymienione na nowe.",
+      icon: "👆"
+    },
+    {
+      name: "WYMIEŃ KARTY",
+      description: "Wymień zaznaczone karty na nowe z talii.",
+      icon: "🔄"
+    },
+    {
+      name: "SPRAWDŹ",
+      description: "Jeśli nie zaznaczyłeś żadnych kart - zachowaj wszystkie i sprawdź wynik.",
+      icon: "✅"
+    }
+  ],
+  tips: [
+    "Zawsze zatrzymuj pary lub lepsze układy.",
+    "Przy 4 kartach do koloru lub strita - wymień tylko jedną kartę.",
+    "Nigdy nie rozdzielaj pary w nadziei na lepszy układ.",
+    "Karty wysokie (J, Q, K, A) dają szansę na parę wypłacalną."
+  ]
+};
 
 type CardVm = { id: number; rank: string; suit: string };
 type PokerSessionVm = {
@@ -281,6 +338,9 @@ export default function PokerGame() {
           <span>TOP</span>
         </button>
       </div>
+
+      {/* PRZYCISK POMOCY */}
+      <GameHelpModal content={VIDEO_POKER_HELP} position="floating" />
     </div>
   );
 }

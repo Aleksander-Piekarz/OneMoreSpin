@@ -5,6 +5,7 @@ import { api } from '../api';
 import DemoToggle from '../components/DemoToggle';
 import { refreshMissions } from "../events";
 import Leaderboard from '../components/Leaderboard';
+import { GameHelpModal, ROULETTE_HELP } from '../components/GameHelpModal';
 import "../styles/RoulettePage.css";
 
 const WHEEL_NUMBERS = [
@@ -605,6 +606,9 @@ export default function RouletteGame() {
             <span>TOP</span>
           </button>
         </div>
+
+        {/* PRZYCISK POMOCY */}
+        <GameHelpModal content={ROULETTE_HELP} position="floating" />
 
       </div>
 

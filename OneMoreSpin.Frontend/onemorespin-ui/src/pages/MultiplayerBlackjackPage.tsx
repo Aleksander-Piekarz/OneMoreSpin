@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useBlackjackGame } from '../hooks/useBlackjackGame';
 import Leaderboard from '../components/Leaderboard';
 import { GameCard, type ThemeType } from '../components/GameCard';
+import { GameHelpModal, BLACKJACK_MULTIPLAYER_HELP } from '../components/GameHelpModal';
 import { fireConfetti } from '../utils/confetti';
 import '../styles/MultiplayerBlackjackPage.css';
 
@@ -158,10 +159,13 @@ export const MultiplayerBlackjackPage = () => {
                         <span className="bj-game-stat-value">{table.stage}</span>
                     </div>
                 </div>
-                <button onClick={() => navigate('/blackjack-lobby')} className="bj-leave-btn">
-                    <i className="fas fa-sign-out-alt"></i>
-                    <span>Wyjdź</span>
-                </button>
+                <div className="bj-header-actions">
+                    <GameHelpModal content={BLACKJACK_MULTIPLAYER_HELP} position="header" />
+                    <button onClick={() => navigate('/blackjack-lobby')} className="bj-leave-btn">
+                        <i className="fas fa-sign-out-alt"></i>
+                        <span>Wyjdź</span>
+                    </button>
+                </div>
             </header>
 
             {/* MAIN GAME AREA */}

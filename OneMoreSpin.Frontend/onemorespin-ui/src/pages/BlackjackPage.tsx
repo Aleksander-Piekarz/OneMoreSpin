@@ -5,6 +5,7 @@ import { refreshMissions } from "../events";
 import { fireConfetti } from "../utils/confetti";
 import Leaderboard from "../components/Leaderboard";
 import DemoToggle from "../components/DemoToggle";
+import { GameHelpModal, BLACKJACK_HELP } from "../components/GameHelpModal";
 import "../styles/BlackjackPage.css";
 import { GameCard } from "../components/GameCard";
 import "../styles/SinglePokerPage.css";
@@ -135,7 +136,6 @@ const BlackjackPage: React.FC = () => {
       const result = await api.blackjack.standWithMode(gameState.sessionId, unlimitedMode);
       setGameState(result);
       if (!unlimitedMode) setBalance(result.balance);
-      showGameResult(result);
       refreshMissions();
     } catch (err: any) {
       setError(err.message || "Błąd podczas pasowania");
@@ -150,7 +150,6 @@ const BlackjackPage: React.FC = () => {
       const result = await api.blackjack.doubleWithMode(gameState.sessionId, unlimitedMode);
       setGameState(result);
       if (!unlimitedMode) setBalance(result.balance);
-      showGameResult(result);
       refreshMissions();
     } catch (err: any) {
       setError(err.message || "Błąd podczas podwajania");
@@ -368,6 +367,9 @@ const BlackjackPage: React.FC = () => {
           <span>TOP</span>
         </button>
       </div>
+
+      {/* PRZYCISK POMOCY */}
+      <GameHelpModal content={BLACKJACK_HELP} position="floating" />
     </div>
   );
 };
