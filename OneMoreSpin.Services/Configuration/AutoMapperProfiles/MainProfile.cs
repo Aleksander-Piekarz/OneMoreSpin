@@ -51,6 +51,7 @@ public class MainProfile : Profile
             .ForMember(dest => dest.MissionId, opt => opt.MapFrom(src => src.MissionId))
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Mission.Name))
             .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Mission.Description))
+            .ForMember(dest => dest.DescriptionEn, opt => opt.MapFrom(src => src.Mission.DescriptionEn))
             .ForMember(dest => dest.CurrentProgress, opt => opt.MapFrom(src => src.CurrentProgress))
             .ForMember(
                 dest => dest.RequiredAmount,
@@ -64,7 +65,12 @@ public class MainProfile : Profile
             .ForMember(dest => dest.IsClaimed, opt => opt.MapFrom(src => src.IsClaimed));
         CreateMap<Mission, UserMissionVm>()
             .ForMember(dest => dest.MissionId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+            .ForMember(dest => dest.DescriptionEn, opt => opt.MapFrom(src => src.DescriptionEn))
             .ForMember(dest => dest.CurrentProgress, opt => opt.MapFrom(src => 0))
+            .ForMember(dest => dest.RequiredAmount, opt => opt.MapFrom(src => src.RequiredAmount))
+            .ForMember(dest => dest.RewardAmount, opt => opt.MapFrom(src => src.RewardAmount))
             .ForMember(dest => dest.IsCompleted, opt => opt.MapFrom(src => false))
             .ForMember(dest => dest.IsClaimed, opt => opt.MapFrom(src => false));
     }

@@ -107,7 +107,7 @@ export const PokerLobby = () => {
             <div className="pk-lobby-content">
                 <div className="pk-lobby-intro">
                   <p className="pk-lobby-subtitle">{t('lobby.selectTable')}</p>
-                    <p className="pk-lobby-subtitle">Wybierz stół i zacznij grać</p>
+                  
                     <GameHelpModal content={POKER_MULTIPLAYER_HELP} position="prominent" />
                 </div>
 

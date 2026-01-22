@@ -10,7 +10,7 @@ interface MissionsWidgetProps {
 }
 
 export const MissionsWidget: React.FC<MissionsWidgetProps> = ({ onRewardClaimed }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [missions, setMissions] = useState<UserMissionVm[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -41,6 +41,7 @@ export const MissionsWidget: React.FC<MissionsWidgetProps> = ({ onRewardClaimed 
         missionId: number;
         name: string;
         description: string;
+        descriptionEn?: string;
         currentProgress: number;
         requiredAmount: number;
         rewardAmount: number;
@@ -52,6 +53,7 @@ export const MissionsWidget: React.FC<MissionsWidgetProps> = ({ onRewardClaimed 
         MissionId: m.missionId,
         Name: m.name,
         Description: m.description,
+        DescriptionEn: m.descriptionEn,
         CurrentProgress: m.currentProgress,
         RequiredAmount: m.requiredAmount,
         RewardAmount: m.rewardAmount,
@@ -116,12 +118,14 @@ export const MissionsWidget: React.FC<MissionsWidgetProps> = ({ onRewardClaimed 
           ) : (
             <div className="missions-list">
               {missions.length === 0 && <div>{t('profile.noMissions')}</div>}
-              {missions.map((m) => (
-                <div key={m.MissionId} className={`mission-item${m.IsCompleted ? " completed" : ""}${m.IsClaimed ? " claimed" : ""}`}>
-                  <div className="mission-left-col">
-                    <div className="mission-name">{m.Name}</div>
-                    <div className="mission-desc">{m.Description}</div>
-                  </div>
+              {missions.map((m) => {
+                const desc = language === "en" && m.DescriptionEn ? m.DescriptionEn : m.Description;
+                return (
+                  <div key={m.MissionId} className={`mission-item${m.IsCompleted ? " completed" : ""}${m.IsClaimed ? " claimed" : ""}`}>
+                    <div className="mission-left-col">
+                      <div className="mission-name">{m.Name}</div>
+                      <div className="mission-desc">{desc}</div>
+                    </div>
                   
                   <div className="mission-center-col">
                     <div className="mission-progress-row">
@@ -137,26 +141,27 @@ export const MissionsWidget: React.FC<MissionsWidgetProps> = ({ onRewardClaimed 
                     </div>
                   </div>
 
-                  <div className="mission-right-col">
-                    <div className="mission-reward">🎁 {m.RewardAmount} PLN</div>
-                    <div className="mission-actions">
-                      {m.IsClaimed ? (
-                        <span className="mission-claimed">{t('missions.claimed')}</span>
-                      ) : m.IsCompleted ? (
-                        <button
-                          className="mission-claim-btn"
-                          onClick={() => handleClaim(m.MissionId)}
-                          disabled={claimingId === m.MissionId}
-                        >
-                          {claimingId === m.MissionId ? "..." : t('profile.claimReward')}
-                        </button>
-                      ) : (
-                        <span className="mission-incomplete">{t('missions.inProgress')}</span>
-                      )}
+                    <div className="mission-right-col">
+                      <div className="mission-reward">🎁 {m.RewardAmount} PLN</div>
+                      <div className="mission-actions">
+                        {m.IsClaimed ? (
+                          <span className="mission-claimed">{t('missions.claimed')}</span>
+                        ) : m.IsCompleted ? (
+                          <button
+                            className="mission-claim-btn"
+                            onClick={() => handleClaim(m.MissionId)}
+                            disabled={claimingId === m.MissionId}
+                          >
+                            {claimingId === m.MissionId ? "..." : t('profile.claimReward')}
+                          </button>
+                        ) : (
+                          <span className="mission-incomplete">{t('missions.inProgress')}</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
           {successMsg && <div className="missions-success">{successMsg}</div>}

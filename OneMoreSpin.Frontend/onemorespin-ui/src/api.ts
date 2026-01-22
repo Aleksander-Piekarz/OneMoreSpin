@@ -2,6 +2,7 @@ export type UserMissionVm = {
   MissionId: number;
   Name: string;
   Description: string;
+  DescriptionEn?: string;
   CurrentProgress: number;
   RequiredAmount: number;
   RewardAmount: number;

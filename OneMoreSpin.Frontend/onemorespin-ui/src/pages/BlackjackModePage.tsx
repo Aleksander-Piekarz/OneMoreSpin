@@ -6,7 +6,7 @@ import '../styles/BlackjackModePage.css';
 
 const BlackjackModePage: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   return (
     <div className="bj-mode-page">
@@ -19,7 +19,7 @@ const BlackjackModePage: React.FC = () => {
       <header className="bj-mode-header">
         <button className="bj-back-btn" onClick={() => navigate('/home')}>
           <i className="fas fa-arrow-left"></i>
-          <span>POWRÓT</span>
+          <span>{language === 'pl' ? 'POWRÓT' : 'BACK'}</span>
         </button>
 
         <h1 className="bj-page-title">
