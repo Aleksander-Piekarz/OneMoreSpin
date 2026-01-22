@@ -123,6 +123,13 @@
   font-weight: 700;
 }
 
+/* Header actions container */
+.poker-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .poker-leave-btn {
   display: flex;
   align-items: center;

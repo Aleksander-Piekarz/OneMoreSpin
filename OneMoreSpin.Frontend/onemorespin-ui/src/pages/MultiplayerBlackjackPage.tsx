@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useBlackjackGame } from '../hooks/useBlackjackGame';
+import { GameHelpModal, BLACKJACK_MULTIPLAYER_HELP } from '../components/GameHelpModal';
 import Leaderboard from '../components/Leaderboard';
 import { GameCard, type ThemeType } from '../components/GameCard';
 import { fireConfetti } from '../utils/confetti';
@@ -153,18 +154,21 @@ export const MultiplayerBlackjackPage = () => {
                 <div className="bj-game-brand">MULTIPLAYER 21</div>
                 <div className="bj-game-info">
                     <div className="bj-game-stat">
-                        <span className="bj-game-stat-label">{t('games.blackjack.tableLabel')}:</span>
+                         <span className="bj-game-stat-label">{t('games.blackjack.tableLabel')}:</span>
                         <span className="bj-game-stat-value">{table.id}</span>
                     </div>
                     <div className="bj-game-stat">
                         <span className="bj-game-stat-label">{t('games.blackjack.stageLabel')}:</span>
                         <span className="bj-game-stat-value">{table.stage}</span>
-                    </div>
+                  </div>
                 </div>
-                <button onClick={() => navigate('/blackjack-lobby')} className="bj-leave-btn">
-                    <i className="fas fa-sign-out-alt"></i>
-                    <span>{t('games.blackjack.leaveTable')}</span>
-                </button>
+                <div className="bj-header-actions">
+                    <GameHelpModal content={BLACKJACK_MULTIPLAYER_HELP} position="header" />
+                    <button onClick={() => navigate('/blackjack-lobby')} className="bj-leave-btn">
+                        <i className="fas fa-sign-out-alt"></i>
+                        <span>Wyjdź</span>
+                    </button>
+                </div>
             </header>
 
             {/* MAIN GAME AREA */}

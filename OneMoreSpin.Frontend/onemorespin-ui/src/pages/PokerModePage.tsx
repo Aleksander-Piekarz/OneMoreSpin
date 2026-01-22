@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import PokerModeSelector from '../components/PokerModeSelector';
+import { GameHelpModal, POKER_HELP } from '../components/GameHelpModal';
 import '../styles/PokerModePage.css';
 
 const PokerModePage: React.FC = () => {
@@ -25,7 +26,7 @@ const PokerModePage: React.FC = () => {
           <span className="poker-title-word">POKER</span>
         </h1>
 
-        <div className="poker-header-spacer"></div>
+        <GameHelpModal content={POKER_HELP} position="header" />
       </header>
 
       <main className="poker-mode-main">

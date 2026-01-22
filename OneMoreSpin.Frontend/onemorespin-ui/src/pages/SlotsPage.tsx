@@ -5,6 +5,7 @@ import { api } from "../api";
 import { refreshMissions } from "../events";
 import { fireConfetti } from "../utils/confetti";
 import Leaderboard from "../components/Leaderboard";
+import { GameHelpModal, SLOTS_HELP } from "../components/GameHelpModal";
 import "../styles/SlotsPage.css";
 import DemoToggle from "../components/DemoToggle";
 
@@ -513,6 +514,9 @@ const SlotsPage: React.FC = () => {
             <span>TOP</span>
           </button>
         </div>
+
+        {/* PRZYCISK POMOCY */}
+        <GameHelpModal content={SLOTS_HELP} position="floating" />
 
         {error && (
           <div className="error-message">

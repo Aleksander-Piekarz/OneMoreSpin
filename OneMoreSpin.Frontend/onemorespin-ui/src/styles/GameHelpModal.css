@@ -1,0 +1,361 @@
+/* =========================================
+   GAME HELP MODAL STYLES
+   ========================================= */
+
+/* Przycisk pomocy - wersja pływająca */
+.game-help-btn.floating {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
+  transition: all 0.3s ease;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-help-btn.floating:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 30px rgba(102, 126, 234, 0.7);
+}
+
+/* Przycisk pomocy - wersja w headerze */
+.game-help-btn.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.game-help-btn.header:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.game-help-btn.header i {
+  font-size: 18px;
+  color: #ffd700;
+}
+
+/* Przycisk pomocy - wersja DUŻA / PROMINENT dla Lobby */
+.game-help-btn.prominent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.game-help-btn.prominent:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.game-help-btn.prominent i {
+  font-size: 22px;
+  color: #ffd700;
+  animation: pulse-icon 2s ease-in-out infinite;
+}
+
+@keyframes pulse-icon {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* Overlay tła */
+.game-help-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+  padding: 20px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal */
+.game-help-modal {
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 20px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  margin: auto;
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* Przycisk zamknięcia */
+.game-help-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.game-help-close:hover {
+  background: rgba(239, 83, 80, 0.3);
+  border-color: #ef5350;
+  color: #ef5350;
+}
+
+/* Nagłówek modalu */
+.game-help-header {
+  padding: 30px 30px 20px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.game-help-header h2 {
+  margin: 0 0 10px;
+  font-size: 28px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.game-help-short {
+  margin: 0;
+  color: #aaa;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Zawartość modalu */
+.game-help-content {
+  padding: 20px 30px 30px;
+}
+
+/* Sekcje */
+.game-help-section {
+  margin-bottom: 25px;
+}
+
+.game-help-section:last-child {
+  margin-bottom: 0;
+}
+
+.game-help-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 15px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.game-help-section h3 i {
+  color: #667eea;
+  font-size: 20px;
+}
+
+/* Zasady gry */
+.game-help-rules,
+.game-help-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.game-help-rule,
+.game-help-action {
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.game-help-rule:hover,
+.game-help-action:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.rule-icon,
+.action-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  background: rgba(102, 126, 234, 0.2);
+  border-radius: 10px;
+}
+
+.game-help-rule strong,
+.game-help-action strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+  color: #fff;
+}
+
+.game-help-rule p,
+.game-help-action p {
+  margin: 0;
+  font-size: 13px;
+  color: #aaa;
+  line-height: 1.5;
+}
+
+/* Porady */
+.game-help-tips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.game-help-tips li {
+  padding: 12px 15px;
+  padding-left: 40px;
+  position: relative;
+  background: rgba(255, 215, 0, 0.05);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #ccc;
+  line-height: 1.5;
+  border: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.game-help-tips li:last-child {
+  margin-bottom: 0;
+}
+
+.game-help-tips li::before {
+  content: "💡";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+}
+
+/* Scrollbar */
+.game-help-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.game-help-modal::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.game-help-modal::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.5);
+  border-radius: 4px;
+}
+
+.game-help-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.7);
+}
+
+/* Responsywność */
+@media (max-width: 600px) {
+  .game-help-modal {
+    max-height: 90vh;
+    border-radius: 15px;
+  }
+
+  .game-help-header {
+    padding: 25px 20px 15px;
+  }
+
+  .game-help-header h2 {
+    font-size: 22px;
+  }
+
+  .game-help-content {
+    padding: 15px 20px 25px;
+  }
+
+  .game-help-rule,
+  .game-help-action {
+    padding: 12px;
+  }
+
+  .rule-icon,
+  .action-icon {
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+  }
+
+  .game-help-btn.floating {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    bottom: 15px;
+    right: 15px;
+  }
+}
