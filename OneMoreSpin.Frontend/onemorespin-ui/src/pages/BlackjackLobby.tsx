@@ -97,14 +97,14 @@ export const BlackjackLobby = () => {
             <header className="bj-lobby-header">
                 <button onClick={() => navigate('/blackjack')} className="bj-lobby-back-btn">
                     <i className="fas fa-arrow-left"></i>
-                    <span>Powrót</span>
+                    <span>{t('common.back')}</span>
                 </button>
                 <h1 className="bj-lobby-title">BLACKJACK ROOMS</h1>
                 <div className="bj-lobby-spacer"></div>
             </header>
 
             <div className="bj-lobby-content">
-                <p className="bj-lobby-subtitle">Wybierz stół i zacznij grać</p>
+                <p className="bj-lobby-subtitle">{t('lobby.selectTable')}</p>
 
                 {isConnected ? (
                     <div className="bj-tables-grid">
@@ -123,17 +123,17 @@ export const BlackjackLobby = () => {
                                     
                                     <div className="bj-table-details">
                                         <div className="bj-detail-item">
-                                            <span>👥 Gracze</span>
+                                            <span>👥 {t('lobby.players')}</span>
                                             <span className="bj-detail-value">{table.playersCount} / 5</span>
                                         </div>
                                         <div className="bj-detail-item">
-                                            <span>💰 Min. zakład</span>
+                                            <span>💰 {t('lobby.minBet')}</span>
                                             <span className="bj-detail-value">${table.minBet}</span>
                                         </div>
                                     </div>
                                     
                                     <button onClick={() => joinTable(table.id)} className="bj-join-btn">
-                                        Zagraj Teraz
+                                        {t('lobby.playNow')}
                                     </button>
                                 </div>
                             );
@@ -142,7 +142,7 @@ export const BlackjackLobby = () => {
                 ) : (
                     <div className="bj-loading-container">
                         <div className="bj-loading-spinner"></div>
-                        <span className="bj-loading-text">Ładowanie stołów...</span>
+                        <span className="bj-loading-text">{t('lobby.loadingTables')}</span>
                     </div>
                 )}
             </div>

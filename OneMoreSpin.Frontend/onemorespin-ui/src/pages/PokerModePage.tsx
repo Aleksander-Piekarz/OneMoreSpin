@@ -18,7 +18,7 @@ const PokerModePage: React.FC = () => {
       <header className="poker-mode-header">
         <button className="poker-back-btn" onClick={() => navigate('/home')}>
           <i className="fas fa-arrow-left"></i>
-          <span>POWRÓT</span>
+          <span>{t('common.back')}</span>
         </button>
 
         <h1 className="poker-page-title">

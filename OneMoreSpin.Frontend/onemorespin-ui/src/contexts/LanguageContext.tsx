@@ -45,7 +45,8 @@ const translations: Record<Language, any> = {
       deposit: "Wpłata",
       withdraw: "Wypłata",
       history: "Historia",
-      characters: "znaków"
+      characters: "znaków",
+      you: "Ty"
     },
     nav: {
       games: "Gry",
@@ -117,7 +118,18 @@ const translations: Record<Language, any> = {
         standError: "Błąd podczas pasowania",
         doubleError: "Błąd podczas podwajania",
         showLeaderboard: "Pokaż ranking",
-        hideLeaderboard: "Schowaj ranking"
+        hideLeaderboard: "Schowaj ranking",
+        connecting: "Łączenie z kasynem...",
+        enteringTable: "Wchodzenie do stołu...",
+        tableLabel: "Stół",
+        stageLabel: "Etap",
+        leaveTable: "Wyjdź",
+        yourTurn: "Twój ruch",
+        historyTitle: "Historia gry",
+        tableChat: "Czat stołu",
+        startChat: "Rozpocznij rozmowę...",
+        chatPlaceholder: "Napisz wiadomość...",
+        placeBet: "Postaw"
       },
       roulettePage: {
         title: "Ruletka",
@@ -165,7 +177,18 @@ const translations: Record<Language, any> = {
         gameStartError: "Błąd startu",
         gameExchangeError: "Błąd wymiany",
         showLeaderboard: "Pokaż ranking",
-        hideLeaderboard: "Schowaj ranking"
+        hideLeaderboard: "Schowaj ranking",
+        connecting: "Łączenie z kasynem...",
+        enteringTable: "Wchodzenie do stołu...",
+        tableLabel: "Stół",
+        stageLabel: "Etap",
+        leaveTable: "Wyjdź",
+        historyTitle: "Historia gry",
+        tableChat: "Czat stołu",
+        startChat: "Rozpocznij rozmowę...",
+        chatPlaceholder: "Napisz wiadomość...",
+        folded: "Pas",
+        youFolded: "Spasowałeś"
       },
       slots: {
         title: "Automaty",
@@ -336,7 +359,11 @@ const translations: Record<Language, any> = {
       startGame: "Zacznij grę",
       joinGame: "Dołącz do gry",
       full: "Pełne",
-      inProgress: "Trwa gra"
+      inProgress: "Trwa gra",
+      selectTable: "Wybierz stół i zacznij grać",
+      playNow: "Zagraj teraz",
+      minBuyIn: "Min. wejście",
+      loadingTables: "Ładowanie stołów..."
     },
     validation: {
       required: "To pole jest wymagane",
@@ -380,7 +407,8 @@ const translations: Record<Language, any> = {
       deposit: "Deposit",
       withdraw: "Withdraw",
       history: "History",
-      characters: "characters"
+      characters: "characters",
+      you: "You"
     },
     nav: {
       games: "Games",
@@ -452,7 +480,18 @@ const translations: Record<Language, any> = {
         standError: "Error during stand",
         doubleError: "Error during double",
         showLeaderboard: "Show leaderboard",
-        hideLeaderboard: "Hide leaderboard"
+        hideLeaderboard: "Hide leaderboard",
+        connecting: "Connecting to the casino...",
+        enteringTable: "Entering the table...",
+        tableLabel: "Table",
+        stageLabel: "Stage",
+        leaveTable: "Leave",
+        yourTurn: "Your turn",
+        historyTitle: "Game history",
+        tableChat: "Table chat",
+        startChat: "Start the conversation...",
+        chatPlaceholder: "Write a message...",
+        placeBet: "Place bet"
       },
       roulettePage: {
         title: "Roulette",
@@ -500,7 +539,18 @@ const translations: Record<Language, any> = {
         gameStartError: "Start error",
         gameExchangeError: "Exchange error",
         showLeaderboard: "Show leaderboard",
-        hideLeaderboard: "Hide leaderboard"
+        hideLeaderboard: "Hide leaderboard",
+        connecting: "Connecting to the casino...",
+        enteringTable: "Entering the table...",
+        tableLabel: "Table",
+        stageLabel: "Stage",
+        leaveTable: "Leave",
+        historyTitle: "Game history",
+        tableChat: "Table chat",
+        startChat: "Start the conversation...",
+        chatPlaceholder: "Write a message...",
+        folded: "Folded",
+        youFolded: "You folded"
       },
       slots: {
         title: "Slot Machines",
@@ -663,7 +713,11 @@ const translations: Record<Language, any> = {
       startGame: "Start game",
       joinGame: "Join game",
       full: "Full",
-      inProgress: "In progress"
+      inProgress: "In progress",
+      selectTable: "Choose a table and start playing",
+      playNow: "Play now",
+      minBuyIn: "Min. buy-in",
+      loadingTables: "Loading tables..."
     },
     validation: {
       required: "This field is required",
