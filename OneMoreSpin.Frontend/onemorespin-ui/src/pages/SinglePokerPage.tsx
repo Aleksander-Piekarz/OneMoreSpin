@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import '../styles/SinglePokerPage.css';
 import { api } from '../api';
 import type { UserInfo } from '../api';
@@ -6,6 +7,63 @@ import DemoToggle from '../components/DemoToggle';
 import { fireConfetti } from '../utils/confetti';
 import Leaderboard from '../components/Leaderboard';
 import { GameCard } from '../components/GameCard';
+import { GameHelpModal, POKER_HELP, type GameHelpContent } from '../components/GameHelpModal';
+
+// Pomoc dla Video Pokera (Singleplayer)
+const VIDEO_POKER_HELP: GameHelpContent = {
+  title: "Video Poker",
+  shortDescription: "Klasyczny poker wideo - wymień karty i zbierz najlepszy układ! Graj przeciwko maszynie.",
+  rules: [
+    {
+      title: "Cel gry",
+      description: "Zbierz jak najlepszy układ 5 kart. Im lepszy układ, tym wyższa wygrana!",
+      icon: "🎯"
+    },
+    {
+      title: "Przebieg gry",
+      description: "Otrzymujesz 5 kart, wybierasz które chcesz zatrzymać, reszta jest wymieniana.",
+      icon: "🎮"
+    },
+    {
+      title: "Układy kart",
+      description: "Od najsłabszego: Para (min. Walety), Dwie pary, Trójka, Strit, Kolor, Full, Kareta, Poker, Poker królewski.",
+      icon: "🃏"
+    },
+    {
+      title: "Wypłaty",
+      description: "Para Waletów+ = 1x, Dwie pary = 2x, Trójka = 3x, Strit = 4x, Kolor = 6x, Full = 9x, Kareta = 25x, Poker = 50x, Poker Królewski = 800x.",
+      icon: "💰"
+    }
+  ],
+  actions: [
+    {
+      name: "ROZDAJ KARTY",
+      description: "Rozpocznij nową grę. Ustaw najpierw wysokość zakładu.",
+      icon: "🎴"
+    },
+    {
+      name: "Kliknij kartę",
+      description: "Zaznacz/odznacz kartę do wymiany. Zaznaczone karty zostaną wymienione na nowe.",
+      icon: "👆"
+    },
+    {
+      name: "WYMIEŃ KARTY",
+      description: "Wymień zaznaczone karty na nowe z talii.",
+      icon: "🔄"
+    },
+    {
+      name: "SPRAWDŹ",
+      description: "Jeśli nie zaznaczyłeś żadnych kart - zachowaj wszystkie i sprawdź wynik.",
+      icon: "✅"
+    }
+  ],
+  tips: [
+    "Zawsze zatrzymuj pary lub lepsze układy.",
+    "Przy 4 kartach do koloru lub strita - wymień tylko jedną kartę.",
+    "Nigdy nie rozdzielaj pary w nadziei na lepszy układ.",
+    "Karty wysokie (J, Q, K, A) dają szansę na parę wypłacalną."
+  ]
+};
 
 type CardVm = { id: number; rank: string; suit: string };
 type PokerSessionVm = {
@@ -44,6 +102,7 @@ function formatNumberWithSpaces(n: number | null | undefined) {
 }
 
 export default function PokerGame() {
+  const { t } = useLanguage();
   const [session, setSession] = useState<PokerSessionVm | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [betAmount, setBetAmount] = useState<number>(10);
@@ -164,7 +223,7 @@ export default function PokerGame() {
             <div className="sp-dealer-section">
               {session && isGameFinished ? (
                 <>
-                  <div className="sp-dealer-label">Karty Krupiera</div>
+                  <div className="sp-dealer-label">{t('games.poker.yourCards')}</div>
                   <div className="sp-dealer-hand-wrapper">
                     {session.dealerHand.map((card, idx) => (
                       <GameCard 
@@ -180,7 +239,7 @@ export default function PokerGame() {
                 </>
               ) : (
                 /* Pusty stan ma tę samą wysokość co pełny w CSS, więc nie skacze */
-                 <div className="sp-dealer-label" style={{opacity: 0}}>Oczekiwanie...</div>
+                 <div className="sp-dealer-label" style={{opacity: 0}}>{t('games.poker.waiting')}</div>
               )}
             </div>
 
@@ -190,16 +249,16 @@ export default function PokerGame() {
                 <div className="sp-game-message sp-error">{message}</div>
               ) : (
                 <>
-                  {!session && <div className="sp-game-message sp-hint">Rozdaj karty, aby zagrać</div>}
+                  {!session && <div className="sp-game-message sp-hint">{t('games.poker.dealToStart')}</div>}
                   {session && !isGameFinished && (
                     <div className="sp-game-message sp-hint">
-                      {selected.size > 0 ? `Wybrano do wymiany: ${selected.size}` : 'Wybierz karty do wymiany'}
+                      {selected.size > 0 ? t('games.poker.selectedCards').replace('{{count}}', selected.size.toString()) : t('games.poker.selectCards')}
                     </div>
                   )}
                   {session && isGameFinished && (
                     /* Używamy zwykłego tekstu, nie absolute, żeby nie skakało */
                     <div className={`sp-result-text ${hasWon ? 'sp-win' : 'sp-lose'}`}>
-                      {hasWon ? 'WYGRANA!' : 'PRZEGRANA'}
+                      {hasWon ? t('games.poker.win') : t('games.poker.lose')}
                     </div>
                   )}
                 </>
@@ -248,7 +307,7 @@ export default function PokerGame() {
                   </div>
 
                   <button className="sp-main-btn sp-btn-deal" onClick={startSession} disabled={loading}>
-                    {loading ? 'TASOWANIE...' : 'ROZDAJ KARTY'}
+                    {loading ? t('games.poker.dealing') : t('games.poker.dealCards')}
                   </button>
                 </>
               ) : (
@@ -256,7 +315,7 @@ export default function PokerGame() {
                   <button className="sp-main-btn sp-btn-action" onClick={confirmDiscard} disabled={loading}>
                     {loading 
                       ? 'WYMIENIAM...' 
-                      : (selected.size === 0 ? 'SPRAWDŹ' : 'WYMIEŃ KARTY')}
+                      : (selected.size === 0 ? t('games.poker.check') : t('games.poker.exchange'))}
                   </button>
                 </>
               )}
@@ -275,12 +334,15 @@ export default function PokerGame() {
           className="leaderboard-toggle"
           onClick={() => setLeaderboardOpen((prev) => !prev)}
           aria-expanded={leaderboardOpen}
-          title={leaderboardOpen ? 'Schowaj ranking' : 'Pokaż ranking'}
+          title={leaderboardOpen ? t('games.poker.hideLeaderboard') : t('games.poker.showLeaderboard')}
         >
           <i className="fas fa-trophy"></i>
           <span>TOP</span>
         </button>
       </div>
+
+      {/* PRZYCISK POMOCY */}
+      <GameHelpModal content={VIDEO_POKER_HELP} position="floating" />
     </div>
   );
 }

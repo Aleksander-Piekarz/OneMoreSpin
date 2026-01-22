@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import { api, type DailyRewardStatusResponse } from '../api';
 import '../styles/DailyRewardWidget.css';
 
@@ -11,6 +12,7 @@ interface DailyRewardWidgetProps {
 }
 
 const DailyRewardWidget: React.FC<DailyRewardWidgetProps> = ({ user, onRewardClaimed }) => {
+    const { t } = useLanguage();
     const [status, setStatus] = useState<DailyRewardStatusResponse | null>(null);
     const [timeRemaining, setTimeRemaining] = useState('');
     const [isClaiming, setIsClaiming] = useState(false);
@@ -119,7 +121,7 @@ const DailyRewardWidget: React.FC<DailyRewardWidgetProps> = ({ user, onRewardCla
             <button
                 className={`drw-toggle-btn ${isExpanded ? 'expanded' : ''}`}
                 onClick={() => setIsExpanded(!isExpanded)}
-                title="Dzienna nagroda"
+                title={t('profile.dailyRewards')}
             >
                 🎁
             </button>
@@ -128,16 +130,16 @@ const DailyRewardWidget: React.FC<DailyRewardWidgetProps> = ({ user, onRewardCla
                     <div className="daily-reward-widget" onClick={(e) => e.stopPropagation()}>
                         <div className="drw-header">
                             <span className="drw-icon">🎁</span>
-                            <h3 className="drw-title">Dzienna Nagroda</h3>
+                            <h3 className="drw-title">{t('profile.dailyRewards')}</h3>
                             <button className="drw-close-btn" onClick={() => setIsExpanded(false)}>×</button>
                         </div>
                         <div className="drw-info-row">
                         <div className="drw-info-item">
-                            <div className="drw-info-label">Dziś odbierzesz:</div>
-                            <div className="drw-info-value">{alreadyClaimed ? '✓ Odebrano' : `${todayReward} PLN`}</div>
+                            <div className="drw-info-label">{t('profile.claimReward')}:</div>
+                            <div className="drw-info-value">{alreadyClaimed ? '✓ ' + t('missions.claimed') : `${todayReward} PLN`}</div>
                         </div>
                         <div className="drw-info-item">
-                            <div className="drw-info-label">Jutro odbierzesz:</div>
+                            <div className="drw-info-label">{t('profile.nextRewardIn')}:</div>
                             <div className="drw-info-value">{tomorrowReward} PLN</div>
                         </div>
                     </div>
@@ -161,7 +163,7 @@ const DailyRewardWidget: React.FC<DailyRewardWidgetProps> = ({ user, onRewardCla
                     </div>
                     {alreadyClaimed && timeRemaining && (
                         <div className="drw-next">
-                            <span>Następna za: <strong className="drw-next1">{timeRemaining}</strong></span>
+                            <span>{t('profile.nextRewardIn')}: <strong className="drw-next1">{timeRemaining}</strong></span>
                         </div>
                     )}
                     <button
@@ -169,7 +171,7 @@ const DailyRewardWidget: React.FC<DailyRewardWidgetProps> = ({ user, onRewardCla
                         onClick={handleClaim}
                         disabled={alreadyClaimed || isClaiming}
                     >
-                        {isClaiming ? 'Odbieranie...' : alreadyClaimed ? '✓ ODEBRANO!' : '🎁 ODBIERZ'}
+                        {isClaiming ? t('profile.claimReward') + '...' : alreadyClaimed ? '✓ ' + t('missions.claimed') : '🎁 ' + t('profile.claimReward').toUpperCase()}
                     </button>
                     {errorMsg && (
                         <div className="drw-timer" style={{ marginTop: 10, color: '#f44336', fontWeight: 700 }}>{errorMsg}</div>
@@ -178,7 +180,7 @@ const DailyRewardWidget: React.FC<DailyRewardWidgetProps> = ({ user, onRewardCla
                         <div className="drw-success">
                             <div className="drw-success-content">
                                 <div className="drw-success-icon">🎉</div>
-                                <div className="drw-success-text">Odebrano!</div>
+                                <div className="drw-success-text">{t('missions.claimed')}</div>
                                 <div className="drw-success-amount">+{claimedAmount} PLN</div>
                             </div>
                         </div>

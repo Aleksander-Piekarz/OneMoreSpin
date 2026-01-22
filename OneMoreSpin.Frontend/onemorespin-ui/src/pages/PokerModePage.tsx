@@ -1,9 +1,12 @@
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import PokerModeSelector from '../components/PokerModeSelector';
+import { GameHelpModal, POKER_HELP } from '../components/GameHelpModal';
 import '../styles/PokerModePage.css';
 
 const PokerModePage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <div className="poker-mode-page">
@@ -16,18 +19,18 @@ const PokerModePage: React.FC = () => {
       <header className="poker-mode-header">
         <button className="poker-back-btn" onClick={() => navigate('/home')}>
           <i className="fas fa-arrow-left"></i>
-          <span>POWRÓT</span>
+          <span>{t('common.back')}</span>
         </button>
 
         <h1 className="poker-page-title">
           <span className="poker-title-word">POKER</span>
         </h1>
 
-        <div className="poker-header-spacer"></div>
+        <GameHelpModal content={POKER_HELP} position="header" />
       </header>
 
       <main className="poker-mode-main">
-        <h2 className="poker-select-title">Wybierz tryb gry</h2>
+        <h2 className="poker-select-title">{t('games.poker.selectMode')}</h2>
         <PokerModeSelector />
       </main>
     </div>

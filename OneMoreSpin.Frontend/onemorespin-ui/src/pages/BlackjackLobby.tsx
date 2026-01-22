@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import * as signalR from "@microsoft/signalr";
+import { GameHelpModal, BLACKJACK_MULTIPLAYER_HELP } from '../components/GameHelpModal';   
 import '../styles/BlackjackLobby.css';
 
 interface TableInfo {
@@ -12,6 +14,7 @@ interface TableInfo {
 
 export const BlackjackLobby = () => {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const [tables, setTables] = useState<TableInfo[]>([]);
     const [isConnected, setIsConnected] = useState(false);
     const connectionRef = useRef<signalR.HubConnection | null>(null);
@@ -23,8 +26,7 @@ export const BlackjackLobby = () => {
             if (connectionRef.current) return;
 
             const newConnection = new signalR.HubConnectionBuilder()
-                //.withUrl("http://localhost:5046/blackjackHub", {
-                .withUrl("http://91.123.188.186:5173/blackjackHub", { 
+                .withUrl("http://91.123.188.186:5000/blackjackHub", {  
                     accessTokenFactory: () => localStorage.getItem("jwt") || ""
                 })
                 .withAutomaticReconnect()
@@ -95,14 +97,17 @@ export const BlackjackLobby = () => {
             <header className="bj-lobby-header">
                 <button onClick={() => navigate('/blackjack')} className="bj-lobby-back-btn">
                     <i className="fas fa-arrow-left"></i>
-                    <span>Powrót</span>
+                    <span>{t('common.back')}</span>
                 </button>
                 <h1 className="bj-lobby-title">BLACKJACK ROOMS</h1>
                 <div className="bj-lobby-spacer"></div>
             </header>
 
             <div className="bj-lobby-content">
-                <p className="bj-lobby-subtitle">Wybierz stół i zacznij grać</p>
+                <div className="bj-lobby-intro">
+                     <p className="bj-lobby-subtitle">{t('lobby.selectTable')}</p>
+                    <GameHelpModal content={BLACKJACK_MULTIPLAYER_HELP} position="prominent" />
+                </div>
 
                 {isConnected ? (
                     <div className="bj-tables-grid">
@@ -121,17 +126,17 @@ export const BlackjackLobby = () => {
                                     
                                     <div className="bj-table-details">
                                         <div className="bj-detail-item">
-                                            <span>👥 Gracze</span>
+                                            <span>👥 {t('lobby.players')}</span>
                                             <span className="bj-detail-value">{table.playersCount} / 5</span>
                                         </div>
                                         <div className="bj-detail-item">
-                                            <span>💰 Min. zakład</span>
+                                            <span>💰 {t('lobby.minBet')}</span>
                                             <span className="bj-detail-value">${table.minBet}</span>
                                         </div>
                                     </div>
                                     
                                     <button onClick={() => joinTable(table.id)} className="bj-join-btn">
-                                        Zagraj Teraz
+                                        {t('lobby.playNow')}
                                     </button>
                                 </div>
                             );
@@ -140,7 +145,7 @@ export const BlackjackLobby = () => {
                 ) : (
                     <div className="bj-loading-container">
                         <div className="bj-loading-spinner"></div>
-                        <span className="bj-loading-text">Ładowanie stołów...</span>
+                        <span className="bj-loading-text">{t('lobby.loadingTables')}</span>
                     </div>
                 )}
             </div>

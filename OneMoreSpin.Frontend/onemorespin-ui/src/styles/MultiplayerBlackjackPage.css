@@ -118,6 +118,13 @@
   font-weight: 700;
 }
 
+/* Header actions container */
+.bj-game-page .bj-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 /* Przycisk wyjścia - spójny z back-btn */
 .bj-game-page .bj-leave-btn {
   display: flex;

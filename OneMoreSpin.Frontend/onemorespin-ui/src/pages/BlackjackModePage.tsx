@@ -1,9 +1,12 @@
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import BlackjackModeSelector from '../components/BlackjackModeSelector';
+import { GameHelpModal, BLACKJACK_HELP } from '../components/GameHelpModal';
 import '../styles/BlackjackModePage.css';
 
 const BlackjackModePage: React.FC = () => {
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
 
   return (
     <div className="bj-mode-page">
@@ -16,19 +19,19 @@ const BlackjackModePage: React.FC = () => {
       <header className="bj-mode-header">
         <button className="bj-back-btn" onClick={() => navigate('/home')}>
           <i className="fas fa-arrow-left"></i>
-          <span>POWRÓT</span>
+          <span>{language === 'pl' ? 'POWRÓT' : 'BACK'}</span>
         </button>
 
         <h1 className="bj-page-title">
           <span className="bj-title-word">BLACK</span>
           <span className="bj-title-word">JACK</span>
         </h1>
-
+        <GameHelpModal content={BLACKJACK_HELP} position="header" />
         <div className="bj-header-spacer"></div>
       </header>
 
       <main className="bj-mode-main">
-        <h2 className="bj-select-title">Wybierz tryb gry</h2>
+        <h2 className="bj-select-title">{t('games.blackjack.selectMode')}</h2>
         <BlackjackModeSelector />
       </main>
     </div>

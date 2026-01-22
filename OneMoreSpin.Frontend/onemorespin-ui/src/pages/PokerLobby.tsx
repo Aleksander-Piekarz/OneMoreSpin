@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import * as signalR from "@microsoft/signalr";
+import { GameHelpModal, POKER_MULTIPLAYER_HELP } from '../components/GameHelpModal';
 import '../styles/PokerLobby.css';
 
 interface TableInfo {
@@ -12,6 +14,7 @@ interface TableInfo {
 
 export const PokerLobby = () => {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const [tables, setTables] = useState<TableInfo[]>([]);
     const [isConnected, setIsConnected] = useState(false);
     const connectionRef = useRef<signalR.HubConnection | null>(null);
@@ -95,14 +98,18 @@ export const PokerLobby = () => {
             <header className="pk-lobby-header">
                 <button onClick={() => navigate('/poker-mode')} className="pk-lobby-back-btn">
                     <i className="fas fa-arrow-left"></i>
-                    <span>Powrót</span>
+                    <span>{t('common.back')}</span>
                 </button>
                 <h1 className="pk-lobby-title">POKER ROOMS</h1>
                 <div className="pk-lobby-spacer"></div>
             </header>
 
             <div className="pk-lobby-content">
-                <p className="pk-lobby-subtitle">Wybierz stół i zacznij grać</p>
+                <div className="pk-lobby-intro">
+                  <p className="pk-lobby-subtitle">{t('lobby.selectTable')}</p>
+                  
+                    <GameHelpModal content={POKER_MULTIPLAYER_HELP} position="prominent" />
+                </div>
 
                 {isConnected ? (
                     <div className="pk-tables-grid">
@@ -121,17 +128,17 @@ export const PokerLobby = () => {
                                     
                                     <div className="pk-table-details">
                                         <div className="pk-detail-item">
-                                            <span>👥 Gracze</span>
+                                            <span>👥 {t('lobby.players')}</span>
                                             <span className="pk-detail-value">{table.playersCount} / 6</span>
                                         </div>
                                         <div className="pk-detail-item">
-                                            <span>💰 Min. wejście</span>
+                                            <span>💰 {t('lobby.minBuyIn')}</span>
                                             <span className="pk-detail-value">${table.minBuyIn}</span>
                                         </div>
                                     </div>
                                     
                                     <button onClick={() => joinTable(table.id)} className="pk-join-btn">
-                                        Zagraj Teraz
+                                        {t('lobby.playNow')}
                                     </button>
                                 </div>
                             );
@@ -140,7 +147,7 @@ export const PokerLobby = () => {
                 ) : (
                     <div className="pk-loading-container">
                         <div className="pk-loading-spinner"></div>
-                        <span className="pk-loading-text">Ładowanie stołów...</span>
+                        <span className="pk-loading-text">{t('lobby.loadingTables')}</span>
                     </div>
                 )}
             </div>
