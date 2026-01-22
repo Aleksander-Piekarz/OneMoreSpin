@@ -6,8 +6,7 @@ class BlackjackMultiplayerService {
     private connection: signalR.HubConnection;
 
     constructor() {
-        //const hubUrl = "http://91.123.188.186:5000/blackjackHub";  
-        const hubUrl = "http://91.123.188.186:5173/blackjackHub";                     // dodaj to jak wrzucasz na serwer zamiast tego co jest
+        const hubUrl = "http://91.123.188.186:5000/blackjackHub";  
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl(hubUrl, {
                 accessTokenFactory: () => {

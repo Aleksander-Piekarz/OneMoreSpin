@@ -26,9 +26,7 @@ export const BlackjackLobby = () => {
             if (connectionRef.current) return;
 
             const newConnection = new signalR.HubConnectionBuilder()
-             //.withUrl("http://91.123.188.186:5000/blackjackHub", {  do servera
-            //.withUrl("http://localhost:5046/blackjackHub", {
-                .withUrl("http://91.123.188.186:5173/blackjackHub", { 
+                .withUrl("http://91.123.188.186:5000/blackjackHub", {  
                     accessTokenFactory: () => localStorage.getItem("jwt") || ""
                 })
                 .withAutomaticReconnect()
