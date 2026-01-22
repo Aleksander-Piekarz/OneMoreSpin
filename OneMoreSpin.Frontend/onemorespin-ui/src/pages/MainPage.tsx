@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthModal, { type AuthMode } from "./AuthModal";
+import LanguageSwitcher from "../components/LanguageSwitcher";
+import { useLanguage } from "../contexts/LanguageContext";
 import video1 from "../assets/vids/background-video-1.mp4";
 import video2 from "../assets/vids/background-video-2.mp4";
 import video3 from "../assets/vids/background-video-3.mp4";
@@ -8,6 +10,7 @@ import video4 from "../assets/vids/background-video-4.mp4";
 
 const MainPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
@@ -170,23 +173,26 @@ const MainPage: React.FC = () => {
       </div>
 
       <header className="top-bar">
-        <button
-          className="top-login-btn"
-          onClick={() => openAuth("login")}
-        >
-          LOG IN
-        </button>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <LanguageSwitcher />
+          <button
+            className="top-login-btn"
+            onClick={() => openAuth("login")}
+          >
+            {t('common.login').toUpperCase()}
+          </button>
+        </div>
       </header>
 
       <main className="content">
         <h1 className="title">ONE MORE SPIN</h1>
-        <p className="subtitle">BEST ONLINE CASINO</p>
+        <p className="subtitle">{t('common.welcome').toUpperCase()} - BEST ONLINE CASINO</p>
 
         <button
           className="create-account-btn"
           onClick={goToRegister}
         >
-          CREATE ACCOUNT
+          {t('common.register').toUpperCase()}
         </button>
       </main>
 

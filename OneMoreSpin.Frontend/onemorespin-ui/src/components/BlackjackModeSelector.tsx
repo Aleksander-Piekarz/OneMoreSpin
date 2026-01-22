@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import cardsIcon from '../assets/img/cards.png';
 import '../styles/BlackjackModeSelector.css';
 
 const BlackjackModeSelector: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <div className="bj-mode-selector">
@@ -21,12 +23,12 @@ const BlackjackModeSelector: React.FC = () => {
             <div className="bj-icon-bg"></div>
             <img src={cardsIcon} alt="Single" className="bj-tile-icon" />
           </div>
-          <h2 className="bj-tile-title">Classic Blackjack</h2>
+          <h2 className="bj-tile-title">{t('games.blackjack.classicBlackjack')}</h2>
           <p className="bj-tile-description">
-            Klasyczny blackjack. Graj sam przeciwko krupierowi i doskonał swoje umiejętności.
+            {t('games.blackjack.classicDescription')}
           </p>
           <button className="bj-tile-btn">
-            <i className="fas fa-user"></i> Graj Solo
+            <i className="fas fa-user"></i> {t('games.blackjack.playSolo')}
           </button>
         </div>
       </div>
@@ -45,12 +47,12 @@ const BlackjackModeSelector: React.FC = () => {
             <div className="bj-icon-bg"></div>
             <img src={cardsIcon} alt="Multi" className="bj-tile-icon" style={{ filter: 'hue-rotate(40deg) saturate(1.3)' }} />
           </div>
-          <h2 className="bj-tile-title">Multiplayer 21</h2>
+          <h2 className="bj-tile-title">{t('games.blackjack.multiplayer21')}</h2>
           <p className="bj-tile-description">
-            Prawdziwe emocje przy stole! Dołącz do innych graczy i pokonaj krupiera razem.
+            {t('games.blackjack.multiplayerDescription')}
           </p>
           <button className="bj-tile-btn">
-            <i className="fas fa-users"></i> Dołącz do Stołu
+            <i className="fas fa-users"></i> {t('games.blackjack.joinTable')}
           </button>
         </div>
       </div>

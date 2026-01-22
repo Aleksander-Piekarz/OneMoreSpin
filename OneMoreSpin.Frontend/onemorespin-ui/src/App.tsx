@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { LanguageProvider } from "./contexts/LanguageContext";
 import MainPage from "./pages/MainPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
@@ -19,8 +20,9 @@ import { MultiplayerBlackjackPage } from "./pages/MultiplayerBlackjackPage";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <LanguageProvider>
+      <BrowserRouter>
+        <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -39,6 +41,7 @@ export default function App() {
         <Route path="/single-poker/" element={<SinglePokerPage />} />
       </Routes>
     </BrowserRouter>
+    </LanguageProvider>
   );
 }
 

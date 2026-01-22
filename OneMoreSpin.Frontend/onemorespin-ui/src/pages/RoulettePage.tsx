@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Trash2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import { api } from '../api';
 import DemoToggle from '../components/DemoToggle';
 import { refreshMissions } from "../events";
@@ -137,6 +138,7 @@ const RouletteWheel = ({
 
 export default function RouletteGame() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [balance, setBalance] = useState(0);
   const [unlimitedMode, setUnlimitedMode] = useState(false);
   
@@ -300,7 +302,7 @@ export default function RouletteGame() {
         }, 8000);
     } catch (error: any) {
         setIsSpinning(false);
-        console.error(error.message || "Błąd gry");
+        console.error(error.message || t('games.roulette.gameError'));
         api.auth.me().then((u: any) => setBalance(u.balance));
     }
   };
@@ -426,7 +428,7 @@ export default function RouletteGame() {
       {showWin && (
           <div className={`win-overlay ${isFadingOut ? 'fade-out' : ''}`}>
             <div className="win-banner">
-              <h2 className="win-text">WYGRANA!</h2>
+              <h2 className="win-text">{t('games.roulette.win')}</h2>
               <p className="win-amount">{winAmount.toLocaleString()} PLN</p>
             </div>
           </div>
@@ -600,7 +602,7 @@ export default function RouletteGame() {
             className="leaderboard-toggle"
             onClick={() => setLeaderboardOpen((prev) => !prev)}
             aria-expanded={leaderboardOpen}
-            title={leaderboardOpen ? 'Schowaj ranking' : 'Pokaż ranking'}
+            title={leaderboardOpen ? t('games.roulette.hideLeaderboard') : t('games.roulette.showLeaderboard')}
           >
             <i className="fas fa-trophy"></i>
             <span>TOP</span>

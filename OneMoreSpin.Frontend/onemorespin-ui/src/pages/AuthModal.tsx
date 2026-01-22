@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../contexts/LanguageContext";
 import { api } from "../api";
 
 export type AuthMode = "login" | "register" | "forgot-password";
@@ -11,6 +12,7 @@ type Props = {
 
 const AuthModal: React.FC<Props> = ({ mode = "login", onClose }) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [currentMode, setCurrentMode] = useState<AuthMode>(mode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,10 +72,10 @@ const AuthModal: React.FC<Props> = ({ mode = "login", onClose }) => {
 
         {currentMode === "login" ? (
           <>
-            <h3 className="auth-modal-title">LOG IN</h3>
+            <h3 className="auth-modal-title">{t('common.login').toUpperCase()}</h3>
             <form onSubmit={onSubmitLogin} className="auth-form" noValidate>
               <div className="form-group">
-                <label htmlFor="login-email">Email</label>
+                <label htmlFor="login-email">{t('auth.email')}</label>
                 <input
                   id="login-email"
                   type="email"
@@ -86,7 +88,7 @@ const AuthModal: React.FC<Props> = ({ mode = "login", onClose }) => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="login-password">Password</label>
+                <label htmlFor="login-password">{t('auth.password')}</label>
                 <input
                   id="login-password"
                   type="password"
@@ -105,26 +107,26 @@ const AuthModal: React.FC<Props> = ({ mode = "login", onClose }) => {
                   onClick={() => setCurrentMode("forgot-password")}
                   style={{ background: "none", border: "none", color: "#aaa", cursor: "pointer", textDecoration: "underline" }}
                 >
-                  Forgot Password?
+                  {t('auth.forgotPassword')}
                 </button>
               </div>
 
               {error && <div className="error">{error}</div>}
 
               <button type="submit" className="submit-btn" disabled={busy}>
-                {busy ? "Logging in..." : "LOG IN"}
+                {busy ? t('common.loading') : t('common.login').toUpperCase()}
               </button>
             </form>
           </>
         ) : currentMode === "forgot-password" ? (
           <>
-            <h3 className="auth-modal-title">RESET PASSWORD</h3>
+            <h3 className="auth-modal-title">{t('auth.resetPassword').toUpperCase()}</h3>
             <form onSubmit={onSubmitForgotPassword} className="auth-form" noValidate>
               <p style={{ color: "#ccc", marginBottom: "1rem" }}>
-                Enter your email address and we'll send you a link to reset your password.
+                Wpisz adres email i wyślemy Ci link do resetowania hasła.
               </p>
               <div className="form-group">
-                <label htmlFor="forgot-email">Email</label>
+                <label htmlFor="forgot-email">{t('auth.email')}</label>
                 <input
                   id="forgot-email"
                   type="email"
@@ -140,7 +142,7 @@ const AuthModal: React.FC<Props> = ({ mode = "login", onClose }) => {
               {successMessage && <div className="success" style={{ color: "lightgreen", marginBottom: "10px" }}>{successMessage}</div>}
 
               <button type="submit" className="submit-btn" disabled={busy}>
-                {busy ? "Sending..." : "SEND RESET LINK"}
+                {busy ? t('common.loading') : t('auth.resetPassword').toUpperCase()}
               </button>
 
               <button
@@ -149,15 +151,15 @@ const AuthModal: React.FC<Props> = ({ mode = "login", onClose }) => {
                 onClick={() => setCurrentMode("login")}
                 style={{ marginTop: "10px", background: "none", border: "none", color: "#aaa", cursor: "pointer", textDecoration: "underline", width: "100%" }}
               >
-                Back to Login
+                {t('common.back')}
               </button>
             </form>
           </>
         ) : (
           <>
-            <h3 className="auth-modal-title">REGISTER</h3>
-            <p className="auth-modal-info">Please use the Create Account form.</p>
-            <a className="create-account-btn" href="/register">CREATE ACCOUNT</a>
+            <h3 className="auth-modal-title">{t('common.register').toUpperCase()}</h3>
+            <p className="auth-modal-info">Użyj formularza Rejestracji.</p>
+            <a className="create-account-btn" href="/register">{t('common.register').toUpperCase()}</a>
           </>
         )}
       </div>

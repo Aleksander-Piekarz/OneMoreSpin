@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import { usePokerGame } from '../hooks/usePokerGame';
 import Leaderboard from '../components/Leaderboard';
 import { GameCard, type ThemeType } from '../components/GameCard';
-import { GameHelpModal, POKER_MULTIPLAYER_HELP } from '../components/GameHelpModal';
 import { fireConfetti } from '../utils/confetti';
+import { GameHelpModal, POKER_MULTIPLAYER_HELP } from '../components/GameHelpModal';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import '../styles/PokerPage.css';
 
 export const PokerPage = () => {
     const { tableId } = useParams();
     const navigate = useNavigate();
+    const { t, language } = useLanguage();
     // Używamy ID z URL lub domyślnego
     const currentTableId = tableId || "stol-1";
     
@@ -68,11 +71,11 @@ export const PokerPage = () => {
         const didIWin = winners.some(w => w.userId === myUserId);
         
         if (didIWin) {
-            setResultMessage("WYGRANA!");
+            setResultMessage(t('games.poker.win'));
             setIsWin(true);
             fireConfetti();
         } else {
-            setResultMessage("PRZEGRANA");
+            setResultMessage(t('games.poker.lose'));
             setIsWin(false);
         }
 
@@ -92,8 +95,8 @@ export const PokerPage = () => {
         }
     };
 
-    if (!isConnected) return <div className="poker-container" style={{justifyContent:'center'}}><h2>🔌 Łączenie z kasynem...</h2></div>;
-    if (!table) return <div className="poker-container" style={{justifyContent:'center'}}><h2>🚀 Wchodzenie do stołu...</h2></div>;
+    if (!isConnected) return <div className="poker-container" style={{justifyContent:'center'}}><h2>🔌 {t('games.poker.connecting')}</h2></div>;
+    if (!table) return <div className="poker-container" style={{justifyContent:'center'}}><h2>🚀 {t('games.poker.enteringTable')}</h2></div>;
 
     const myPlayer = table.players.find(p => p.userId === myUserId);
     const currentPlayer = table.players[table.currentPlayerIndex];
@@ -119,6 +122,22 @@ export const PokerPage = () => {
         sortedPlayers = [...part1, ...part2];
     }
 
+    const translateLog = (log: string) => {
+        if (language === 'pl') return log;
+
+        let translated = log;
+
+        translated = translated.replace(/^Gracz\s+([^\s]+)\s+dołączył\.?/i, 'Player $1 joined.');
+        translated = translated.replace(/WYGRAŁ/gi, 'WON');
+        translated = translated.replace(/Układ/gi, 'Hand');
+        translated = translated.replace(/PAS/gi, 'FOLD');
+        translated = translated.replace(/PULA/gi, 'POT');
+        translated = translated.replace(/Stół/gi, 'Table');
+        translated = translated.replace(/Etap/gi, 'Stage');
+
+        return translated;
+    };
+
     return (
         <div className="poker-container leaderboard-host">
             {/* ANIMOWANE TŁO */}
@@ -133,11 +152,11 @@ export const PokerPage = () => {
                 <div className="poker-brand">TEXAS HOLD'EM</div>
                 <div className="poker-info">
                     <div className="poker-stat">
-                        <span className="poker-stat-label">Stół:</span>
+                        <span className="poker-stat-label">{t('games.poker.tableLabel')}:</span>
                         <span className="poker-stat-value">{table.id}</span>
                     </div>
                     <div className="poker-stat">
-                        <span className="poker-stat-label">Etap:</span>
+                        <span className="poker-stat-label">{t('games.poker.stageLabel')}:</span>
                         <span className="poker-stat-value-gold">{table.stage}</span>
                     </div>
                 </div>
@@ -153,7 +172,7 @@ export const PokerPage = () => {
                         }
                     }} className="poker-leave-btn">
                         <i className="fas fa-sign-out-alt"></i>
-                        <span>Wyjdź</span>
+                        <span>{t('games.poker.leaveTable')}</span>
                     </button>
                 </div>
             </header>
@@ -163,7 +182,7 @@ export const PokerPage = () => {
                 {/* STÓŁ Z KLASĄ MOTYWU */}
                 <div className={`poker-table table-theme-${currentTheme}`}>
                     <div className="table-center-content">
-                        <div className="pot-display">PULA <span className="pot-amount">${table.pot}</span></div>
+                        <div className="pot-display">{t('games.poker.pot').toUpperCase()} <span className="pot-amount">${table.pot}</span></div>
                         
                         <div className="community-cards">
                             {table.communityCards.map((c, i) => <GameCard key={i} card={c} theme={currentTheme} />)}
@@ -192,12 +211,12 @@ export const PokerPage = () => {
 
                     return (
                         <div key={p.userId} className={seatClasses} style={pos}>
-                            {isActiveTurn && <div className="badge-turn">Ruch</div>}
+                            {isActiveTurn && <div className="badge-turn">{t('games.poker.turn')}</div>}
                             {p.isVip && <div className="badge-vip">👑</div>}
                             
                             <div className={`player-name ${p.isVip ? 'vip-name' : ''}`}>
                                 {p.isVip && <span className="vip-crown">👑</span>}
-                                {p.username.split('@')[0]} {isMe && "(Ty)"}
+                                {p.username.split('@')[0]} {isMe && `(${t('common.you')})`}
                             </div>
                             
                             <div className="player-cards">
@@ -213,7 +232,7 @@ export const PokerPage = () => {
                                 {p.currentBet > 0 && <span className="bet-amount">${p.currentBet}</span>}
                             </div>
 
-                            {p.isFolded && <div className="overlay-fold">PAS</div>}
+                            {p.isFolded && <div className="overlay-fold">{t('games.poker.folded')}</div>}
                             {isAllIn && <div className="badge-allin">ALL-IN</div>}
                         </div>
                     );
@@ -223,7 +242,7 @@ export const PokerPage = () => {
             {/* PANEL LOGÓW (LEWA STRONA) */}
             <div className="log-panel">
                 <div className="log-header">
-                    <span>HISTORIA GRY</span><span style={{color: '#66bb6a'}}>● Live</span>
+                    <span>{t('games.poker.historyTitle').toUpperCase()}</span><span style={{color: '#66bb6a'}}>● Live</span>
                 </div>
                 <div className="log-content">
                     {logs.map((log, i) => {
@@ -231,7 +250,8 @@ export const PokerPage = () => {
                         if(log.includes("WYGRAŁ")) c = '#66bb6a';
                         if(log.includes("Układ")) c = '#ffd700';
                         if(log.includes("PAS")) c = '#ef5350';
-                        return <div key={i} style={{color: c}}>{log}</div>
+                        const displayLog = translateLog(log);
+                        return <div key={i} style={{color: c}}>{displayLog}</div>
                     })}
                     <div ref={logsEndRef} />
                 </div>
@@ -240,7 +260,7 @@ export const PokerPage = () => {
             {/* PANEL CZATU - PO LEWEJ STRONIE POD LOGAMI */}
             <div className="chat-panel-widget">
                 <div className="chat-header">
-                    <span>💬 CZAT STOŁU</span>
+                    <span>💬 {t('games.poker.tableChat')}</span>
                 </div>
 
                 <div className="chat-messages">
@@ -255,7 +275,7 @@ export const PokerPage = () => {
                         ))
                     ) : (
                         <div className="chat-empty">
-                            Rozpocznij rozmowę...
+                            {t('games.poker.startChat')}
                         </div>
                     )}
                     <div ref={chatEndRef} />
@@ -267,7 +287,7 @@ export const PokerPage = () => {
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                        placeholder="Napisz wiadomość..."
+                        placeholder={t('games.poker.chatPlaceholder')}
                         className="chat-input"
                     />
                     <button 
@@ -282,7 +302,7 @@ export const PokerPage = () => {
             <div className="controls-bar">
                 {!table.gameInProgress ? (
                     <button onClick={startGame} className="poker-btn btn-start">
-                        {table.stage === 'Showdown' ? "NASTĘPNE ROZDANIE" : "ROZDAJ KARTY"}
+                        {table.stage === 'Showdown' ? t('games.poker.nextRound') : t('games.poker.dealCards')}
                     </button>
                 ) : (
                     <>
@@ -290,12 +310,12 @@ export const PokerPage = () => {
                             <>
                                 {isMyTurn ? (
                                     <>
-                                        <button onClick={() => move("FOLD", 0)} className="poker-btn btn-fold">PAS</button>
+                                        <button onClick={() => move("FOLD", 0)} className="poker-btn btn-fold">{t('games.poker.fold')}</button>
                                         
                                         {toCall === 0 ? (
-                                            <button onClick={() => move("CHECK", 0)} className="poker-btn btn-check">CZEKAJ</button>
+                                            <button onClick={() => move("CHECK", 0)} className="poker-btn btn-check">{t('games.poker.check')}</button>
                                         ) : (
-                                            <button onClick={() => move("CALL", 0)} className="poker-btn btn-call">SPRAWDŹ (${toCall})</button>
+                                            <button onClick={() => move("CALL", 0)} className="poker-btn btn-call">{t('games.poker.call')} (${toCall})</button>
                                         )}
                                         
                                         <div className="raise-control">
@@ -305,17 +325,17 @@ export const PokerPage = () => {
                                                 onChange={e => setRaiseAmount(Number(e.target.value))}
                                                 className="raise-input"
                                             />
-                                            <button onClick={() => move("RAISE", raiseAmount)} className="poker-btn btn-raise">PODBIJ</button>
+                                            <button onClick={() => move("RAISE", raiseAmount)} className="poker-btn btn-raise">{t('games.poker.raise')}</button>
                                         </div>
                                     </>
                                 ) : (
                                     <div style={{color: '#888', fontStyle: 'italic', alignSelf: 'center'}}>
-                                        Czekaj na ruch gracza: <span style={{color:'#fff', fontWeight:'bold'}}>{currentPlayer?.username.split('@')[0]}</span>
+                                        {t('common.loading')} <span style={{color:'#fff', fontWeight:'bold'}}>{currentPlayer?.username.split('@')[0]}</span>
                                     </div>
                                 )}
                             </>
                         )}
-                        {myPlayer && myPlayer.isFolded && <div style={{color: '#ef5350', fontWeight: 'bold'}}>SPASOWAŁEŚ</div>}
+                        {myPlayer && myPlayer.isFolded && <div style={{color: '#ef5350', fontWeight: 'bold'}}>{t('games.poker.youFolded')}</div>}
                     </>
                 )}
             </div>
@@ -328,7 +348,7 @@ export const PokerPage = () => {
                     className="leaderboard-toggle"
                     onClick={() => setLeaderboardOpen(prev => !prev)}
                     aria-expanded={leaderboardOpen}
-                    title={leaderboardOpen ? 'Schowaj ranking' : 'Pokaż ranking'}
+                    title={leaderboardOpen ? t('games.poker.hideLeaderboard') : t('games.poker.showLeaderboard')}
                 >
                     <i className="fas fa-trophy"></i>
                     <span>TOP</span>
