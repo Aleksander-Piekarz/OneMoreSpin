@@ -34,6 +34,7 @@ export const usePokerGame = (tableId: string) => {
     const [isConnected, setIsConnected] = useState(false);
     const [myUserId, setMyUserId] = useState("");
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+    const [kickReason, setKickReason] = useState<string | null>(null);
     const hasLeftRef = useRef(false);
    
 
@@ -69,6 +70,13 @@ export const usePokerGame = (tableId: string) => {
         pokerService.onReceiveMessage((username, text) => {
             if (isMounted) {
                 setChatMessages(prev => [...prev, { username, text }]);
+            }
+        });
+
+        pokerService.onKickFromTable((reason) => {
+            if (isMounted) {
+                console.log("[POKER] Kicked from table:", reason);
+                setKickReason(reason);
             }
         });
 
@@ -121,9 +129,15 @@ export const usePokerGame = (tableId: string) => {
         if (!isConnected) return;
         await pokerService.makeMove(tableId, action, amount);
     };
+
+    const setReady = async (isReady: boolean) => {
+        if (!isConnected) return;
+        await pokerService.setReady(tableId, isReady);
+    };
+
     const sendChatMessage = async (msg: string) => {
             if (!isConnected) return;
             await pokerService.sendMessage(tableId, msg);
         };
-    return { table, logs, isConnected, startGame, move, myUserId, chatMessages, sendChatMessage, leaveTable };
+    return { table, logs, isConnected, startGame, move, myUserId, chatMessages, sendChatMessage, leaveTable, kickReason, setReady };
 };

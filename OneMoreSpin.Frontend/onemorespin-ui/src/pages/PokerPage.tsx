@@ -5,8 +5,6 @@ import { usePokerGame } from '../hooks/usePokerGame';
 import Leaderboard from '../components/Leaderboard';
 import { GameCard, type ThemeType } from '../components/GameCard';
 import { fireConfetti } from '../utils/confetti';
-import { GameHelpModal, POKER_MULTIPLAYER_HELP } from '../components/GameHelpModal';
-import LanguageSwitcher from '../components/LanguageSwitcher';
 import '../styles/PokerPage.css';
 
 export const PokerPage = () => {
@@ -17,7 +15,7 @@ export const PokerPage = () => {
     const currentTableId = tableId || "stol-1";
     
     // Rozszerzamy destrukturyzację o chatMessages i sendChatMessage
-    const { table, logs, isConnected, startGame, move, myUserId, chatMessages, sendChatMessage, leaveTable } = usePokerGame(currentTableId);
+    const { table, logs, isConnected, move, myUserId, chatMessages, sendChatMessage, leaveTable, kickReason, setReady } = usePokerGame(currentTableId);
     
     const [raiseAmount, setRaiseAmount] = useState(100);
     const [leaderboardOpen, setLeaderboardOpen] = useState(false);
@@ -50,6 +48,14 @@ export const PokerPage = () => {
         }
     }, [chatMessages]);
 
+    // Obsługa wyrzucenia z pokoju (np. brak VIP)
+    useEffect(() => {
+        if (kickReason) {
+            alert(kickReason);
+            navigate('/poker');
+        }
+    }, [kickReason, navigate]);
+
     // Obsługa powiadomień wygranej/przegranej dla pokera
     useEffect(() => {
         if (!table || table.stage !== 'Showdown' || prevStageRef.current === 'Showdown') return;
@@ -59,16 +65,10 @@ export const PokerPage = () => {
         const myPlayer = table.players.find(p => p.userId === myUserId);
         if (!myPlayer || myPlayer.isFolded) return;
 
-        // Sprawdzamy czy ktoś wygrał
-        const activePlayers = table.players.filter(p => !p.isFolded);
-        if (activePlayers.length === 0) return;
-
-        // Znajdź gracza z największą pulą (najprostszy sposób - możesz to ulepszyć)
-        // W prawdziwym pokerze backend powinien wysyłać info o zwycięzcy
-        const maxChips = Math.max(...activePlayers.map(p => p.chips));
-        const winners = activePlayers.filter(p => p.chips === maxChips);
+        // Sprawdzamy czy backend wysłał info o zwycięzcy
+        if (!table.winnerId) return;
         
-        const didIWin = winners.some(w => w.userId === myUserId);
+        const didIWin = table.winnerId === myUserId;
         
         if (didIWin) {
             setResultMessage(t('games.poker.win'));
@@ -108,9 +108,9 @@ export const PokerPage = () => {
     // Pozycjonowanie graczy (Elipsa) - gracze względem wrappera
     const getPosition = (index: number, total: number) => {
         const angle = (index / total) * 2 * Math.PI + (Math.PI / 2);
-        // Promień dostosowany do wrappera (gracze na zewnątrz stołu)
-        const x = 50 + 42 * Math.cos(angle); 
-        const y = 50 + 42 * Math.sin(angle);
+        // Zmniejszony promień - 38% zamiast 42% żeby gracze nie wychodziili poza ekran
+        const x = 50 + 38 * Math.cos(angle); 
+        const y = 50 + 38 * Math.sin(angle);
         return { top: `${y}%`, left: `${x}%`, transform: 'translate(-50%, -50%)' };
     };
 
@@ -147,21 +147,9 @@ export const PokerPage = () => {
                 <div className="floating-shape shape-3"></div>
             </div>
 
-            {/* HEADER - identyczny jak Blackjack */}
+            {/* HEADER - nowy układ */}
             <header className="poker-header">
-                <div className="poker-brand">TEXAS HOLD'EM</div>
-                <div className="poker-info">
-                    <div className="poker-stat">
-                        <span className="poker-stat-label">{t('games.poker.tableLabel')}:</span>
-                        <span className="poker-stat-value">{table.id}</span>
-                    </div>
-                    <div className="poker-stat">
-                        <span className="poker-stat-label">{t('games.poker.stageLabel')}:</span>
-                        <span className="poker-stat-value-gold">{table.stage}</span>
-                    </div>
-                </div>
-                <div className="poker-header-actions">
-                    <GameHelpModal content={POKER_MULTIPLAYER_HELP} position="header" />
+                <div className="poker-header-left">
                     <button onClick={async () => { 
                         try {
                             await leaveTable(); 
@@ -171,9 +159,24 @@ export const PokerPage = () => {
                             navigate('/poker'); 
                         }
                     }} className="poker-leave-btn">
-                        <i className="fas fa-sign-out-alt"></i>
+                        <i className="fas fa-arrow-left"></i>
                         <span>{t('games.poker.leaveTable')}</span>
                     </button>
+                </div>
+                <div className="poker-header-center">
+                    <div className="poker-brand">TEXAS HOLD'EM</div>
+                    <div className="poker-info">
+                        <div className="poker-stat">
+                            <span className="poker-stat-label">{t('games.poker.tableLabel')}:</span>
+                            <span className="poker-stat-value">{table.id}</span>
+                        </div>
+                        <div className="poker-stat">
+                            <span className="poker-stat-label">{t('games.poker.stageLabel')}:</span>
+                            <span className="poker-stat-value-gold">{table.stage}</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="poker-header-right">
                 </div>
             </header>
 
@@ -301,9 +304,27 @@ export const PokerPage = () => {
 
             <div className="controls-bar">
                 {!table.gameInProgress ? (
-                    <button onClick={startGame} className="poker-btn btn-start">
-                        {table.stage === 'Showdown' ? t('games.poker.nextRound') : t('games.poker.dealCards')}
-                    </button>
+                    <>
+                        {table.waitingForReady ? (
+                            <div className="ready-countdown">
+                                <span className="countdown-text">🎰 {t('games.poker.startingIn')}: {table.readyCountdown}s</span>
+                            </div>
+                        ) : (
+                            <>
+                                {myPlayer && (
+                                    <button 
+                                        onClick={() => setReady(!myPlayer.isReady)} 
+                                        className={`poker-btn ${myPlayer.isReady ? 'btn-ready-active' : 'btn-ready'}`}
+                                    >
+                                        {myPlayer.isReady ? `✓ ${t('games.poker.ready')}` : t('games.poker.setReady')}
+                                    </button>
+                                )}
+                                <div className="ready-status">
+                                    {t('games.poker.playersReady')}: {table.players.filter(p => p.isReady).length}/{table.players.length}
+                                </div>
+                            </>
+                        )}
+                    </>
                 ) : (
                     <>
                         {myPlayer && !myPlayer.isFolded && (

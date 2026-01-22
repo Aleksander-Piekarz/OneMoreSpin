@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import BlackjackModeSelector from '../components/BlackjackModeSelector';
-import { GameHelpModal, BLACKJACK_HELP } from '../components/GameHelpModal';
 import '../styles/BlackjackModePage.css';
 
 const BlackjackModePage: React.FC = () => {
@@ -26,7 +25,7 @@ const BlackjackModePage: React.FC = () => {
           <span className="bj-title-word">BLACK</span>
           <span className="bj-title-word">JACK</span>
         </h1>
-        <GameHelpModal content={BLACKJACK_HELP} position="header" />
+
         <div className="bj-header-spacer"></div>
       </header>
 

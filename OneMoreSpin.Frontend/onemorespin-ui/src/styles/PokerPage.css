@@ -67,7 +67,7 @@
   75% { transform: translate(50px, -30px) rotate(270deg) scale(1.05); }
 }
 
-/* === HEADER - identyczny jak Blackjack === */
+/* === HEADER - nowy układ === */
 .poker-header {
   display: flex;
   align-items: center;
@@ -79,6 +79,32 @@
   z-index: 100;
   position: relative;
   flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.poker-header-left,
+.poker-header-right {
+  flex: 0 0 auto;
+  min-width: 120px;
+}
+
+.poker-header-left {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.poker-header-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.poker-header-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 .poker-brand {
@@ -121,13 +147,6 @@
 .poker-stat-value-gold {
   color: #ffd700;
   font-weight: 700;
-}
-
-/* Header actions container */
-.poker-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }
 
 .poker-leave-btn {
@@ -191,6 +210,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: visible; /* Pozwól graczom na wychodzenie poza wrapper */
 }
 
 /* === STÓŁ POKEROWY - zmieszczony na ekranie === */
@@ -813,6 +833,62 @@
 .btn-start:hover:not(:disabled) {
   box-shadow: 0 8px 30px rgba(67, 233, 123, 0.6);
   transform: translateY(-3px);
+}
+
+/* Przyciski gotowości */
+.btn-ready {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+  min-width: clamp(150px, 20vw, 200px);
+  font-size: clamp(14px, 1.8vw, 18px);
+}
+
+.btn-ready:hover:not(:disabled) {
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+  transform: translateY(-2px);
+}
+
+.btn-ready-active {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: #0a0e27;
+  box-shadow: 0 5px 20px rgba(67, 233, 123, 0.4);
+  min-width: clamp(150px, 20vw, 200px);
+  font-size: clamp(14px, 1.8vw, 18px);
+}
+
+.btn-ready-active:hover:not(:disabled) {
+  box-shadow: 0 8px 30px rgba(67, 233, 123, 0.6);
+  transform: translateY(-2px);
+}
+
+.ready-status {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: clamp(12px, 1.5vw, 14px);
+  margin-left: 15px;
+}
+
+.ready-countdown {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 30px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 165, 0, 0.3) 100%);
+  border: 2px solid #ffd700;
+  border-radius: 50px;
+  animation: pulse-countdown 1s infinite;
+}
+
+.countdown-text {
+  color: #ffd700;
+  font-size: clamp(18px, 2.5vw, 24px);
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+@keyframes pulse-countdown {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 /* Kontrola raise */

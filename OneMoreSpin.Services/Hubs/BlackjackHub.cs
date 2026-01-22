@@ -25,6 +25,23 @@ namespace OneMoreSpin.Services.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
+        public async Task LeaveTable(string tableId)
+        {
+            var table = _blackjackService.GetTable(tableId);
+            var player = table?.Players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
+            string username = player?.Username ?? "Gracz";
+            
+            _blackjackService.LeaveTable(Context.ConnectionId);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, tableId);
+            
+            var updatedTable = _blackjackService.GetTable(tableId);
+            if (updatedTable != null)
+            {
+                await Clients.Group(tableId).SendAsync("UpdateGameState", updatedTable);
+                await Clients.Group(tableId).SendAsync("PlayerLeft", username);
+            }
+        }
+
         public async Task JoinTable(string tableId)
         {
             var userId = Context.UserIdentifier;

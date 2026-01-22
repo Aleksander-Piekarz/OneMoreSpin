@@ -50,5 +50,9 @@ namespace OneMoreSpin.Model.DataModels
         public string Stage { get; set; } = "Waiting";
         public bool GameInProgress { get; set; } = false;
         public int PlayersReady { get; set; } = 0;
+        
+        // Timer na obstawianie (30 sekund)
+        public int BettingCountdown { get; set; } = 0;
+        public bool WaitingForBets { get; set; } = false;
     }
 }

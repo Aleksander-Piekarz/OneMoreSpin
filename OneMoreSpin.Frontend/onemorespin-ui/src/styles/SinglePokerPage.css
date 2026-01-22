@@ -559,6 +559,38 @@ body {
   line-height: 1;
 }
 
+.sp-bet-input {
+  font-family: 'Big Shoulders', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fbbf24;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(251, 191, 36, 0.4);
+  border-radius: 8px;
+  padding: 4px 8px;
+  width: 90px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.sp-bet-input:focus {
+  outline: none;
+  border-color: #fbbf24;
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+}
+
+.sp-bet-input::-webkit-outer-spin-button,
+.sp-bet-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.sp-bet-input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 /* Przyciski Główne */
 .sp-main-btn {
   height: 55px;

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 
 type Language = 'pl' | 'en';
@@ -26,7 +26,7 @@ const translations: Record<Language, any> = {
       settings: "Ustawienia",
       language: "Język",
       balance: "Saldo",
-      loading: "Ładowanie...",
+      loading: "Status",
       error: "Błąd",
       success: "Sukces",
       cancel: "Anuluj",
@@ -129,7 +129,9 @@ const translations: Record<Language, any> = {
         tableChat: "Czat stołu",
         startChat: "Rozpocznij rozmowę...",
         chatPlaceholder: "Napisz wiadomość...",
-        placeBet: "Postaw"
+        placeBet: "Postaw",
+        roundStartsIn: "Runda zaczyna się za",
+        waitingForOthers: "Czekanie na innych graczy..."
       },
       roulettePage: {
         title: "Ruletka",
@@ -188,7 +190,11 @@ const translations: Record<Language, any> = {
         startChat: "Rozpocznij rozmowę...",
         chatPlaceholder: "Napisz wiadomość...",
         folded: "Pas",
-        youFolded: "Spasowałeś"
+        youFolded: "Spasowałeś",
+        ready: "Gotowy",
+        setReady: "Jestem gotowy",
+        playersReady: "Gotowi gracze",
+        startingIn: "Start za"
       },
       slots: {
         title: "Automaty",
@@ -463,6 +469,147 @@ const translations: Record<Language, any> = {
       sevensSecond: "Siódemki to drugi najlepszy symbol (25x stawki).",
       playResponsibly: "Graj rozsądnie - automaty są losowe, nie ma \"gorących\" maszyn.",
       setLossLimit: "Ustaw limit strat przed rozpoczęciem gry."
+    },
+    helpOverlay: {
+      title: "📚 Pomoc",
+      blackjack: {
+        title: "♠️ Blackjack Solo",
+        goal: {
+          title: "🎯 Cel gry",
+          desc: "Zbierz karty o wartości jak najbliższej 21 punktów, nie przekraczając tej liczby. Pokonaj krupiera!"
+        },
+        cards: {
+          title: "🃏 Wartości kart",
+          desc: "• 2-10 = wartość nominalna<br>• J, Q, K = 10 punktów<br>• As = 1 lub 11 punktów (automatycznie)<br>• Blackjack (As + 10/J/Q/K) = natychmiastowa wygrana 1.5x!"
+        },
+        actions: {
+          title: "🎮 Dostępne akcje",
+          desc: "<strong>DOBIERZ (Hit)</strong> - Weź kolejną kartę<br><strong>STÓJ (Stand)</strong> - Zachowaj obecny wynik<br><strong>PODWÓJ (Double)</strong> - Podwój zakład, dobierz 1 kartę i stój"
+        },
+        rules: {
+          title: "📋 Zasady",
+          desc: "• Krupier dobiera do 16, stoi na 17+<br>• Przekroczenie 21 = przegrana (bust)<br>• Remis = zwrot zakładu<br>• Blackjack bije 21 z więcej kart"
+        },
+        tips: {
+          title: "💡 Wskazówki",
+          desc: "• Podwajaj zawsze na 11<br>• Stój na 17 lub więcej<br>• Dobieraj na 11 lub mniej<br>• Jeśli krupier ma 6 lub mniej - częściej przekroczy 21"
+        }
+      },
+      blackjackMultiplayer: {
+        title: "♠️ Blackjack Multiplayer",
+        goal: {
+          title: "🎯 Cel gry",
+          desc: "Te same zasady co w solo, ale grasz z innymi graczami przy wspólnym stole przeciwko krupierowi!"
+        },
+        betting: {
+          title: "⏱️ Faza obstawiania",
+          desc: "• Masz <strong>30 sekund</strong> na postawienie zakładu<br>• Runda startuje automatycznie po upływie czasu<br>• Pierwszy gracz który postawi uruchamia timer<br>• Możesz zmienić zakład do końca odliczania"
+        },
+        gameplay: {
+          title: "🎮 Rozgrywka",
+          desc: "• Gracze podejmują decyzje po kolei<br>• Czekaj na swoją turę (podświetlenie)<br>• Krupier gra jako ostatni<br>• Każdy gracz gra niezależnie przeciwko krupierowi"
+        },
+        chat: {
+          title: "💬 Czat",
+          desc: "• Komunikuj się z graczami przy stole<br>• Czat w prawym dolnym rogu<br>• Bądź kulturalny!"
+        },
+        tips: {
+          title: "💡 Wskazówki",
+          desc: "• Obserwuj decyzje innych graczy<br>• Nie spiesz się - masz czas<br>• Używaj czatu do strategii zespołowej"
+        }
+      },
+      poker: {
+        title: "♦️ Video Poker",
+        goal: {
+          title: "🎯 Cel gry",
+          desc: "Graj przeciwko krupierowi. Stwórz lepszy układ 5 kart i wygraj 2x stawkę!"
+        },
+        hands: {
+          title: "🏆 Układy kart (od najsłabszego)",
+          desc: "• Wysoka karta<br>• Para<br>• Dwie pary<br>• Trójka<br>• Strit (5 kart po kolei)<br>• Kolor (5 kart tej samej maści)<br>• Full (trójka + para)<br>• Kareta<br>• Poker (strit w kolorze)<br>• Poker królewski (10-A w kolorze)"
+        },
+        gameplay: {
+          title: "🎮 Jak grać",
+          desc: "1. Wpisz lub ustaw stawkę<br>2. Kliknij ROZDAJ<br>3. Wybierz karty do wymiany (max 4)<br>4. Kliknij WYMIEŃ lub ZOSTAW<br>5. Porównaj układ z krupierem!"
+        },
+        payouts: {
+          title: "💰 Wypłaty",
+          desc: "<strong>Wygrana = 2x stawka</strong><br>Pokonaj krupiera mając lepszy układ kart.<br>W przypadku remisu - zwrot stawki."
+        },
+        tips: {
+          title: "💡 Wskazówki",
+          desc: "• Trzymaj parę lub lepiej<br>• Przy 4 do koloru/strita - wymieniaj jedną<br>• Wysoka karta rzadko wygrywa"
+        }
+      },
+      pokerMultiplayer: {
+        title: "♦️ Texas Hold'em Multiplayer",
+        goal: {
+          title: "🎯 Cel gry",
+          desc: "Wygraj pulę mając najlepszy układ 5 kart (z 2 własnych + 5 wspólnych) lub zmuszając wszystkich do spasowania!"
+        },
+        ante: {
+          title: "💵 Ante i start",
+          desc: "• Każdy gracz wpłaca <strong>ante 100$</strong><br>• <strong>Jeśli nie masz na ante - automatycznie pasujesz!</strong><br>• Gra startuje gdy wszyscy są gotowi (30s)<br>• Kliknij 'GOTOWY' aby dołączyć do rundy"
+        },
+        phases: {
+          title: "📋 Fazy gry",
+          desc: "1. <strong>Pre-flop</strong> - 2 karty własne<br>2. <strong>Flop</strong> - 3 karty wspólne<br>3. <strong>Turn</strong> - 4. karta wspólna<br>4. <strong>River</strong> - 5. karta wspólna<br>5. <strong>Showdown</strong> - porównanie układów"
+        },
+        actions: {
+          title: "🎮 Dostępne akcje",
+          desc: "<strong>CHECK</strong> - Czekaj (gdy nikt nie podbił)<br><strong>CALL</strong> - Wyrównaj stawkę<br><strong>RAISE</strong> - Podbij stawkę<br><strong>FOLD</strong> - Pas (tracisz wpłacone)<br><strong>ALL-IN</strong> - Wszystkie żetony"
+        },
+        tips: {
+          title: "💡 Wskazówki",
+          desc: "• Pozycja ma znaczenie - ostatni wie więcej<br>• Nie bój się pasować słabych kart<br>• Obserwuj zakłady przeciwników<br>• Blef działa lepiej przeciw 1-2 graczom"
+        }
+      },
+      roulette: {
+        title: "🎡 Ruletka",
+        goal: {
+          title: "🎯 Cel gry",
+          desc: "Przewiduj gdzie zatrzyma się kulka. Wyższa wygrana = mniejsza szansa!"
+        },
+        numbers: {
+          title: "🔢 Numery",
+          desc: "• Ruletka europejska: 0-36<br>• Zero (0) = zielone<br>• Pozostałe = czerwone i czarne naprzemiennie"
+        },
+        bets: {
+          title: "💰 Typy zakładów i wypłaty",
+          desc: "<strong>Numer</strong> (35:1) - jeden numer<br><strong>Split</strong> (17:1) - 2 sąsiednie<br><strong>Street</strong> (11:1) - rząd 3 numerów<br><strong>Corner</strong> (8:1) - 4 numery<br><strong>Kolor</strong> (1:1) - czerwone/czarne<br><strong>Parzyste</strong> (1:1) - parzyste/nieparzyste<br><strong>Połowa</strong> (1:1) - 1-18 lub 19-36"
+        },
+        gameplay: {
+          title: "🎮 Jak grać",
+          desc: "1. Wybierz żeton (10/50/100/500)<br>2. Kliknij na stole gdzie chcesz postawić<br>3. Możesz postawić wiele zakładów<br>4. Kliknij SPIN<br>5. Czekaj na wynik!"
+        },
+        tips: {
+          title: "💡 Wskazówki",
+          desc: "• Zakłady zewnętrzne (kolor) = bezpieczniejsze<br>• Zero daje przewagę kasynu<br>• Ustal limit i trzymaj się go<br>• Nie istnieją 'gorące' numery"
+        }
+      },
+      slots: {
+        title: "🎰 Automaty",
+        goal: {
+          title: "🎯 Cel gry",
+          desc: "Ułóż minimum 3 takie same symbole na jednej z 10 linii wygrywających!"
+        },
+        symbols: {
+          title: "🍀 Symbole i mnożniki",
+          desc: "🍋 Cytryna = 2x<br>🍒 Wiśnie = 3x<br>🍇 Winogrona = 5x<br>🔔 Dzwonek = 10x<br>☘️ Koniczyna = 15x<br>7️⃣ Siódemka = 25x<br>💎 Diament = 50x"
+        },
+        gameplay: {
+          title: "🎮 Jak grać",
+          desc: "1. Wpisz lub ustaw stawkę (+/-)<br>2. Kliknij SPIN lub pociągnij dźwignię<br>3. Bębny się zatrzymują<br>4. Wygrane linie zostają podświetlone!"
+        },
+        rules: {
+          title: "📋 10 linii wygrywających",
+          desc: "• 3 rzędy poziome<br>• 2 linie diagonalne (V i Λ)<br>• 2 linie V od góry/dołu<br>• 3 linie zygzakowe<br>• Wystarczą 3+ symbole od lewej!"
+        },
+        tips: {
+          title: "💡 Wskazówki",
+          desc: "• Diamenty = najwyższa wygrana (50x)<br>• Można wygrać na wielu liniach naraz!<br>• Ustal limit strat PRZED grą<br>• Każdy spin jest losowy"
+        }
+      }
     }
   },
   en: {
@@ -478,7 +625,7 @@ const translations: Record<Language, any> = {
       settings: "Settings",
       language: "Language",
       balance: "Balance",
-      loading: "Loading...",
+      loading: "Status",
       error: "Error",
       success: "Success",
       cancel: "Cancel",
@@ -581,7 +728,9 @@ const translations: Record<Language, any> = {
         tableChat: "Table chat",
         startChat: "Start the conversation...",
         chatPlaceholder: "Write a message...",
-        placeBet: "Place bet"
+        placeBet: "Place bet",
+        roundStartsIn: "Round starts in",
+        waitingForOthers: "Waiting for other players..."
       },
       roulettePage: {
         title: "Roulette",
@@ -640,7 +789,11 @@ const translations: Record<Language, any> = {
         startChat: "Start the conversation...",
         chatPlaceholder: "Write a message...",
         folded: "Folded",
-        youFolded: "You folded"
+        youFolded: "You folded",
+        ready: "Ready",
+        setReady: "I'm ready",
+        playersReady: "Players ready",
+        startingIn: "Starting in"
       },
       slots: {
         title: "Slot Machines",
@@ -907,6 +1060,147 @@ const translations: Record<Language, any> = {
       amountInvalid: "Invalid amount",
       amountTooSmall: "Amount too small",
       insufficientBalance: "Insufficient balance"
+    },
+    helpOverlay: {
+      title: "📚 Help",
+      blackjack: {
+        title: "♠️ Blackjack Solo",
+        goal: {
+          title: "🎯 Goal",
+          desc: "Get cards as close to 21 as possible without going over. Beat the dealer!"
+        },
+        cards: {
+          title: "🃏 Card Values",
+          desc: "• 2-10 = face value<br>• J, Q, K = 10 points<br>• Ace = 1 or 11 (automatic)<br>• Blackjack (Ace + 10/J/Q/K) = instant 1.5x win!"
+        },
+        actions: {
+          title: "🎮 Actions",
+          desc: "<strong>HIT</strong> - Draw another card<br><strong>STAND</strong> - Keep current total<br><strong>DOUBLE</strong> - Double bet, draw 1 card and stand"
+        },
+        rules: {
+          title: "📋 Rules",
+          desc: "• Dealer hits to 16, stands on 17+<br>• Over 21 = bust (lose)<br>• Tie = push (bet returned)<br>• Blackjack beats regular 21"
+        },
+        tips: {
+          title: "💡 Tips",
+          desc: "• Always double on 11<br>• Stand on 17 or higher<br>• Hit on 11 or less<br>• If dealer shows 6 or less - they often bust"
+        }
+      },
+      blackjackMultiplayer: {
+        title: "♠️ Blackjack Multiplayer",
+        goal: {
+          title: "🎯 Goal",
+          desc: "Same rules as solo, but play with other players at one table against the dealer!"
+        },
+        betting: {
+          title: "⏱️ Betting Phase",
+          desc: "• You have <strong>30 seconds</strong> to place your bet<br>• Round starts automatically when time runs out<br>• First player to bet starts the timer<br>• You can change your bet until countdown ends"
+        },
+        gameplay: {
+          title: "🎮 Gameplay",
+          desc: "• Players take turns making decisions<br>• Wait for your turn (highlighted)<br>• Dealer plays last<br>• Each player plays independently vs dealer"
+        },
+        chat: {
+          title: "💬 Chat",
+          desc: "• Communicate with players at the table<br>• Chat in bottom right corner<br>• Be respectful!"
+        },
+        tips: {
+          title: "💡 Tips",
+          desc: "• Watch other players' decisions<br>• Don't rush - you have time<br>• Use chat for team strategy"
+        }
+      },
+      poker: {
+        title: "♦️ Video Poker",
+        goal: {
+          title: "🎯 Goal",
+          desc: "Play against the dealer. Create a better 5-card hand and win 2x your bet!"
+        },
+        hands: {
+          title: "🏆 Hand Rankings (lowest to highest)",
+          desc: "• High Card<br>• Pair<br>• Two Pair<br>• Three of a Kind<br>• Straight (5 in sequence)<br>• Flush (5 same suit)<br>• Full House (3+2)<br>• Four of a Kind<br>• Straight Flush<br>• Royal Flush (10-A same suit)"
+        },
+        gameplay: {
+          title: "🎮 How to Play",
+          desc: "1. Type or set your bet<br>2. Click DEAL<br>3. Select cards to discard (max 4)<br>4. Click DRAW or HOLD<br>5. Compare hands with dealer!"
+        },
+        payouts: {
+          title: "💰 Payouts",
+          desc: "<strong>Win = 2x your bet</strong><br>Beat the dealer with a better hand.<br>Tie = bet returned."
+        },
+        tips: {
+          title: "💡 Tips",
+          desc: "• Always keep a pair or better<br>• With 4 to flush/straight - draw one<br>• High card rarely wins"
+        }
+      },
+      pokerMultiplayer: {
+        title: "♦️ Texas Hold'em Multiplayer",
+        goal: {
+          title: "🎯 Goal",
+          desc: "Win the pot with the best 5-card hand (from 2 hole + 5 community) or make everyone fold!"
+        },
+        ante: {
+          title: "💵 Ante & Start",
+          desc: "• Every player pays <strong>$100 ante</strong><br>• <strong>If you can't afford ante - auto fold!</strong><br>• Game starts when all are ready (30s)<br>• Click 'READY' to join the round"
+        },
+        phases: {
+          title: "📋 Game Phases",
+          desc: "1. <strong>Pre-flop</strong> - 2 hole cards<br>2. <strong>Flop</strong> - 3 community cards<br>3. <strong>Turn</strong> - 4th community card<br>4. <strong>River</strong> - 5th community card<br>5. <strong>Showdown</strong> - compare hands"
+        },
+        actions: {
+          title: "🎮 Actions",
+          desc: "<strong>CHECK</strong> - Pass (if no one raised)<br><strong>CALL</strong> - Match current bet<br><strong>RAISE</strong> - Increase the bet<br><strong>FOLD</strong> - Give up (lose what you bet)<br><strong>ALL-IN</strong> - Bet all your chips"
+        },
+        tips: {
+          title: "💡 Tips",
+          desc: "• Position matters - last to act knows more<br>• Don't be afraid to fold weak cards<br>• Watch opponents' betting patterns<br>• Bluffs work better vs 1-2 players"
+        }
+      },
+      roulette: {
+        title: "🎡 Roulette",
+        goal: {
+          title: "🎯 Goal",
+          desc: "Predict where the ball will land. Higher payout = lower chance!"
+        },
+        numbers: {
+          title: "🔢 Numbers",
+          desc: "• European roulette: 0-36<br>• Zero (0) = green<br>• Others = alternating red and black"
+        },
+        bets: {
+          title: "💰 Bet Types & Payouts",
+          desc: "<strong>Number</strong> (35:1) - single number<br><strong>Split</strong> (17:1) - 2 adjacent<br><strong>Street</strong> (11:1) - row of 3<br><strong>Corner</strong> (8:1) - 4 numbers<br><strong>Color</strong> (1:1) - red/black<br><strong>Even</strong> (1:1) - even/odd<br><strong>Half</strong> (1:1) - 1-18 or 19-36"
+        },
+        gameplay: {
+          title: "🎮 How to Play",
+          desc: "1. Select chip (10/50/100/500)<br>2. Click on table where to bet<br>3. Place multiple bets if you want<br>4. Click SPIN<br>5. Wait for result!"
+        },
+        tips: {
+          title: "💡 Tips",
+          desc: "• Outside bets (color) = safer<br>• Zero gives house edge<br>• Set a limit and stick to it<br>• There are no 'hot' numbers"
+        }
+      },
+      slots: {
+        title: "🎰 Slots",
+        goal: {
+          title: "🎯 Goal",
+          desc: "Line up at least 3 matching symbols on one of 10 paylines to win!"
+        },
+        symbols: {
+          title: "🍀 Symbols & Multipliers",
+          desc: "🍋 Lemon = 2x<br>🍒 Cherries = 3x<br>🍇 Grapes = 5x<br>🔔 Bell = 10x<br>☘️ Clover = 15x<br>7️⃣ Seven = 25x<br>💎 Diamond = 50x"
+        },
+        gameplay: {
+          title: "🎮 How to Play",
+          desc: "1. Type or set your bet (+/-)<br>2. Click SPIN or pull lever<br>3. Reels stop spinning<br>4. Winning lines get highlighted!"
+        },
+        rules: {
+          title: "📋 10 Paylines",
+          desc: "• 3 horizontal rows<br>• 2 diagonal lines (V and Λ)<br>• 2 V-shaped from top/bottom<br>• 3 zigzag patterns<br>• 3+ symbols from left wins!"
+        },
+        tips: {
+          title: "💡 Tips",
+          desc: "• Diamonds = highest payout (50x)<br>• Can win on multiple lines at once!<br>• Set loss limit BEFORE playing<br>• Each spin is random"
+        }
+      }
     }
   }
 };
@@ -921,6 +1215,16 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     setLanguageState(lang);
     localStorage.setItem('language', lang);
   };
+
+  // Expose help translations to window object for helpOverlay.js
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).__HELP_TRANSLATIONS__ = {
+        pl: translations.pl.helpOverlay,
+        en: translations.en.helpOverlay
+      };
+    }
+  }, []);
 
   const t = (key: string): string => {
     const keys = key.split('.');

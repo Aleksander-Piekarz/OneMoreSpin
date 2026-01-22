@@ -6,7 +6,6 @@ import { refreshMissions } from "../events";
 import { fireConfetti } from "../utils/confetti";
 import Leaderboard from "../components/Leaderboard";
 import DemoToggle from "../components/DemoToggle";
-import { GameHelpModal, BLACKJACK_HELP } from "../components/GameHelpModal";
 import "../styles/BlackjackPage.css";
 import { GameCard } from "../components/GameCard";
 import "../styles/SinglePokerPage.css";
@@ -33,11 +32,6 @@ type GameState = {
   canDouble: boolean;
   gameFinished: boolean;
 };
-
-function formatNumberWithSpaces(n: number | null | undefined) {
-  if (n === null || n === undefined) return "0";
-  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-}
 
 const BlackjackPage: React.FC = () => {
   const navigate = useNavigate();
@@ -302,7 +296,13 @@ const BlackjackPage: React.FC = () => {
                     </button>
                     <div className="sp-bet-info">
                       <span className="sp-bet-label">STAWKA</span>
-                      <span className="sp-bet-amount">{bet}</span>
+                      <input
+                        type="number"
+                        className="sp-bet-input"
+                        value={bet}
+                        onChange={(e) => setBet(Math.max(10, parseInt(e.target.value) || 10))}
+                        min={10}
+                      />
                     </div>
                     <button
                       className="sp-bet-btn-small"
@@ -369,9 +369,6 @@ const BlackjackPage: React.FC = () => {
           <span>TOP</span>
         </button>
       </div>
-
-      {/* PRZYCISK POMOCY */}
-      <GameHelpModal content={BLACKJACK_HELP} position="floating" />
     </div>
   );
 };

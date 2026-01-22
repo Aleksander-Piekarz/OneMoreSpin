@@ -91,6 +91,20 @@ namespace OneMoreSpin.Services.ConcreteServices
                     existing.Username = dbUsername;
                     existing.Chips = playerChips;
                     existing.IsVip = isVip;
+                    
+                    // Resetuj wyniki z poprzedniej gry gdy gracz wraca
+                    if (!table.GameInProgress)
+                    {
+                        existing.Result = "";
+                        existing.Payout = 0;
+                        existing.CurrentBet = 0;
+                        existing.Hand.Clear();
+                        existing.Score = 0;
+                        existing.HasStood = false;
+                        existing.HasBusted = false;
+                        existing.HasBlackjack = false;
+                        existing.HasDoubledDown = false;
+                    }
                 }
                 else
                 {
@@ -191,10 +205,84 @@ namespace OneMoreSpin.Services.ConcreteServices
                 Console.WriteLine($"[BLACKJACK BET] {player.Username} postawił ${amount}. Ready: {table.PlayersReady}/{table.Players.Count}");
 
                 _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"💰 {player.Username} postawił ${amount}");
-                _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
+                
+                // Sprawdź czy wszyscy postawili - jeśli tak, rozpocznij od razu
+                if (table.PlayersReady >= table.Players.Count && table.Players.Count >= 1)
+                {
+                    table.WaitingForBets = false;
+                    table.BettingCountdown = 0;
+                    _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
+                    StartRoundInternal(table, tableId);
+                }
+                else if (!table.WaitingForBets && table.PlayersReady == 1)
+                {
+                    // Pierwszy gracz postawił - uruchom timer 30 sekund
+                    StartBettingCountdown(tableId, table);
+                }
+                else
+                {
+                    _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
+                }
 
                 return true;
             }
+        }
+
+        private void StartBettingCountdown(string tableId, BlackjackTable table)
+        {
+            table.WaitingForBets = true;
+            table.BettingCountdown = 30;
+
+            _hubContext.Clients.Group(tableId).SendAsync("ActionLog", "⏱️ 30 sekund na obstawianie!");
+            _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
+
+            Task.Run(async () =>
+            {
+                for (int i = 30; i > 0; i--)
+                {
+                    await Task.Delay(1000);
+                    
+                    lock (table)
+                    {
+                        if (!table.WaitingForBets || table.GameInProgress) return; // Przerwano lub gra się zaczęła
+                        
+                        table.BettingCountdown = i - 1;
+                        
+                        if (i == 10 || i == 5)
+                        {
+                            _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"⏱️ Pozostało {i - 1} sekund!");
+                        }
+                        
+                        _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
+                    }
+                }
+
+                lock (table)
+                {
+                    if (!table.WaitingForBets || table.GameInProgress) return;
+                    
+                    table.WaitingForBets = false;
+                    table.BettingCountdown = 0;
+                    
+                    // Usuń graczy, którzy nie postawili
+                    var playersWithoutBet = table.Players.Where(p => p.CurrentBet <= 0).ToList();
+                    foreach (var p in playersWithoutBet)
+                    {
+                        _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"❌ {p.Username} nie postawił - pomija rundę");
+                    }
+                    
+                    // Jeśli ktoś postawił, rozpocznij grę
+                    if (table.Players.Any(p => p.CurrentBet > 0))
+                    {
+                        StartRoundInternal(table, tableId);
+                    }
+                    else
+                    {
+                        _hubContext.Clients.Group(tableId).SendAsync("ActionLog", "❌ Nikt nie postawił - gra anulowana");
+                        _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
+                    }
+                }
+            });
         }
 
         public void StartRound(string tableId)
@@ -204,90 +292,99 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             lock (table)
             {
-                Console.WriteLine($"[BLACKJACK START] Próba startu gry na stole {tableId}. Graczy: {table.Players.Count}");
-
-                // Usuwamy graczy bez żetonów
-                table.Players.RemoveAll(p => p.Chips <= 0 && p.CurrentBet <= 0);
-
-                // Filtrujemy graczy, którzy postawili zakład
-                var activePlayers = table.Players.Where(p => p.CurrentBet > 0).ToList();
+                // Zatrzymaj timer jeśli działa
+                table.WaitingForBets = false;
+                table.BettingCountdown = 0;
                 
-                if (activePlayers.Count < 1)
-                {
-                    Console.WriteLine("[BLACKJACK START] Brak graczy ze stawką.");
-                    _hubContext.Clients.Group(tableId).SendAsync("Error", "Przynajmniej jeden gracz musi postawić zakład!");
-                    return;
-                }
-
-                // Resetuj stan gry
-                table.Deck = GenerateDeck();
-                ShuffleDeck(table.Deck);
-                table.DealerHand.Clear();
-                table.DealerScore = 0;
-                table.DealerBusted = false;
-                table.DealerHasBlackjack = false;
-                table.Stage = "Dealing";
-                table.GameInProgress = true;
-                table.PlayersReady = 0;
-
-                // Resetuj graczy
-                foreach (var p in table.Players)
-                {
-                    p.Hand.Clear();
-                    p.Score = 0;
-                    p.HasStood = false;
-                    p.HasBusted = false;
-                    p.HasBlackjack = false;
-                    p.HasDoubledDown = false;
-                    p.Result = "";
-                    p.Payout = 0;
-                }
-
-                // Rozdaj karty graczom (2 karty każdemu)
-                foreach (var p in activePlayers)
-                {
-                    p.Hand.Add(DrawCard(table.Deck));
-                    p.Hand.Add(DrawCard(table.Deck));
-                    p.Score = CalculateScore(p.Hand);
-                    
-                    // Sprawdź blackjacka
-                    if (p.Score == 21)
-                    {
-                        p.HasBlackjack = true;
-                    }
-                }
-
-                // Rozdaj karty dealerowi (2 karty)
-                table.DealerHand.Add(DrawCard(table.Deck));
-                table.DealerHand.Add(DrawCard(table.Deck));
-                table.DealerScore = CalculateScore(table.DealerHand);
-
-                // Sprawdź blackjacka dealera
-                if (table.DealerScore == 21)
-                {
-                    table.DealerHasBlackjack = true;
-                }
-
-                // Rozpocznij turę pierwszego aktywnego gracza
-                table.Stage = "PlayerTurns";
-                var firstActivePlayer = activePlayers.FirstOrDefault(p => !p.HasBlackjack);
-                if (firstActivePlayer != null)
-                {
-                    table.CurrentPlayerIndex = table.Players.IndexOf(firstActivePlayer);
-                }
-                else
-                {
-                    // Wszyscy mają blackjacka - przejdź do rozstrzygnięcia
-                    table.Stage = "DealerTurn";
-                    ProcessDealerTurn(table);
-                    return;
-                }
-
-                Console.WriteLine($"[BLACKJACK START] Rozdanie rozpoczęte! Aktywny gracz: {table.CurrentPlayerIndex}");
-                
-                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", "🃏 Karty rozdane!");
-                _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
+                StartRoundInternal(table, tableId);
             }
+        }
+
+        private void StartRoundInternal(BlackjackTable table, string tableId)
+        {
+            Console.WriteLine($"[BLACKJACK START] Próba startu gry na stole {tableId}. Graczy: {table.Players.Count}");
+
+            // Usuwamy graczy bez żetonów
+            table.Players.RemoveAll(p => p.Chips <= 0 && p.CurrentBet <= 0);
+
+            // Filtrujemy graczy, którzy postawili zakład
+            var activePlayers = table.Players.Where(p => p.CurrentBet > 0).ToList();
+            
+            if (activePlayers.Count < 1)
+            {
+                Console.WriteLine("[BLACKJACK START] Brak graczy ze stawką.");
+                _hubContext.Clients.Group(tableId).SendAsync("Error", "Przynajmniej jeden gracz musi postawić zakład!");
+                return;
+            }
+
+            // Resetuj stan gry
+            table.Deck = GenerateDeck();
+            ShuffleDeck(table.Deck);
+            table.DealerHand.Clear();
+            table.DealerScore = 0;
+            table.DealerBusted = false;
+            table.DealerHasBlackjack = false;
+            table.Stage = "Dealing";
+            table.GameInProgress = true;
+            table.PlayersReady = 0;
+
+            // Resetuj graczy
+            foreach (var p in table.Players)
+            {
+                p.Hand.Clear();
+                p.Score = 0;
+                p.HasStood = false;
+                p.HasBusted = false;
+                p.HasBlackjack = false;
+                p.HasDoubledDown = false;
+                p.Result = "";
+                p.Payout = 0;
+            }
+
+            // Rozdaj karty graczom (2 karty każdemu)
+            foreach (var p in activePlayers)
+            {
+                p.Hand.Add(DrawCard(table.Deck));
+                p.Hand.Add(DrawCard(table.Deck));
+                p.Score = CalculateScore(p.Hand);
+                
+                // Sprawdź blackjacka
+                if (p.Score == 21)
+                {
+                    p.HasBlackjack = true;
+                }
+            }
+
+            // Rozdaj karty dealerowi (2 karty)
+            table.DealerHand.Add(DrawCard(table.Deck));
+            table.DealerHand.Add(DrawCard(table.Deck));
+            table.DealerScore = CalculateScore(table.DealerHand);
+
+            // Sprawdź blackjacka dealera
+            if (table.DealerScore == 21)
+            {
+                table.DealerHasBlackjack = true;
+            }
+
+            // Rozpocznij turę pierwszego aktywnego gracza
+            table.Stage = "PlayerTurns";
+            var firstActivePlayer = activePlayers.FirstOrDefault(p => !p.HasBlackjack);
+            if (firstActivePlayer != null)
+            {
+                table.CurrentPlayerIndex = table.Players.IndexOf(firstActivePlayer);
+            }
+            else
+            {
+                // Wszyscy mają blackjacka - przejdź do rozstrzygnięcia
+                table.Stage = "DealerTurn";
+                ProcessDealerTurn(table);
+                return;
+            }
+
+            Console.WriteLine($"[BLACKJACK START] Rozdanie rozpoczęte! Aktywny gracz: {table.CurrentPlayerIndex}");
+            
+            _hubContext.Clients.Group(tableId).SendAsync("ActionLog", "🃏 Karty rozdane!");
+            _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
         }
 
         public bool PlayerHit(string tableId, string userId)
@@ -513,9 +610,16 @@ namespace OneMoreSpin.Services.ConcreteServices
                     _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🤝 {player.Username}: Remis ({player.Score} = {table.DealerScore}) +${player.Payout}");
                 }
 
-                // Zapisz wynik do bazy
-                decimal moneyWon = player.Payout - player.CurrentBet;
-                Task.Run(() => SaveRoundResult(player.UserId, player.Chips, moneyWon));
+                // Zapisz wynik do bazy - WAŻNE: zapisz wartości PRZED Task.Run, bo CurrentBet będzie zresetowany
+                decimal savedBet = player.CurrentBet;
+                decimal savedPayout = player.Payout;
+                decimal savedMoneyWon = savedPayout - savedBet;
+                string savedUserId = player.UserId;
+                decimal savedChips = player.Chips;
+                
+                Console.WriteLine($"[DEBUG] Przed zapisem: UserId={savedUserId}, Bet={savedBet}, Payout={savedPayout}, MoneyWon={savedMoneyWon}");
+                
+                _ = Task.Run(async () => await SaveRoundResult(savedUserId, savedChips, savedBet, savedMoneyWon));
             }
 
             _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", "=========================");
@@ -533,7 +637,7 @@ namespace OneMoreSpin.Services.ConcreteServices
             _hubContext.Clients.Group(table.Id).SendAsync("UpdateGameState", table);
         }
 
-        private async Task SaveRoundResult(string userId, decimal currentChips, decimal moneyWon)
+        private async Task SaveRoundResult(string userId, decimal currentChips, decimal bet, decimal moneyWon)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
@@ -552,8 +656,8 @@ namespace OneMoreSpin.Services.ConcreteServices
                             {
                                 UserId = idAsInt,
                                 GameId = 2, // Blackjack
-                                Stake = 0,
-                                MoneyWon = moneyWon,
+                                Stake = bet,
+                                MoneyWon = moneyWon > 0 ? moneyWon : 0,
                                 Score = moneyWon > 0 ? "Wygrana" : (moneyWon == 0 ? "Remis" : "Przegrana"),
                                 DateOfGame = DateTime.UtcNow,
                             };
@@ -561,7 +665,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                             await db.UserScores.AddAsync(gameHistoryEntry);
                             await db.SaveChangesAsync();
 
-                            Console.WriteLine($"[BLACKJACK DB] Zapisano historię dla ID {idAsInt}. Wynik: {moneyWon}");
+                            Console.WriteLine($"[BLACKJACK DB] Zapisano historię dla ID {idAsInt}. Bet: {bet}, Wynik: {moneyWon}");
                         }
                     }
                 }

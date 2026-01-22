@@ -47,6 +47,11 @@ class BlackjackMultiplayerService {
         }
     }
 
+    public async leaveTable(tableId: string) {
+        if (this.connection.state !== signalR.HubConnectionState.Connected) return;
+        await this.connection.invoke("LeaveTable", tableId);
+    }
+
     // --- Metody ---
 
     public async joinTable(tableId: string) {

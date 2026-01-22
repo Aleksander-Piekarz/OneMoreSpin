@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useBlackjackGame } from '../hooks/useBlackjackGame';
-import { GameHelpModal, BLACKJACK_MULTIPLAYER_HELP } from '../components/GameHelpModal';
 import Leaderboard from '../components/Leaderboard';
 import { GameCard, type ThemeType } from '../components/GameCard';
 import { fireConfetti } from '../utils/confetti';
@@ -163,7 +162,6 @@ export const MultiplayerBlackjackPage = () => {
                   </div>
                 </div>
                 <div className="bj-header-actions">
-                    <GameHelpModal content={BLACKJACK_MULTIPLAYER_HELP} position="header" />
                     <button onClick={() => navigate('/blackjack-lobby')} className="bj-leave-btn">
                         <i className="fas fa-sign-out-alt"></i>
                         <span>Wyjdź</span>
@@ -319,11 +317,24 @@ export const MultiplayerBlackjackPage = () => {
             <div className="bj-controls-bar">
                 {!table.gameInProgress ? (
                     <>
+                        {/* Timer odliczania do startu */}
+                        {table.waitingForBets && table.bettingCountdown !== undefined && table.bettingCountdown > 0 && (
+                            <div className="bj-betting-timer">
+                                ⏱️ {t('games.blackjack.roundStartsIn')} <span className="bj-countdown">{table.bettingCountdown}s</span>
+                            </div>
+                        )}
+
                         {canBet && (
                             <div className="bj-bet-control">
                                 <span className="bj-bet-label">{t('common.bet')}:</span>
                                 <button onClick={() => setBetAmount(prev => Math.max(table.minBet, prev - 10))} className="bj-bet-btn">-</button>
-                                <span className="bj-bet-value">${betAmount}</span>
+                                <input
+                                    type="number"
+                                    className="bj-bet-input"
+                                    value={betAmount}
+                                    onChange={(e) => setBetAmount(Math.max(table.minBet, parseInt(e.target.value) || table.minBet))}
+                                    min={table.minBet}
+                                />
                                 <button onClick={() => setBetAmount(prev => prev + 10)} className="bj-bet-btn">+</button>
                             </div>
                         )}
@@ -336,14 +347,8 @@ export const MultiplayerBlackjackPage = () => {
 
                         {hasBet && (
                             <div style={{ color: '#4caf50', fontWeight: 600 }}>
-                                ✅ {t('common.bet')}: ${myPlayer?.currentBet}. {t('common.loading')}
+                                ✅ {t('common.bet')}: ${myPlayer?.currentBet}. {table.waitingForBets ? t('games.blackjack.waitingForOthers') : t('common.loading')}
                             </div>
-                        )}
-
-                        {table.players.some(p => p.currentBet > 0) && (
-                            <button onClick={startRound} className="bj-game-btn bj-btn-start">
-                                {table.stage === 'Showdown' ? t('games.blackjack.nextRound') : t('games.blackjack.dealCards')}
-                            </button>
                         )}
                     </>
                 ) : (

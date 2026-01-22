@@ -80,6 +80,12 @@ namespace OneMoreSpin.Services.Hubs
             await Clients.Group(tableId).SendAsync("UpdateGameState", table);
         }
 
+        public async Task SetReady(string tableId, bool isReady)
+        {
+            var userId = Context.UserIdentifier ?? Context.User?.FindFirst("sub")?.Value ?? "";
+            _pokerService.SetPlayerReady(tableId, userId, isReady);
+        }
+
         public async Task<List<TableInfoDto>> GetTables()
         {
             return _pokerService.GetLobbyInfo();

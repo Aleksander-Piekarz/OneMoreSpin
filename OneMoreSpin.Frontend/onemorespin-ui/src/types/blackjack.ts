@@ -51,4 +51,6 @@ export interface BlackjackTable {
     stage: string; // "Waiting", "Betting", "Dealing", "PlayerTurns", "DealerTurn", "Showdown"
     gameInProgress: boolean;
     playersReady: number;
+    bettingCountdown?: number;
+    waitingForBets?: boolean;
 }

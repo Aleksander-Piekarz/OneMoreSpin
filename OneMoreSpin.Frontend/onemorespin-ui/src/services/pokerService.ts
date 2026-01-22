@@ -83,6 +83,11 @@ class PokerService {
         await this.connection.invoke("MakeMove", tableId, action, amount);
     }
 
+    public async setReady(tableId: string, isReady: boolean) {
+        if (this.connection.state !== signalR.HubConnectionState.Connected) return;
+        await this.connection.invoke("SetReady", tableId, isReady);
+    }
+
     // --- Listenery bez zmian ---
     public onUpdateGameState(callback: (table: PokerTable) => void) {
         this.connection.on("UpdateGameState", callback);
@@ -111,12 +116,18 @@ class PokerService {
     public onReceiveMessage(callback: (username: string, message: string) => void) {
         this.connection.on("ReceiveMessage", callback);
     }
+    
+    public onKickFromTable(callback: (reason: string) => void) {
+        this.connection.on("KickFromTable", callback);
+    }
+    
     public offEvents() {
         this.connection.off("UpdateGameState");
         this.connection.off("PlayerJoined");
         this.connection.off("ActionLog");
         this.connection.off("Error");
         this.connection.off("ReceiveMessage");
+        this.connection.off("KickFromTable");
     }
 }
 

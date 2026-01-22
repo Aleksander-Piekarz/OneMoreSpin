@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import * as signalR from "@microsoft/signalr";
-import { GameHelpModal, BLACKJACK_MULTIPLAYER_HELP } from '../components/GameHelpModal';   
 import '../styles/BlackjackLobby.css';
 
 interface TableInfo {
@@ -106,7 +105,6 @@ export const BlackjackLobby = () => {
             <div className="bj-lobby-content">
                 <div className="bj-lobby-intro">
                      <p className="bj-lobby-subtitle">{t('lobby.selectTable')}</p>
-                    <GameHelpModal content={BLACKJACK_MULTIPLAYER_HELP} position="prominent" />
                 </div>
 
                 {isConnected ? (

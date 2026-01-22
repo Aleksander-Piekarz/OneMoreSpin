@@ -82,6 +82,15 @@ namespace OneMoreSpin.Services.ConcreteServices
         }
     }
 
+    // Sprawdzanie VIP dla pokoju VIP
+    if (tableId.Contains("vip", StringComparison.OrdinalIgnoreCase) && !isVip)
+    {
+        Console.WriteLine($"[JOIN] User: {dbUsername} próbuje wejść do pokoju VIP bez statusu VIP!");
+        _hubContext.Clients.Client(connectionId).SendAsync("ActionLog", "❌ Ten pokój jest dostępny tylko dla graczy VIP!");
+        _hubContext.Clients.Client(connectionId).SendAsync("KickFromTable", "Nie masz statusu VIP!");
+        return;
+    }
+
     
     Console.WriteLine($"[JOIN] User: {dbUsername}, Pobrane żetony z bazy: {playerChips}, VIP: {isVip}");
 
@@ -211,6 +220,93 @@ namespace OneMoreSpin.Services.ConcreteServices
             }
         }
 
+        public void SetPlayerReady(string tableId, string userId, bool isReady)
+        {
+            var table = GetTable(tableId);
+            if (table == null) return;
+
+            lock (table)
+            {
+                var player = table.Players.FirstOrDefault(p => p.UserId == userId);
+                if (player == null) return;
+
+                player.IsReady = isReady;
+                
+                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", 
+                    isReady ? $"✅ {player.Username} jest gotowy!" : $"⏸️ {player.Username} nie jest gotowy");
+
+                // Sprawdź czy wszyscy są gotowi (minimum 2 graczy)
+                var readyPlayers = table.Players.Where(p => p.IsReady).Count();
+                var totalPlayers = table.Players.Count;
+
+                if (totalPlayers >= 2 && readyPlayers == totalPlayers && !table.WaitingForReady)
+                {
+                    // Wszyscy gotowi - rozpocznij odliczanie 5 sekund
+                    StartReadyCountdown(tableId, table);
+                }
+                else
+                {
+                    // Nie wszyscy gotowi - zatrzymaj odliczanie jeśli trwa
+                    if (table.WaitingForReady)
+                    {
+                        table.WaitingForReady = false;
+                        table.ReadyCountdown = 0;
+                        _hubContext.Clients.Group(tableId).SendAsync("ActionLog", "⏹️ Odliczanie przerwane - nie wszyscy są gotowi");
+                    }
+                }
+
+                _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
+            }
+        }
+
+        private void StartReadyCountdown(string tableId, PokerTable table)
+        {
+            table.WaitingForReady = true;
+            table.ReadyCountdown = 5;
+
+            _hubContext.Clients.Group(tableId).SendAsync("ActionLog", "🎰 Gra rozpocznie się za 5 sekund!");
+
+            Task.Run(async () =>
+            {
+                for (int i = 5; i > 0; i--)
+                {
+                    await Task.Delay(1000);
+                    
+                    lock (table)
+                    {
+                        if (!table.WaitingForReady) return; // Przerwano
+                        
+                        table.ReadyCountdown = i - 1;
+                        
+                        if (i > 1)
+                        {
+                            _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"⏱️ {i - 1}...");
+                        }
+                        
+                        _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
+                    }
+                }
+
+                lock (table)
+                {
+                    if (!table.WaitingForReady) return;
+                    
+                    table.WaitingForReady = false;
+                    table.ReadyCountdown = 0;
+                    
+                    // Reset ready status dla wszystkich graczy
+                    foreach (var p in table.Players)
+                    {
+                        p.IsReady = false;
+                    }
+                    
+                    // Rozpocznij grę
+                    StartNewHandInternal(table);
+                    _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
+                }
+            });
+        }
+
         public void StartNewHand(string tableId)
 {
     var table = GetTable(tableId);
@@ -218,7 +314,13 @@ namespace OneMoreSpin.Services.ConcreteServices
 
     lock (table)
     {
-        Console.WriteLine($"[START] Próba startu gry na stole {tableId}. Graczy: {table.Players.Count}");
+        StartNewHandInternal(table);
+    }
+}
+
+        private void StartNewHandInternal(PokerTable table)
+        {
+        Console.WriteLine($"[START] Próba startu gry na stole {table.Id}. Graczy: {table.Players.Count}");
 
         
         foreach (var p in table.Players)
@@ -251,11 +353,12 @@ namespace OneMoreSpin.Services.ConcreteServices
         {
             p.Chips -= anteAmount;
             p.CurrentBet = anteAmount;
+            p.TotalBetInHand = anteAmount; // Reset i początkowy zakład
             table.Pot += anteAmount;
             Console.WriteLine($"   -> Pobrano ante {anteAmount}$ od {p.Username}. Pozostało: {p.Chips}$");
         }
         
-        _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"💰 Ante: każdy gracz wpłaca {anteAmount}$ do puli. Pula startowa: {table.Pot}$");
+        _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"💰 Ante: każdy gracz wpłaca {anteAmount}$ do puli. Pula startowa: {table.Pot}$");
 
         table.Deck = GenerateDeck();
         ShuffleDeck(table.Deck);
@@ -283,8 +386,7 @@ namespace OneMoreSpin.Services.ConcreteServices
         table.CurrentPlayerIndex = (table.DealerIndex + 1) % table.Players.Count;
 
         Console.WriteLine($"[START] Rozdanie rozpoczęte! Dealer: {table.DealerIndex}, Aktywny: {table.CurrentPlayerIndex}, Pula: {table.Pot}$");
-    }
-}
+        }
 
         public bool PlayerMove(string tableId, string userId, string action, decimal amount)
         {
@@ -314,11 +416,13 @@ namespace OneMoreSpin.Services.ConcreteServices
                             decimal allInAmount = player.Chips;
                             player.Chips = 0;
                             player.CurrentBet += allInAmount;
+                            player.TotalBetInHand += allInAmount;
                             table.Pot += allInAmount;
                             moveResult = true;
                         } else {
                             player.Chips -= toCall;
                             player.CurrentBet += toCall;
+                            player.TotalBetInHand += toCall;
                             table.Pot += toCall;
                             moveResult = true;
                         }
@@ -343,6 +447,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                         if (player.Chips >= amount && amount > 0) {
                             player.Chips -= amount;
                             player.CurrentBet += amount;
+                            player.TotalBetInHand += amount;
                             table.Pot += amount;
                             
                             if (player.CurrentBet > table.CurrentMinBet) {
@@ -484,6 +589,12 @@ namespace OneMoreSpin.Services.ConcreteServices
                 }
             }
 
+            // Reset winner info before setting new
+            table.WinnerId = null;
+            table.WinnerName = null;
+            table.WinHandName = null;
+            table.WinAmount = 0;
+
             if (winner != null)
             {
                 // VIP BONUS: +10% do wygranej puli dla użytkowników VIP
@@ -504,6 +615,12 @@ namespace OneMoreSpin.Services.ConcreteServices
                 
                 winner.Chips += table.Pot;
                 
+                // Ustaw info o zwycięzcy dla frontendu
+                table.WinnerId = winner.UserId;
+                table.WinnerName = winner.Username;
+                table.WinHandName = winHandName;
+                table.WinAmount = table.Pot + vipBonus;
+                
                 _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", "=========================");
                 _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🏆 WYGRAŁ: {winner.Username}");
                 _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🃏 Układ: {winHandName}");
@@ -514,9 +631,9 @@ namespace OneMoreSpin.Services.ConcreteServices
             foreach (var player in table.Players)
             {
                 decimal moneyWon = (winner != null && player.UserId == winner.UserId) ? table.Pot : 0;
-                
+                decimal stake = player.TotalBetInHand;
 
-                Task.Run(() => SaveHandResult(player.UserId, player.Chips, moneyWon));
+                Task.Run(() => SaveHandResult(player.UserId, player.Chips, moneyWon, stake));
             }
 
 
@@ -537,10 +654,18 @@ namespace OneMoreSpin.Services.ConcreteServices
                 table.Stage = "Waiting";
                 table.CommunityCards.Clear();
                 table.CurrentPlayerIndex = -1;
+                
+                // Reset winner info
+                table.WinnerId = null;
+                table.WinnerName = null;
+                table.WinHandName = null;
+                table.WinAmount = 0;
+                
                 foreach(var p in table.Players) {
                     p.Hand.Clear();
                     p.IsFolded = false;
                     p.CurrentBet = 0;
+                    p.TotalBetInHand = 0;
                 }
                 
                 
@@ -693,7 +818,7 @@ namespace OneMoreSpin.Services.ConcreteServices
             };
         }
 
-private async Task SaveHandResult(string userId, decimal currentChips, decimal moneyWon)
+private async Task SaveHandResult(string userId, decimal currentChips, decimal moneyWon, decimal stake)
         {
             using (var scope = _scopeFactory.CreateScope())
             {
@@ -714,7 +839,7 @@ private async Task SaveHandResult(string userId, decimal currentChips, decimal m
                             {
                                 UserId = idAsInt,
                                 GameId = 4, 
-                                Stake = 0,  
+                                Stake = stake,  
                                 MoneyWon = moneyWon,
                                 Score = moneyWon > 0 ? "Wygrana" : "Przegrana",
                                 DateOfGame = DateTime.UtcNow,
@@ -725,7 +850,7 @@ private async Task SaveHandResult(string userId, decimal currentChips, decimal m
                             
                             await db.SaveChangesAsync();
                             
-                            Console.WriteLine($"[POKER DB] Zapisano historię dla ID {idAsInt}. Wynik: {moneyWon}");
+                            Console.WriteLine($"[POKER DB] Zapisano historię dla ID {idAsInt}. Zakład: {stake}, Wynik: {moneyWon}");
                         }
                     }
                 } 

@@ -11,8 +11,10 @@ namespace OneMoreSpin.Model.DataModels
         public string Username { get; set; } = "";
         public decimal Chips { get; set; }
         public decimal CurrentBet { get; set; }
+        public decimal TotalBetInHand { get; set; } = 0; // Całkowity zakład w rozdaniu
         public bool IsFolded { get; set; } = false;
         public bool IsVip { get; set; } = false; // VIP status for special display
+        public bool IsReady { get; set; } = false; // Gracz gotowy do gry
         public List<Card> Hand { get; set; } = new List<Card>();
         public int SeatIndex { get; set; } = -1;
 
@@ -46,5 +48,15 @@ namespace OneMoreSpin.Model.DataModels
 
         // Licznik, ilu graczy wykonało ruch w tej rundzie licytacji
         public int ActionsTakenInRound { get; set; } = 0;
+        
+        // Informacje o zwycięzcy (do powiadomień frontend)
+        public string? WinnerId { get; set; } = null;
+        public string? WinnerName { get; set; } = null;
+        public string? WinHandName { get; set; } = null;
+        public decimal WinAmount { get; set; } = 0;
+        
+        // Countdown do rozpoczęcia gry
+        public int ReadyCountdown { get; set; } = 0; // 0 = brak countdown
+        public bool WaitingForReady { get; set; } = false;
     }
 }

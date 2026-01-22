@@ -30,6 +30,7 @@ export interface PokerPlayer {
     isFolded: boolean;
     isActive: boolean;
     isVip: boolean; // VIP status for crown display
+    isReady: boolean; // Gracz gotowy do gry
     hand: Card[]; 
 }
 
@@ -46,4 +47,14 @@ export interface PokerTable {
     // --- NOWE POLA, KTÓRYCH BRAKOWAŁO ---
     gameInProgress: boolean;
     actionsTakenInRound: number;
+    
+    // Informacje o zwycięzcy
+    winnerId?: string | null;
+    winnerName?: string | null;
+    winHandName?: string | null;
+    winAmount?: number;
+    
+    // Countdown do rozpoczęcia gry
+    readyCountdown?: number;
+    waitingForReady?: boolean;
 }
