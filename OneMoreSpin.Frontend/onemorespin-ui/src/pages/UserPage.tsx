@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import { api } from '../api';
 import { refreshMissions } from '../events';
 import DailyRewardWidget from '../components/DailyRewardWidget';
@@ -52,6 +53,7 @@ const CardHeader = ({ icon, title }: CardHeaderProps) => (
 
 function UserProfile() {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const [searchParams, setSearchParams] = useSearchParams(); 
     
     const [me, setMe] = useState<MeUser | null>(null);
@@ -218,59 +220,59 @@ function UserProfile() {
             <MissionsWidget onRewardClaimed={handleRewardClaimed} />
             
             <button className="userpage-back-btn" onClick={() => navigate('/home')}>
-                Powrót
+                {t('common.back')}
             </button>
             
             <header className="userpage-header">
-                <h1 className="userpage-title">MÓJ PROFIL</h1>
+                <h1 className="userpage-title">{t('profile.title').toUpperCase()}</h1>
             </header>
             
             <div className="userpage-content">
                 <div className="userpage-grid">
                     <div className="userpage-card">
-                        <CardHeader icon={<UserIcon />} title="Dane Gracza" />
+                        <CardHeader icon={<UserIcon />} title={t('profile.userInfo')} />
                         <ul className="userpage-list">
                             <li className="userpage-list-item">
-                                <span className="userpage-label">Nazwa użytkownika:</span>
+                                <span className="userpage-label">{t('auth.username')}:</span>
                                 <span className="userpage-value">{displayName}</span>
                             </li>
                             <li className="userpage-list-item">
-                                <span className="userpage-label">Adres e-mail:</span>
+                                <span className="userpage-label">{t('auth.email')}:</span>
                                 <span className="userpage-value">{me.email}</span>
                             </li>
                             <li className="userpage-list-item">
-                                <span className="userpage-label">Status konta:</span>
+                                <span className="userpage-label">{t('common.loading')}:</span>
                                 <span className="userpage-status">{statusText}</span>
                             </li>
                             <li className="userpage-list-item">
-                                <span className="userpage-label">Status VIP:</span>
+                                <span className="userpage-label">{t('profile.vipStatus')}:</span>
                                 <span className="userpage-vip">{vipText}</span>
                             </li>
                         </ul>
                     </div>
                     
                     <div className="userpage-card">
-                        <CardHeader icon={<WalletIcon />} title="Mój Portfel" />
-                        <div className="userpage-balance-label">Aktualne Saldo</div>
+                        <CardHeader icon={<WalletIcon />} title={t('common.balance')} />
+                        <div className="userpage-balance-label">{t('profile.balance')}</div>
                         <div className="userpage-balance">{balanceText}</div>
-                        <button className="userpage-btn" onClick={() => setShowDepositModal(true)}>WPŁAĆ</button>
-                        <button className="userpage-btn" onClick={() => setShowWithdrawalModal(true)}>WYPŁAĆ</button>
+                        <button className="userpage-btn" onClick={() => setShowDepositModal(true)}>{t('common.deposit').toUpperCase()}</button>
+                        <button className="userpage-btn" onClick={() => setShowWithdrawalModal(true)}>{t('common.withdraw').toUpperCase()}</button>
                     </div>
                     
                     <div className="userpage-card" style={{gridColumn: '1 / -1'}}>
-                        <CardHeader icon={<HistoryIcon />} title="Historia" />
+                        <CardHeader icon={<HistoryIcon />} title={t('common.history')} />
                         <div className="userpage-tabs">
                             <button 
                                 className={`userpage-tab${activeTab==='transakcje'?' active':''}`} 
                                 onClick={()=>setActiveTab('transakcje')}
                             >
-                                TRANSAKCJE
+                                {t('profile.transactions').toUpperCase()}
                             </button>
                             <button 
                                 className={`userpage-tab${activeTab==='gry'?' active':''}`} 
                                 onClick={()=>setActiveTab('gry')}
                             >
-                                GRY
+                                {t('profile.gameHistory').toUpperCase()}
                             </button>
                         </div>
                         <div>
@@ -279,18 +281,18 @@ function UserProfile() {
                                 <table className="userpage-table">
                                     <thead>
                                         <tr>
-                                            <th>Data</th>
-                                            <th>Typ</th>
-                                            <th>Kwota</th>
+                                            <th>{t('profile.date')}</th>
+                                            <th>{t('profile.type')}</th>
+                                            <th>{t('common.balance')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {historyLoading ? (
-                                            <tr><td colSpan={3} style={{ textAlign: 'center' }}>Ładowanie...</td></tr>
+                                            <tr><td colSpan={3} style={{ textAlign: 'center' }}>{t('common.loading')}</td></tr>
                                         ) : historyError ? (
                                             <tr><td colSpan={3} style={{ textAlign: 'center', color: 'red' }}>{historyError}</td></tr>
                                         ) : transactions.length === 0 ? (
-                                            <tr><td colSpan={3} style={{ textAlign: 'center' }}>Brak historii transakcji.</td></tr>
+                                            <tr><td colSpan={3} style={{ textAlign: 'center' }}>{t('profile.noTransactions')}</td></tr>
                                         ) : (
                                             transactions.slice(0, visibleTransactions).map(tx => (
                                                 <tr key={tx.id}>
@@ -310,7 +312,7 @@ function UserProfile() {
                                             onClick={() => setVisibleTransactions(prev => prev + 10)}
                                             style={{ marginTop: '15px' }}
                                         >
-                                            Pokaż więcej
+                                            {t('profile.loadMore')}
                                         </button>
                                     )}
                                 </>
@@ -320,26 +322,26 @@ function UserProfile() {
                                 <table className="userpage-table">
                                     <thead>
                                         <tr>
-                                            <th>Data</th>
-                                            <th>Gra</th>
-                                            <th>Wynik</th>
-                                            <th>Stawka</th>
-                                            <th>Wygrana</th>
+                                            <th>{t('profile.date')}</th>
+                                            <th>{t('nav.games')}</th>
+                                            <th>{t('profile.outcome')}</th>
+                                            <th>{t('common.bet')}</th>
+                                            <th>{t('profile.winAmount')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {gameHistoryLoading ? (
-                                            <tr><td colSpan={5} style={{ textAlign: 'center' }}>Ładowanie...</td></tr>
+                                            <tr><td colSpan={5} style={{ textAlign: 'center' }}>{t('common.loading')}</td></tr>
                                         ) : gameHistoryError ? (
                                             <tr><td colSpan={5} style={{ textAlign: 'center', color: 'red' }}>{gameHistoryError}</td></tr>
                                         ) : games.length === 0 ? (
-                                            <tr><td colSpan={5} style={{ textAlign: 'center' }}>Brak historii gier.</td></tr>
+                                            <tr><td colSpan={5} style={{ textAlign: 'center' }}>{t('profile.noGameHistory')}</td></tr>
                                         ) : (
                                             games.slice(0, visibleGames).map((game, index) => (
                                                 <tr key={index}>
                                                     <td>{new Date(game.dateOfGame).toLocaleString('pl-PL')}</td>
                                                     <td>{game.gameName}</td>
-                                                    <td>{game.outcome}</td>
+                                                    <td>{game.moneyWon > 0 ? t('profile.win') : t('profile.lose')}</td>
                                                     <td>{game.stake.toFixed(2)} PLN</td>
                                                     <td style={{ color: game.moneyWon > 0 ? '#4caf50' : '#f15050' }}>
                                                         {game.moneyWon.toFixed(2)} PLN
@@ -355,7 +357,7 @@ function UserProfile() {
                                             onClick={() => setVisibleGames(prev => prev + 10)}
                                             style={{ marginTop: '15px' }}
                                         >
-                                            Pokaż więcej
+                                            {t('profile.loadMore')}
                                         </button>
                                     )}
                                 </>
@@ -364,10 +366,10 @@ function UserProfile() {
                     </div>
                     
                     <div className="userpage-card" style={{gridColumn: '1 / -1'}}>
-                        <CardHeader icon={<SecurityIcon />} title="Bezpieczeństwo" />
+                        <CardHeader icon={<SecurityIcon />} title={t('profile.security')} />
                         <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', maxWidth: '600px', margin: '0 auto'}}>
-                            <button className="userpage-security-btn" onClick={() => setShowPasswordModal(true)}>ZMIEŃ HASŁO</button>
-                            <button className="userpage-security-btn delete" onClick={() => setShowDeleteModal(true)}>USUŃ KONTO</button>
+                            <button className="userpage-security-btn" onClick={() => setShowPasswordModal(true)}>{t('profile.changePasswordButton')}</button>
+                            <button className="userpage-security-btn delete" onClick={() => setShowDeleteModal(true)}>{t('profile.deleteAccountButton')}</button>
                         </div>
                     </div>
                 </div>
@@ -507,56 +509,56 @@ function UserProfile() {
             {showPasswordModal && (
                 <div className="modal-overlay" onClick={() => setShowPasswordModal(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h2 className="modal-title">Zmiana hasła</h2>
+                        <h2 className="modal-title">{t('profile.changePasswordTitle')}</h2>
                         <form onSubmit={async (e) => {
                             e.preventDefault();
                             setPasswordError('');
                             setPasswordSuccess('');
                             if (!currentPassword || !newPassword || !confirmPassword) {
-                                setPasswordError('Wszystkie pola są wymagane'); return;
+                                setPasswordError(t('profile.allFieldsRequired')); return;
                             }
                             if (newPassword.length < 6) {
-                                setPasswordError('Nowe hasło musi mieć co najmniej 6 znaków'); return;
+                                setPasswordError(t('profile.passwordMinLength')); return;
                             }
                             if (newPassword !== confirmPassword) {
-                                setPasswordError('Nowe hasła nie są zgodne'); return;
+                                setPasswordError(t('profile.passwordNotMatching')); return;
                             }
                             try {
                                 await api.users.changePassword({ currentPassword, newPassword });
-                                setPasswordSuccess('Hasło zostało zmienione pomyślnie');
+                                setPasswordSuccess(t('profile.passwordChangedSuccess'));
                                 setTimeout(() => {
                                     setShowPasswordModal(false);
                                     setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
                                     setPasswordError(''); setPasswordSuccess('');
-                                    setToast('Hasło zostało zmienione');
+                                    setToast(t('profile.passwordChanged'));
                                     setTimeout(() => setToast(""), 4000);
                                 }, 2000);
                             } catch (err) {
-                                setPasswordError(err instanceof Error ? err.message : 'Nie udało się zmienić hasła');
+                                setPasswordError(err instanceof Error ? err.message : t('profile.passwordChangeError'));
                             }
                         }}>
                             <div className="modal-form-group">
-                                <label htmlFor="currentPassword">Aktualne hasło</label>
+                                <label htmlFor="currentPassword">{t('profile.currentPassword')}</label>
                                 <input
                                     type="password" id="currentPassword" value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
-                                    placeholder="Wpisz aktualne hasło"
+                                    placeholder={t('profile.enterPasswordToConfirm')}
                                 />
                             </div>
                             <div className="modal-form-group">
-                                <label htmlFor="newPassword">Nowe hasło</label>
+                                <label htmlFor="newPassword">{t('profile.newPassword')}</label>
                                 <input
                                     type="password" id="newPassword" value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
-                                    placeholder="Wpisz nowe hasło (min. 6 znaków)"
+                                    placeholder={`${t('profile.newPassword')} (min. 6 ${t('common.characters')})`}
                                 />
                             </div>
                             <div className="modal-form-group">
-                                <label htmlFor="confirmPassword">Potwierdź nowe hasło</label>
+                                <label htmlFor="confirmPassword">{t('profile.confirmNewPassword')}</label>
                                 <input
                                     type="password" id="confirmPassword" value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
-                                    placeholder="Potwierdź nowe hasło"
+                                    placeholder={t('profile.confirmNewPassword')}
                                 />
                             </div>
                             {passwordError && (<div className="modal-error">{passwordError}</div>)}
@@ -569,10 +571,10 @@ function UserProfile() {
                                         setPasswordError(''); setPasswordSuccess('');
                                     }}
                                 >
-                                    Anuluj
+                                    {t('profile.cancel')}
                                 </button>
                                 <button type="submit" className="modal-btn-submit">
-                                    Zmień hasło
+                                    {t('profile.changePasswordTitle')}
                                 </button>
                             </div>
                         </form>
@@ -587,43 +589,43 @@ function UserProfile() {
                     setDeleteError('');
                 }}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h2 className="modal-title">Usuń konto</h2>
+                        <h2 className="modal-title">{t('profile.deleteAccountTitle')}</h2>
                         <form onSubmit={async (e) => {
                             e.preventDefault();
                             setDeleteError('');
                             if (!deletePassword) {
-                                setDeleteError('Wpisz hasło aby potwierdzić'); return;
+                                setDeleteError(t('profile.allFieldsRequired')); return;
                             }
                             try {
                                 await api.users.deleteAccount({ password: deletePassword });
-                                localStorage.setItem('flash', 'Konto zostało pomyślnie usunięte');
+                                localStorage.setItem('flash', t('profile.deleteAccountSuccess'));
                                 localStorage.removeItem('jwt');
                                 localStorage.removeItem('user');
                                 navigate('/');
                             } catch (err) {
-                                const errorMessage = err instanceof Error ? err.message : 'Nie udało się usunąć konta';
+                                const errorMessage = err instanceof Error ? err.message : t('profile.deleteAccountError');
                                 if (errorMessage.toLowerCase().includes('invalid password') || errorMessage.toLowerCase().includes('password')) {
-                                    setDeleteError('Nieprawidłowe hasło');
+                                    setDeleteError(t('profile.invalidPassword'));
                                 } else {
                                     setDeleteError(errorMessage);
                                 }
                             }
                         }}>
                             <div className="modal-warning">
-                                <p className="modal-warning-title">⚠️ Ostrzeżenie!</p>
+                                <p className="modal-warning-title">{t('profile.deleteAccountWarning')}</p>
                                 <p className="modal-warning-text">
-                                    Ta operacja jest nieodwracalna. Wszystkie Twoje dane, historia gier i saldo zostaną permanentnie usunięte.
+                                    {t('profile.deleteAccountText')}
                                 </p>
                                 <p className="modal-warning-text">
-                                    Czy na pewno chcesz usunąć swoje konto?
+                                    {t('profile.deleteAccountConfirm')}
                                 </p>
                             </div>
                             <div className="modal-form-group">
-                                <label htmlFor="deletePassword">Wpisz swoje hasło aby potwierdzić</label>
+                                <label htmlFor="deletePassword">{t('profile.enterPasswordToConfirm')}</label>
                                 <input
                                     type="password" id="deletePassword" value={deletePassword}
                                     onChange={(e) => setDeletePassword(e.target.value)}
-                                    placeholder="Twoje hasło"
+                                    placeholder={t('profile.enterPasswordToConfirm')}
                                 />
                             </div>
                             {deleteError && (<div className="modal-error">{deleteError}</div>)}
@@ -635,10 +637,10 @@ function UserProfile() {
                                         setDeleteError('');
                                     }}
                                 >
-                                    Nie, zachowaj konto
+                                    {t('profile.keepAccount')}
                                 </button>
                                 <button type="submit" className="modal-btn-delete">
-                                    Tak, usuń konto
+                                    {t('profile.confirmDeleteAccount')}
                                 </button>
                             </div>
                         </form>

@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useBlackjackGame } from '../hooks/useBlackjackGame';
 import Leaderboard from '../components/Leaderboard';
 import { GameCard, type ThemeType } from '../components/GameCard';
 import { fireConfetti } from '../utils/confetti';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import '../styles/MultiplayerBlackjackPage.css';
 
 export const MultiplayerBlackjackPage = () => {
     const { tableId } = useParams();
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const currentTableId = tableId || "blackjack-1";
 
     const {
@@ -65,16 +68,16 @@ export const MultiplayerBlackjackPage = () => {
         let won = false;
 
         if (myPlayer.result === "Win") {
-            message = "WYGRANA!";
+            message = t('games.blackjack.win');
             won = true;
         } else if (myPlayer.result === "Blackjack") {
-            message = "BLACKJACK!";
+            message = t('games.blackjack.blackjack');
             won = true;
         } else if (myPlayer.result === "Lose") {
-            message = "PRZEGRANA";
+            message = t('games.blackjack.lose');
             won = false;
         } else if (myPlayer.result === "Push") {
-            message = "REMIS";
+            message = t('games.blackjack.push');
             won = false;
         }
 
@@ -109,7 +112,7 @@ export const MultiplayerBlackjackPage = () => {
         return (
             <div className="bj-game-page">
                 <div className="bj-game-status">
-                    <div className="bj-game-status-text">🔌 Łączenie z kasynem...</div>
+                    <div className="bj-game-status-text">🔌 {t('games.blackjack.connecting')}</div>
                 </div>
             </div>
         );
@@ -119,7 +122,7 @@ export const MultiplayerBlackjackPage = () => {
         return (
             <div className="bj-game-page">
                 <div className="bj-game-status">
-                    <div className="bj-game-status-text">🚀 Wchodzenie do stołu...</div>
+                    <div className="bj-game-status-text">🚀 {t('games.blackjack.enteringTable')}</div>
                 </div>
             </div>
         );
@@ -150,17 +153,17 @@ export const MultiplayerBlackjackPage = () => {
                 <div className="bj-game-brand">MULTIPLAYER 21</div>
                 <div className="bj-game-info">
                     <div className="bj-game-stat">
-                        <span className="bj-game-stat-label">Stół:</span>
+                        <span className="bj-game-stat-label">{t('games.blackjack.tableLabel')}:</span>
                         <span className="bj-game-stat-value">{table.id}</span>
                     </div>
                     <div className="bj-game-stat">
-                        <span className="bj-game-stat-label">Etap:</span>
+                        <span className="bj-game-stat-label">{t('games.blackjack.stageLabel')}:</span>
                         <span className="bj-game-stat-value">{table.stage}</span>
                     </div>
                 </div>
                 <button onClick={() => navigate('/blackjack-lobby')} className="bj-leave-btn">
                     <i className="fas fa-sign-out-alt"></i>
-                    <span>Wyjdź</span>
+                    <span>{t('games.blackjack.leaveTable')}</span>
                 </button>
             </header>
 
@@ -217,19 +220,19 @@ export const MultiplayerBlackjackPage = () => {
 
                             return (
                                 <div key={p.userId} className={seatClasses}>
-                                    {isActiveTurn && <div className="bj-badge-turn">Twój ruch</div>}
+                                    {isActiveTurn && <div className="bj-badge-turn">{t('games.blackjack.yourTurn')}</div>}
                                     {p.isVip && <div className="bj-badge-vip">👑 VIP</div>}
 
                                     <div className={`bj-player-name ${p.isVip ? 'bj-vip-name' : ''}`}>
                                         {p.isVip && <span className="bj-vip-crown">👑</span>}
-                                        {p.username.split('@')[0]} {isMe && "(Ty)"}
+                                        {p.username.split('@')[0]} {isMe && `(${t('common.you')})`}
                                     </div>
 
                                     <div className="bj-player-cards">
                                         {p.hand && p.hand.length > 0 ? (
                                             p.hand.map((c, idx) => <GameCard key={idx} card={c} theme={currentTheme} />)
                                         ) : (
-                                            <div className="bj-empty-hand">Oczekiwanie...</div>
+                                            <div className="bj-empty-hand">{t('games.blackjack.waiting')}</div>
                                         )}
                                     </div>
 
@@ -243,9 +246,9 @@ export const MultiplayerBlackjackPage = () => {
 
                                     {p.result && (
                                         <div className={`bj-result-badge bj-${p.result.toLowerCase()}`}>
-                                            {p.result === "Win" && "🏆 WYGRANA"}
-                                            {p.result === "Lose" && "❌ PRZEGRANA"}
-                                            {p.result === "Push" && "🤝 REMIS"}
+                                            {p.result === "Win" && `🏆 ${t('games.blackjack.win')}`}
+                                            {p.result === "Lose" && `❌ ${t('games.blackjack.lose')}`}
+                                            {p.result === "Push" && `🤝 ${t('games.blackjack.push')}`}
                                             {p.result === "Blackjack" && "🎰 BLACKJACK!"}
                                         </div>
                                     )}
@@ -261,7 +264,7 @@ export const MultiplayerBlackjackPage = () => {
             {/* PANEL LOGÓW */}
             <div className="bj-log-panel">
                 <div className="bj-log-header">
-                    Historia gry <span style={{ color: '#4caf50' }}>● Live</span>
+                    {t('games.blackjack.historyTitle')} <span style={{ color: '#4caf50' }}>● Live</span>
                 </div>
                 <div className="bj-log-content">
                     {logs.map((log, i) => {
@@ -277,7 +280,7 @@ export const MultiplayerBlackjackPage = () => {
 
             {/* PANEL CZATU */}
             <div className="bj-chat-panel">
-                <div className="bj-chat-header">💬 Czat stołu</div>
+                <div className="bj-chat-header">💬 {t('games.blackjack.tableChat')}</div>
                 <div className="bj-chat-messages">
                     {chatMessages && chatMessages.length > 0 ? (
                         chatMessages.map((msg, i) => (
@@ -289,7 +292,7 @@ export const MultiplayerBlackjackPage = () => {
                             </div>
                         ))
                     ) : (
-                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>Rozpocznij rozmowę...</div>
+                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>{t('games.blackjack.startChat')}</div>
                     )}
                     <div ref={chatEndRef} />
                 </div>
@@ -299,7 +302,7 @@ export const MultiplayerBlackjackPage = () => {
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                        placeholder="Napisz wiadomość..."
+                        placeholder={t('games.blackjack.chatPlaceholder')}
                         className="bj-chat-input"
                     />
                     <button onClick={handleSend} className="bj-chat-send-btn">
@@ -314,7 +317,7 @@ export const MultiplayerBlackjackPage = () => {
                     <>
                         {canBet && (
                             <div className="bj-bet-control">
-                                <span className="bj-bet-label">Zakład:</span>
+                                <span className="bj-bet-label">{t('common.bet')}:</span>
                                 <button onClick={() => setBetAmount(prev => Math.max(table.minBet, prev - 10))} className="bj-bet-btn">-</button>
                                 <span className="bj-bet-value">${betAmount}</span>
                                 <button onClick={() => setBetAmount(prev => prev + 10)} className="bj-bet-btn">+</button>
@@ -323,19 +326,19 @@ export const MultiplayerBlackjackPage = () => {
 
                         {canBet && (
                             <button onClick={handlePlaceBet} className="bj-game-btn bj-btn-double">
-                                Postaw ${betAmount}
+                                {`${t('games.blackjack.placeBet')} $${betAmount}`}
                             </button>
                         )}
 
                         {hasBet && (
                             <div style={{ color: '#4caf50', fontWeight: 600 }}>
-                                ✅ Postawiłeś ${myPlayer?.currentBet}. Czekaj na innych graczy...
+                                ✅ {t('common.bet')}: ${myPlayer?.currentBet}. {t('common.loading')}
                             </div>
                         )}
 
                         {table.players.some(p => p.currentBet > 0) && (
                             <button onClick={startRound} className="bj-game-btn bj-btn-start">
-                                {table.stage === 'Showdown' ? "Następna runda" : "Rozpocznij grę"}
+                                {table.stage === 'Showdown' ? t('games.blackjack.nextRound') : t('games.blackjack.dealCards')}
                             </button>
                         )}
                     </>
@@ -345,22 +348,22 @@ export const MultiplayerBlackjackPage = () => {
                             <>
                                 {isMyTurn ? (
                                     <>
-                                        <button onClick={hit} className="bj-game-btn bj-btn-hit">Dobierz</button>
-                                        <button onClick={stand} className="bj-game-btn bj-btn-stand">Stój</button>
+                                        <button onClick={hit} className="bj-game-btn bj-btn-hit">{t('games.blackjack.hit')}</button>
+                                        <button onClick={stand} className="bj-game-btn bj-btn-stand">{t('games.blackjack.stand')}</button>
                                         {myPlayer.hand?.length === 2 && myPlayer.chips >= myPlayer.currentBet && (
-                                            <button onClick={double} className="bj-game-btn bj-btn-double">Podwój</button>
+                                            <button onClick={double} className="bj-game-btn bj-btn-double">{t('games.blackjack.double')}</button>
                                         )}
                                     </>
                                 ) : (
                                     <div style={{ color: 'rgba(255,255,255,0.7)' }}>
-                                        Czekaj na ruch gracza: <span style={{ color: '#ffd700', fontWeight: 'bold' }}>{currentPlayer?.username}</span>
+                                        {t('common.loading')} <span style={{ color: '#ffd700', fontWeight: 'bold' }}>{currentPlayer?.username}</span>
                                     </div>
                                 )}
                             </>
                         )}
                         {myPlayer && (myPlayer.hasStood || myPlayer.hasBusted) && (
                             <div style={{ color: myPlayer.hasBusted ? '#f44336' : '#4caf50' }}>
-                                {myPlayer.hasBusted ? "💥 Przekroczyłeś 21!" : "✋ Stoisz. Czekaj na innych..."}
+                                {myPlayer.hasBusted ? "💥 BUST" : `✋ ${t('games.blackjack.stand')}. ${t('common.loading')}`}
                             </div>
                         )}
                     </>
@@ -376,7 +379,7 @@ export const MultiplayerBlackjackPage = () => {
                     className="leaderboard-toggle"
                     onClick={() => setLeaderboardOpen(prev => !prev)}
                     aria-expanded={leaderboardOpen}
-                    title={leaderboardOpen ? 'Schowaj ranking' : 'Pokaż ranking'}
+                    title={leaderboardOpen ? t('games.blackjack.hideLeaderboard') : t('games.blackjack.showLeaderboard')}
                 >
                     <i className={`fas fa-trophy`}></i>
                     <span>TOP</span>

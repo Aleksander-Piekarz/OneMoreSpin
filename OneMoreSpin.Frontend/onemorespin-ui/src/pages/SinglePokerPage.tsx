@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import '../styles/SinglePokerPage.css';
 import { api } from '../api';
 import type { UserInfo } from '../api';
@@ -44,6 +45,7 @@ function formatNumberWithSpaces(n: number | null | undefined) {
 }
 
 export default function PokerGame() {
+  const { t } = useLanguage();
   const [session, setSession] = useState<PokerSessionVm | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [betAmount, setBetAmount] = useState<number>(10);
@@ -164,7 +166,7 @@ export default function PokerGame() {
             <div className="sp-dealer-section">
               {session && isGameFinished ? (
                 <>
-                  <div className="sp-dealer-label">Karty Krupiera</div>
+                  <div className="sp-dealer-label">{t('games.poker.yourCards')}</div>
                   <div className="sp-dealer-hand-wrapper">
                     {session.dealerHand.map((card, idx) => (
                       <GameCard 
@@ -180,7 +182,7 @@ export default function PokerGame() {
                 </>
               ) : (
                 /* Pusty stan ma tę samą wysokość co pełny w CSS, więc nie skacze */
-                 <div className="sp-dealer-label" style={{opacity: 0}}>Oczekiwanie...</div>
+                 <div className="sp-dealer-label" style={{opacity: 0}}>{t('games.poker.waiting')}</div>
               )}
             </div>
 
@@ -190,16 +192,16 @@ export default function PokerGame() {
                 <div className="sp-game-message sp-error">{message}</div>
               ) : (
                 <>
-                  {!session && <div className="sp-game-message sp-hint">Rozdaj karty, aby zagrać</div>}
+                  {!session && <div className="sp-game-message sp-hint">{t('games.poker.dealToStart')}</div>}
                   {session && !isGameFinished && (
                     <div className="sp-game-message sp-hint">
-                      {selected.size > 0 ? `Wybrano do wymiany: ${selected.size}` : 'Wybierz karty do wymiany'}
+                      {selected.size > 0 ? t('games.poker.selectedCards').replace('{{count}}', selected.size.toString()) : t('games.poker.selectCards')}
                     </div>
                   )}
                   {session && isGameFinished && (
                     /* Używamy zwykłego tekstu, nie absolute, żeby nie skakało */
                     <div className={`sp-result-text ${hasWon ? 'sp-win' : 'sp-lose'}`}>
-                      {hasWon ? 'WYGRANA!' : 'PRZEGRANA'}
+                      {hasWon ? t('games.poker.win') : t('games.poker.lose')}
                     </div>
                   )}
                 </>
@@ -248,7 +250,7 @@ export default function PokerGame() {
                   </div>
 
                   <button className="sp-main-btn sp-btn-deal" onClick={startSession} disabled={loading}>
-                    {loading ? 'TASOWANIE...' : 'ROZDAJ KARTY'}
+                    {loading ? t('games.poker.dealing') : t('games.poker.dealCards')}
                   </button>
                 </>
               ) : (
@@ -256,7 +258,7 @@ export default function PokerGame() {
                   <button className="sp-main-btn sp-btn-action" onClick={confirmDiscard} disabled={loading}>
                     {loading 
                       ? 'WYMIENIAM...' 
-                      : (selected.size === 0 ? 'SPRAWDŹ' : 'WYMIEŃ KARTY')}
+                      : (selected.size === 0 ? t('games.poker.check') : t('games.poker.exchange'))}
                   </button>
                 </>
               )}
@@ -275,7 +277,7 @@ export default function PokerGame() {
           className="leaderboard-toggle"
           onClick={() => setLeaderboardOpen((prev) => !prev)}
           aria-expanded={leaderboardOpen}
-          title={leaderboardOpen ? 'Schowaj ranking' : 'Pokaż ranking'}
+          title={leaderboardOpen ? t('games.poker.hideLeaderboard') : t('games.poker.showLeaderboard')}
         >
           <i className="fas fa-trophy"></i>
           <span>TOP</span>

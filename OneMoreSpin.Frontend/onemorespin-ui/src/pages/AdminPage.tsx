@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../api';
 import '../styles/AdminPage.css';
 
@@ -24,6 +25,7 @@ type AdminUsersListVm = {
 
 export default function AdminPage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -47,9 +49,9 @@ export default function AdminPage() {
 
       if (!response.ok) {
         if (response.status === 403) {
-          setError('Brak uprawnień administratora');
+          setError(t('admin.noPermissions'));
         } else {
-          throw new Error('Błąd serwera');
+          throw new Error(t('admin.serverError'));
         }
         return;
       }
@@ -59,7 +61,7 @@ export default function AdminPage() {
       setTotalCount(data.totalCount);
       setPage(data.page);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Nieznany błąd');
+      setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -70,7 +72,7 @@ export default function AdminPage() {
   }, []);
 
   const handleDelete = async (userId: number) => {
-    if (!confirm('Czy na pewno chcesz usunąć tego użytkownika?')) return;
+    if (!confirm(t('admin.confirmDelete'))) return;
 
     try {
       const token = localStorage.getItem('jwt');
@@ -80,18 +82,18 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
-        alert('Użytkownik usunięty');
+        alert(t('admin.userDeleted'));
         fetchUsers(page);
       } else {
-        alert('Błąd podczas usuwania');
+        alert(t('admin.deleteError'));
       }
     } catch (err) {
-      alert('Błąd: ' + err);
+      alert(t('common.error') + ': ' + err);
     }
   };
 
   const handleUpdateBalance = async (userId: number) => {
-    const newBalance = prompt('Podaj nowy balans:');
+    const newBalance = prompt(t('admin.enterBalance'));
     if (!newBalance) return;
 
     try {
@@ -106,13 +108,13 @@ export default function AdminPage() {
       });
 
       if (response.ok) {
-        alert('Balans zaktualizowany');
+        alert(t('admin.balanceUpdated'));
         fetchUsers(page);
       } else {
-        alert('Błąd podczas aktualizacji balansu');
+        alert(t('admin.updateError'));
       }
     } catch (err) {
-      alert('Błąd: ' + err);
+      alert(t('common.error') + ': ' + err);
     }
   };
 
@@ -122,16 +124,16 @@ export default function AdminPage() {
     user.surname.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <div className="admin-loading">⏳ Ładowanie...</div>;
-  if (error) return <div className="admin-error">❌ {error}</div>;
+  if (loading) return <div className="admin-loading">{t('admin.loading')}</div>;
+  if (error) return <div className="admin-error">{t('admin.error')} {error}</div>;
 
   return (
     <div className="admin-container">
       <div className="admin-header">
         <div className="admin-header-content">
-          <h1 className="admin-title">🛡️ Panel Administratora</h1>
+          <h1 className="admin-title">🛡️ {t('admin.title')}</h1>
           <button onClick={() => navigate('/home')} className="admin-back-btn">
-            ← Powrót
+            ← {t('common.back')}
           </button>
         </div>
       </div>
@@ -140,21 +142,21 @@ export default function AdminPage() {
         <div className="admin-stat-card">
           <div className="admin-stat-icon">👥</div>
           <div className="admin-stat-content">
-            <div className="admin-stat-label">Użytkownicy</div>
+            <div className="admin-stat-label">{t('admin.users')}</div>
             <div className="admin-stat-value">{totalCount}</div>
           </div>
         </div>
         <div className="admin-stat-card">
           <div className="admin-stat-icon">✅</div>
           <div className="admin-stat-content">
-            <div className="admin-stat-label">Aktywni</div>
+            <div className="admin-stat-label">{t('admin.active')}</div>
             <div className="admin-stat-value">{users.filter(u => u.isActive).length}</div>
           </div>
         </div>
         <div className="admin-stat-card">
           <div className="admin-stat-icon">⭐</div>
           <div className="admin-stat-content">
-            <div className="admin-stat-label">VIP</div>
+            <div className="admin-stat-label">{t('admin.vip')}</div>
             <div className="admin-stat-value">{users.filter(u => u.isVip).length}</div>
           </div>
         </div>
@@ -163,7 +165,7 @@ export default function AdminPage() {
       <div className="admin-search-bar">
         <input
           type="text"
-          placeholder="🔍 Szukaj użytkownika..."
+          placeholder={t('admin.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="admin-search-input"
@@ -174,14 +176,14 @@ export default function AdminPage() {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Email</th>
-              <th>Imię</th>
-              <th>Nazwisko</th>
-              <th>Balans</th>
-              <th>VIP</th>
-              <th>Status</th>
-              <th>Akcje</th>
+              <th>{t('admin.id')}</th>
+              <th>{t('admin.email')}</th>
+              <th>{t('admin.name')}</th>
+              <th>{t('admin.surname')}</th>
+              <th>{t('admin.balance')}</th>
+              <th>{t('admin.isVip')}</th>
+              <th>{t('admin.status')}</th>
+              <th>{t('admin.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -194,16 +196,16 @@ export default function AdminPage() {
                 <td className="admin-balance">${user.balance.toFixed(2)}</td>
                 <td>
                   {user.isVip ? (
-                    <span className="admin-badge admin-badge-vip">⭐ VIP</span>
+                    <span className="admin-badge admin-badge-vip">⭐ {t('admin.isVip')}</span>
                   ) : (
-                    <span className="admin-badge admin-badge-regular">Użytkownik</span>
+                    <span className="admin-badge admin-badge-regular">{t('admin.users')}</span>
                   )}  
                 </td>
                 <td>
                   {user.isActive ? (
-                    <span className="admin-badge admin-badge-active">✅ Aktywny</span>
+                    <span className="admin-badge admin-badge-active">✅ {t('admin.isActive')}</span>
                   ) : (
-                    <span className="admin-badge admin-badge-inactive">❌ Nieaktywny</span>
+                    <span className="admin-badge admin-badge-inactive">❌ {t('common.error')}</span>
                   )}
                 </td>
                 <td>
@@ -211,14 +213,14 @@ export default function AdminPage() {
                     <button
                       onClick={() => handleUpdateBalance(user.id)}
                       className="admin-btn admin-btn-balance"
-                      title="Zmień balans"
+                      title={t('admin.updateBalance')}
                     >
                       💰
                     </button>
                     <button
                       onClick={() => handleDelete(user.id)}
                       className="admin-btn admin-btn-delete"
-                      title="Usuń użytkownika"
+                      title={t('admin.delete')}
                     >
                       🗑️
                     </button>
@@ -236,17 +238,17 @@ export default function AdminPage() {
           disabled={page <= 1}
           className="admin-pagination-btn"
         >
-          ← Poprzednia
+          {t('admin.previous')}
         </button>
         <span className="admin-pagination-info">
-          Strona {page} / {Math.ceil(totalCount / 20)}
+          {t('admin.page')} {page} {t('admin.of')} {Math.ceil(totalCount / 20)}
         </span>
         <button
           onClick={() => fetchUsers(page + 1)}
           disabled={users.length < 20}
           className="admin-pagination-btn"
         >
-          Następna →
+          {t('admin.next')}
         </button>
       </div>
     </div>

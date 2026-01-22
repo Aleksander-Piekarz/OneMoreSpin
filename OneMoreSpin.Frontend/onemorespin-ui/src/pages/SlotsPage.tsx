@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../contexts/LanguageContext";
 import { api } from "../api";
 import { refreshMissions } from "../events";
 import { fireConfetti } from "../utils/confetti";
@@ -21,6 +22,7 @@ import loseSoundDefault from "../assets/sounds/lose-default.mp3";
 
 const SlotsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [bet, setBet] = useState<number>(10);
   const [balance, setBalance] = useState<number>(0);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -193,12 +195,12 @@ const SlotsPage: React.FC = () => {
     playSound('lever');
 
     if (bet <= 0) {
-      setError("Wpisz kwotę większą niż 0");
+      setError(t('games.slots.invalidBet'));
       setTimeout(() => setError(""), 3000);
       return;
     }
     if (bet > balance) {
-      setError("Niewystarczający balans");
+      setError(t('games.slots.insufficientBalance'));
       setTimeout(() => setError(""), 3000);
       return;
     }
@@ -505,7 +507,7 @@ const SlotsPage: React.FC = () => {
             className="leaderboard-toggle"
             onClick={() => setLeaderboardOpen((prev) => !prev)}
             aria-expanded={leaderboardOpen}
-            title={leaderboardOpen ? 'Schowaj ranking' : 'Pokaż ranking'}
+            title={leaderboardOpen ? t('games.slots.hideLeaderboard') : t('games.slots.showLeaderboard')}
           >
             <i className="fas fa-trophy"></i>
             <span>TOP</span>
@@ -522,7 +524,7 @@ const SlotsPage: React.FC = () => {
         {showWin && (
           <div className={`win-overlay ${isFadingOut ? 'fade-out' : ''}`}>
             <div className="win-banner">
-              <h2 className="win-text">WYGRANA!</h2>
+              <h2 className="win-text">{t('games.slots.win')}</h2>
               <p className="win-amount">+{winAmount.toLocaleString()} PLN</p>
               <p className="win-multiplier">Mnożnik: {winMultiplier.toFixed(1)}x</p>
             </div>

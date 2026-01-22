@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../contexts/LanguageContext";
 import { api } from "../api";
 import video1 from "../assets/vids/background-video-1.mp4";
 import video2 from "../assets/vids/background-video-2.mp4";
@@ -8,7 +9,7 @@ import video4 from "../assets/vids/background-video-4.mp4";
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
   const [birthDate, setBirthDate] = useState("");

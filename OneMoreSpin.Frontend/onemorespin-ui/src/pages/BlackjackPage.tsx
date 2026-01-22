@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../contexts/LanguageContext";
 import { api } from "../api";
 import { refreshMissions } from "../events";
 import { fireConfetti } from "../utils/confetti";
@@ -32,13 +33,9 @@ type GameState = {
   gameFinished: boolean;
 };
 
-function formatNumberWithSpaces(n: number | null | undefined) {
-  if (n === null || n === undefined) return "0";
-  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-}
-
 const BlackjackPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [bet, setBet] = useState<number>(10);
   const [balance, setBalance] = useState<number>(0);
   const [unlimitedMode, setUnlimitedMode] = useState(false);
@@ -81,12 +78,12 @@ const BlackjackPage: React.FC = () => {
 
   const startNewGame = async () => {
     if (bet <= 0) {
-      setError("Wpisz kwotę większą niż 0");
+      setError(t('games.blackjack.invalidBet'));
       setTimeout(() => setError(""), 3000);
       return;
     }
     if (!unlimitedMode && bet > balance) {
-      setError("Niewystarczający balans");
+      setError(t('games.blackjack.insufficientBalance'));
       setTimeout(() => setError(""), 3000);
       return;
     }
@@ -106,7 +103,7 @@ const BlackjackPage: React.FC = () => {
       }, 600);
     } catch (err: any) {
       setIsDealing(false);
-      setError(err.message || "Błąd podczas rozpoczynania gry");
+      setError(err.message || t('games.blackjack.gameError'));
       setTimeout(() => setError(""), 3000);
     }
   };
@@ -123,7 +120,7 @@ const BlackjackPage: React.FC = () => {
         refreshMissions();
       }
     } catch (err: any) {
-      setError(err.message || "Błąd podczas dobierania karty");
+      setError(err.message || t('games.blackjack.hitError'));
       setTimeout(() => setError(""), 3000);
     }
   };
@@ -135,10 +132,9 @@ const BlackjackPage: React.FC = () => {
       const result = await api.blackjack.standWithMode(gameState.sessionId, unlimitedMode);
       setGameState(result);
       if (!unlimitedMode) setBalance(result.balance);
-      showGameResult(result);
       refreshMissions();
     } catch (err: any) {
-      setError(err.message || "Błąd podczas pasowania");
+      setError(err.message || t('games.blackjack.standError'));
       setTimeout(() => setError(""), 3000);
     }
   };
@@ -150,10 +146,9 @@ const BlackjackPage: React.FC = () => {
       const result = await api.blackjack.doubleWithMode(gameState.sessionId, unlimitedMode);
       setGameState(result);
       if (!unlimitedMode) setBalance(result.balance);
-      showGameResult(result);
       refreshMissions();
     } catch (err: any) {
-      setError(err.message || "Błąd podczas podwajania");
+      setError(err.message || t('games.blackjack.doubleError'));
       setTimeout(() => setError(""), 3000);
     }
   };
@@ -162,13 +157,13 @@ const BlackjackPage: React.FC = () => {
     if (!gameState) return "";
     switch (gameState.result) {
       case "PlayerWin":
-        return "WYGRANA!";
+        return t('games.blackjack.win');
       case "Blackjack":
-        return "BLACKJACK!";
+        return t('games.blackjack.blackjack');
       case "DealerWin":
-        return "PRZEGRANA";
+        return t('games.blackjack.lose');
       case "Push":
-        return "REMIS";
+        return t('games.blackjack.push');
       default:
         return "";
     }
@@ -216,7 +211,7 @@ const BlackjackPage: React.FC = () => {
             <div className="sp-dealer-section">
               {gameState ? (
                 <>
-                  <div className="sp-dealer-label">Karty Krupiera</div>
+                  <div className="sp-dealer-label">{t('games.blackjack.dealerCards')}</div>
                   <div className="sp-dealer-hand-wrapper">
                     {gameState.dealerHand.map((card, idx) => (
                       <GameCard
@@ -250,12 +245,12 @@ const BlackjackPage: React.FC = () => {
                 <>
                   {!gameState && (
                     <div className="sp-game-message sp-hint">
-                      Rozdaj karty, aby zagrac
+                      {t('games.blackjack.dealToStart')}
                     </div>
                   )}
                   {gameState && !isGameFinished && (
                     <div className="sp-game-message sp-hint">
-                      Stawka: {gameState.bet} PLN
+                      {t('games.blackjack.currentBet').replace('{{bet}}', gameState.bet.toString())}
                     </div>
                   )}
                   {gameState && isGameFinished && (
@@ -316,7 +311,7 @@ const BlackjackPage: React.FC = () => {
                     onClick={startNewGame}
                     disabled={isDealing}
                   >
-                    {isDealing ? "ROZDAWANIE..." : "ROZDAJ KARTY"}
+                    {isDealing ? t('games.blackjack.dealing') : t('games.blackjack.dealCards')}
                   </button>
                 </>
               ) : (
@@ -327,7 +322,7 @@ const BlackjackPage: React.FC = () => {
                     disabled={!gameState.canHit}
                   >
                     <i className="fas fa-plus"></i>
-                    DOBIERZ
+                    {t('games.blackjack.hit')}
                   </button>
 
                   <button
@@ -336,7 +331,7 @@ const BlackjackPage: React.FC = () => {
                     disabled={!gameState.canStand}
                   >
                     <i className="fas fa-hand-paper"></i>
-                    PASUJ
+                    {t('games.blackjack.stand')}
                   </button>
 
                   <button
@@ -345,7 +340,7 @@ const BlackjackPage: React.FC = () => {
                     disabled={!gameState.canDouble}
                   >
                     <i className="fas fa-times"></i>
-                    PODWÓJ
+                    {t('games.blackjack.double')}
                   </button>
                 </>
               )}
@@ -362,7 +357,7 @@ const BlackjackPage: React.FC = () => {
           className="leaderboard-toggle"
           onClick={() => setLeaderboardOpen((prev) => !prev)}
           aria-expanded={leaderboardOpen}
-          title={leaderboardOpen ? "Schowaj ranking" : "Pokaż ranking"}
+          title={leaderboardOpen ? t('games.blackjack.hideLeaderboard') : t('games.blackjack.showLeaderboard')}
         >
           <i className="fas fa-trophy"></i>
           <span>TOP</span>

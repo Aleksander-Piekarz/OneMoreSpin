@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useLanguage } from "../contexts/LanguageContext";
 import { api } from "../api";
 import type { UserMissionVm } from "../api";
 import { on, off } from "../events";
@@ -9,6 +10,7 @@ interface MissionsWidgetProps {
 }
 
 export const MissionsWidget: React.FC<MissionsWidgetProps> = ({ onRewardClaimed }) => {
+  const { t } = useLanguage();
   const [missions, setMissions] = useState<UserMissionVm[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -95,25 +97,25 @@ export const MissionsWidget: React.FC<MissionsWidgetProps> = ({ onRewardClaimed 
       <button
         className={`missions-toggle-btn${expanded ? " expanded" : ""}`}
         onClick={() => setExpanded((v) => !v)}
-        title="Misje"
+        title={t('profile.missions')}
       >
-        🗺️
+        📋
       </button>
       {expanded && (
         <div className="missions-modal-overlay" onClick={() => setExpanded(false)}>
             <div className="missions-widget" onClick={(e) => e.stopPropagation()}>
               <div className="missions-header">
-                <span className="missions-icon">🗺️</span>
-                <h3 className="missions-title">Misje</h3>
+                <span className="missions-icon">📋</span>
+                <h3 className="missions-title">{t('profile.missions')}</h3>
                 <button className="missions-close-btn" onClick={() => setExpanded(false)}>×</button>
               </div>
           {loading ? (
-            <div className="missions-loading">Ładowanie...</div>
+            <div className="missions-loading">{t('common.loading')}</div>
           ) : error ? (
             <div className="missions-error">{error}</div>
           ) : (
             <div className="missions-list">
-              {missions.length === 0 && <div>Brak dostępnych misji.</div>}
+              {missions.length === 0 && <div>{t('profile.noMissions')}</div>}
               {missions.map((m) => (
                 <div key={m.MissionId} className={`mission-item${m.IsCompleted ? " completed" : ""}${m.IsClaimed ? " claimed" : ""}`}>
                   <div className="mission-left-col">
@@ -139,17 +141,17 @@ export const MissionsWidget: React.FC<MissionsWidgetProps> = ({ onRewardClaimed 
                     <div className="mission-reward">🎁 {m.RewardAmount} PLN</div>
                     <div className="mission-actions">
                       {m.IsClaimed ? (
-                        <span className="mission-claimed">Odebrano</span>
+                        <span className="mission-claimed">{t('missions.claimed')}</span>
                       ) : m.IsCompleted ? (
                         <button
                           className="mission-claim-btn"
                           onClick={() => handleClaim(m.MissionId)}
                           disabled={claimingId === m.MissionId}
                         >
-                          {claimingId === m.MissionId ? "..." : "Odbierz"}
+                          {claimingId === m.MissionId ? "..." : t('profile.claimReward')}
                         </button>
                       ) : (
-                        <span className="mission-incomplete">W trakcie</span>
+                        <span className="mission-incomplete">{t('missions.inProgress')}</span>
                       )}
                     </div>
                   </div>
