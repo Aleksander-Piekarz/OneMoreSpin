@@ -241,7 +241,7 @@ function UserProfile() {
                                 <span className="userpage-value">{me.email}</span>
                             </li>
                             <li className="userpage-list-item">
-                                <span className="userpage-label">{t('common.loading')}:</span>
+                                <span className="userpage-label">{t('profile.accountStatus')}:</span>
                                 <span className="userpage-status">{statusText}</span>
                             </li>
                             <li className="userpage-list-item">
