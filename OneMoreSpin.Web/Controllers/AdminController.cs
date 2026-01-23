@@ -6,6 +6,11 @@ using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Web.Controllers;
 
+/// <summary>
+/// Kontroler panelu administracyjnego.
+/// Endpointy: lista użytkowników, edycja salda, nadawanie VIP, usuwanie użytkowników.
+/// Dostępny tylko dla użytkowników z rolą Admin.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]

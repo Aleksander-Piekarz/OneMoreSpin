@@ -1,12 +1,10 @@
-// src/services/pokerService.ts
 import * as signalR from "@microsoft/signalr";
-import { type PokerTable } from "../types/poker"; // Pamiętaj o 'type'
+import { type PokerTable } from "../types/poker";
 
 class PokerService {
     private connection: signalR.HubConnection;
 
     constructor() {
-        //const hubUrl = "http://localhost:5046/pokerHub";
         const hubUrl = "http://91.123.188.186:5000/pokerHub";
 
         this.connection = new signalR.HubConnectionBuilder()
@@ -21,12 +19,10 @@ class PokerService {
     }
 
     public async startConnection() {
-        // 1. Jeśli już połączony - wyjdź natychmiast
         if (this.connection.state === signalR.HubConnectionState.Connected) {
             return;
         }
 
-        // 2. Jeśli rozłączony - zainicjuj start
         if (this.connection.state === signalR.HubConnectionState.Disconnected) {
             try {
                 await this.connection.start();
@@ -37,15 +33,10 @@ class PokerService {
             }
         }
 
-        // 3. Oczekiwanie na połączenie (Poprawka błędu TS)
-        // Rzutujemy 'state' na typ ogólny, żeby TypeScript nie "wymądrzał się", 
-        // że wie lepiej jaki jest stan.
         while ((this.connection.state as signalR.HubConnectionState) !== signalR.HubConnectionState.Connected) {
 
-            // Czekaj 50ms
             await new Promise(resolve => setTimeout(resolve, 50));
 
-            // Zabezpieczenie przed nieskończoną pętlą przy błędzie
             if (this.connection.state === signalR.HubConnectionState.Disconnected) {
                 break;
             }
@@ -62,8 +53,6 @@ class PokerService {
         if (this.connection.state !== signalR.HubConnectionState.Connected) return;
         await this.connection.invoke("LeaveTable", tableId);
     }
-
-    // --- ZABEZPIECZONE METODY ---
 
     public async joinTable(tableId: string) {
         if (this.connection.state !== signalR.HubConnectionState.Connected) {
@@ -83,11 +72,14 @@ class PokerService {
         await this.connection.invoke("MakeMove", tableId, action, amount);
     }
 
-    // --- Listenery bez zmian ---
+    public async setReady(tableId: string, isReady: boolean) {
+        if (this.connection.state !== signalR.HubConnectionState.Connected) return;
+        await this.connection.invoke("SetReady", tableId, isReady);
+    }
+
     public onUpdateGameState(callback: (table: PokerTable) => void) {
         this.connection.on("UpdateGameState", callback);
     }
-    // ... reszta listenerów tak jak była ...
 
     public onPlayerJoined(callback: (username: string) => void) {
         this.connection.on("PlayerJoined", callback);
@@ -111,12 +103,18 @@ class PokerService {
     public onReceiveMessage(callback: (username: string, message: string) => void) {
         this.connection.on("ReceiveMessage", callback);
     }
+    
+    public onKickFromTable(callback: (reason: string) => void) {
+        this.connection.on("KickFromTable", callback);
+    }
+    
     public offEvents() {
         this.connection.off("UpdateGameState");
         this.connection.off("PlayerJoined");
         this.connection.off("ActionLog");
         this.connection.off("Error");
         this.connection.off("ReceiveMessage");
+        this.connection.off("KickFromTable");
     }
 }
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace OneMoreSpin.Model.DataModels
 {
-    // Klasa reprezentująca gracza TYLKO na czas gry w pokera
     public class PokerPlayer
     {
         public string ConnectionId { get; set; }
@@ -11,12 +10,14 @@ namespace OneMoreSpin.Model.DataModels
         public string Username { get; set; } = "";
         public decimal Chips { get; set; }
         public decimal CurrentBet { get; set; }
+        public decimal TotalBetInHand { get; set; } = 0;
         public bool IsFolded { get; set; } = false;
-        public bool IsVip { get; set; } = false; // VIP status for special display
+        public bool IsVip { get; set; } = false;
+        public bool IsReady { get; set; } = false;
         public List<Card> Hand { get; set; } = new List<Card>();
         public int SeatIndex { get; set; } = -1;
 
-        public PokerPlayer() { } // Parameterless constructor for serialization
+        public PokerPlayer() { }
         
         public PokerPlayer(string connectionId, string username, decimal initialChips)
         {
@@ -27,7 +28,6 @@ namespace OneMoreSpin.Model.DataModels
         }
     }
 
-    // Klasa reprezentująca stół
     public class PokerTable
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
@@ -41,10 +41,17 @@ namespace OneMoreSpin.Model.DataModels
         public int CurrentPlayerIndex { get; set; } = 0;
         public int DealerIndex { get; set; } = 0;
 
-        public string Stage { get; set; } = "Waiting"; // Waiting, PreFlop, Flop, Turn, River, Showdown
+        public string Stage { get; set; } = "Waiting";
         public bool GameInProgress { get; set; } = false;
 
-        // Licznik, ilu graczy wykonało ruch w tej rundzie licytacji
         public int ActionsTakenInRound { get; set; } = 0;
+        
+        public string? WinnerId { get; set; } = null;
+        public string? WinnerName { get; set; } = null;
+        public string? WinHandName { get; set; } = null;
+        public decimal WinAmount { get; set; } = 0;
+        
+        public int ReadyCountdown { get; set; } = 0;
+        public bool WaitingForReady { get; set; } = false;
     }
 }

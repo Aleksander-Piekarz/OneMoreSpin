@@ -9,6 +9,12 @@ using OneMoreSpin.Services.Interfaces;
 
 namespace OneMoreSpin.Services.Hubs
 {
+    /// <summary>
+    /// SignalR Hub dla wieloosobowego Blackjacka.
+    /// Obsługuje komunikację real-time: dołączanie do stołu, obstawianie,
+    /// akcje graczy (hit, stand, double), synchronizację stanu gry.
+    /// Do 5 graczy przy jednym stole przeciwko krupierowi.
+    /// </summary>
     [Authorize]
     public class BlackjackHub : Hub
     {
@@ -23,6 +29,23 @@ namespace OneMoreSpin.Services.Hubs
         {
             _blackjackService.LeaveTable(Context.ConnectionId);
             await base.OnDisconnectedAsync(exception);
+        }
+
+        public async Task LeaveTable(string tableId)
+        {
+            var table = _blackjackService.GetTable(tableId);
+            var player = table?.Players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
+            string username = player?.Username ?? "Gracz";
+            
+            _blackjackService.LeaveTable(Context.ConnectionId);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, tableId);
+            
+            var updatedTable = _blackjackService.GetTable(tableId);
+            if (updatedTable != null)
+            {
+                await Clients.Group(tableId).SendAsync("UpdateGameState", updatedTable);
+                await Clients.Group(tableId).SendAsync("PlayerLeft", username);
+            }
         }
 
         public async Task JoinTable(string tableId)

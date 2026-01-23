@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace OneMoreSpin.Services.Interfaces
 {
-    // Prosta klasa DTO do przesyłania info o stołach
     public class TableInfoDto
     {
         public string Id { get; set; }
@@ -20,6 +19,6 @@ namespace OneMoreSpin.Services.Interfaces
         void StartNewHand(string tableId);
         bool PlayerMove(string tableId, string userId, string action, decimal amount);
         PokerTable GetTable(string tableId);
-        
+        void SetPlayerReady(string tableId, string userId, bool isReady);
     }
 }

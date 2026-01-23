@@ -12,6 +12,11 @@ using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Services.ConcreteServices
 {
+    /// <summary>
+    /// Serwis obsługujący profile użytkowników.
+    /// Pobiera dane profilowe: email, saldo, status VIP, data rejestracji.
+    /// Używany przez stronę profilu użytkownika.
+    /// </summary>
     public class ProfileService : BaseService, IProfileService
     {
         public ProfileService(
@@ -36,8 +41,6 @@ namespace OneMoreSpin.Services.ConcreteServices
                 return null;
             }
 
-            // var userProfileVm = Mapper.Map<UserProfileVm>(user);
-            // return userProfileVm;
             return Mapper.Map<UserProfileVm>(user);
         }
     }

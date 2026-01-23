@@ -34,6 +34,7 @@ export const usePokerGame = (tableId: string) => {
     const [isConnected, setIsConnected] = useState(false);
     const [myUserId, setMyUserId] = useState("");
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+    const [kickReason, setKickReason] = useState<string | null>(null);
     const hasLeftRef = useRef(false);
    
 
@@ -41,11 +42,9 @@ export const usePokerGame = (tableId: string) => {
         let isMounted = true;
         hasLeftRef.current = false;
         
-        // 1. Ustaw ID
         const id = getMyId();
         setMyUserId(id);
 
-        // 2. Rejestruj listenery PRZED połączeniem
         pokerService.onUpdateGameState((updatedTable) => {
             if (isMounted) {
                 console.log("[POKER] Otrzymano stan stołu:", updatedTable);
@@ -59,7 +58,7 @@ export const usePokerGame = (tableId: string) => {
         });
 
         pokerService.onPlayerJoined((username) => {
-            if (isMounted) setLogs(prev => [...prev, `Gracz ${username} dołączył.`]);
+            if (isMounted) setLogs(prev => [...prev, `Gracz ${username.split('@')[0]} dołączył.`]);
         });
 
         pokerService.onActionLog((msg) => {
@@ -72,10 +71,16 @@ export const usePokerGame = (tableId: string) => {
             }
         });
 
+        pokerService.onKickFromTable((reason) => {
+            if (isMounted) {
+                console.log("[POKER] Kicked from table:", reason);
+                setKickReason(reason);
+            }
+        });
+
         const connectAndJoin = async () => {
             try {
                 console.log("Hook: Próba startConnection()...");
-                // To wywołanie teraz bezpiecznie poczeka, jeśli połączenie już trwa
                 await pokerService.startConnection();
                 
                 if (isMounted && !hasLeftRef.current) {
@@ -94,7 +99,6 @@ export const usePokerGame = (tableId: string) => {
 
         return () => {
             isMounted = false;
-            // Only call leaveTable on unmount if user hasn't already left explicitly
             if (!hasLeftRef.current) {
                 pokerService.leaveTable(tableId).catch(console.error);
             }
@@ -121,9 +125,15 @@ export const usePokerGame = (tableId: string) => {
         if (!isConnected) return;
         await pokerService.makeMove(tableId, action, amount);
     };
+
+    const setReady = async (isReady: boolean) => {
+        if (!isConnected) return;
+        await pokerService.setReady(tableId, isReady);
+    };
+
     const sendChatMessage = async (msg: string) => {
             if (!isConnected) return;
             await pokerService.sendMessage(tableId, msg);
         };
-    return { table, logs, isConnected, startGame, move, myUserId, chatMessages, sendChatMessage, leaveTable };
+    return { table, logs, isConnected, startGame, move, myUserId, chatMessages, sendChatMessage, leaveTable, kickReason, setReady };
 };

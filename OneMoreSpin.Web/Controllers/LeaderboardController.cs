@@ -5,6 +5,10 @@ using OneMoreSpin.Services.Interfaces;
 
 namespace OneMoreSpin.Web.Controllers;
 
+/// <summary>
+/// Kontroler API dla rankingów i tabel liderów.
+/// Endpointy: top 10 dla konkretnej gry.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class LeaderboardController : ControllerBase
@@ -20,7 +24,6 @@ public class LeaderboardController : ControllerBase
     public async Task<IActionResult> Get()
     {
         var top = await _service.GetTop10ByWinningsAsync();
-        // Return as JSON without defining a new class
         var result = top.Select(t => new { Email = t.Email, MoneyWon = t.MoneyWon });
         return Ok(result);
     }

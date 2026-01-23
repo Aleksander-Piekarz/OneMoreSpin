@@ -21,7 +21,6 @@ const formatMoney = (value: number): string => {
   return amount.toFixed(0);
 };
 
-// Funkcja maskująca email (np. al***@gmail.com) dla prywatności
 const maskEmail = (email: string) => {
   const [name, domain] = email.split('@');
   if (!name || name.length < 3) return email;
@@ -86,7 +85,6 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ gameId, gameName, titl
   return (
     <div className={`casino-leaderboard ${className || ''}`}>
       <div className="leaderboard-header">
-        <i className="fas fa-trophy"></i>
         <span>{title}</span>
       </div>
 

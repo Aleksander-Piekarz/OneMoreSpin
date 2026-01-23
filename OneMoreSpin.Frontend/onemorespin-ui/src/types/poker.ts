@@ -1,5 +1,3 @@
-// src/types/poker.ts
-
 export const Suit = {
     Hearts: 0,
     Diamonds: 1,
@@ -23,13 +21,14 @@ export interface Card {
 
 export interface PokerPlayer {
     connectionId: string;
-    userId: string; // <--- DODAJ TO
+    userId: string;
     username: string;
     chips: number;
     currentBet: number;
     isFolded: boolean;
     isActive: boolean;
-    isVip: boolean; // VIP status for crown display
+    isVip: boolean;
+    isReady: boolean;
     hand: Card[]; 
 }
 
@@ -43,7 +42,14 @@ export interface PokerTable {
     dealerIndex: number;
     stage: string;
     
-    // --- NOWE POLA, KTÓRYCH BRAKOWAŁO ---
     gameInProgress: boolean;
     actionsTakenInRound: number;
+    
+    winnerId?: string | null;
+    winnerName?: string | null;
+    winHandName?: string | null;
+    winAmount?: number;
+    
+    readyCountdown?: number;
+    waitingForReady?: boolean;
 }

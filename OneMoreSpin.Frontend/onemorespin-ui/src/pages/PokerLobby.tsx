@@ -2,8 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import * as signalR from "@microsoft/signalr";
-import { GameHelpModal, POKER_MULTIPLAYER_HELP } from '../components/GameHelpModal';
 import '../styles/PokerLobby.css';
+import '../styles/GameHeader.css';
 
 interface TableInfo {
     id: string;
@@ -26,7 +26,6 @@ export const PokerLobby = () => {
             if (connectionRef.current) return;
 
             const newConnection = new signalR.HubConnectionBuilder()
-               // .withUrl("http://localhost:5046/pokerHub", {
             .withUrl("http://91.123.188.186:5000/pokerHub", { 
                     accessTokenFactory: () => localStorage.getItem("jwt") || ""
                 })
@@ -77,7 +76,6 @@ export const PokerLobby = () => {
         return 'pk-card-beginner';
     };
 
-    // Sortowanie stołów: Beginner -> Advanced -> VIP
     const sortedTables = [...tables].sort((a, b) => {
         const getOrder = (id: string) => {
             if (id.includes('vip')) return 2;
@@ -95,20 +93,26 @@ export const PokerLobby = () => {
                 <div className="pk-lobby-shape pk-lobby-shape-3"></div>
             </div>
 
-            <header className="pk-lobby-header">
-                <button onClick={() => navigate('/poker-mode')} className="pk-lobby-back-btn">
-                    <i className="fas fa-arrow-left"></i>
-                    <span>{t('common.back')}</span>
-                </button>
-                <h1 className="pk-lobby-title">POKER ROOMS</h1>
-                <div className="pk-lobby-spacer"></div>
+            <header className="game-header">
+                <div className="game-header-left">
+                    <button onClick={() => navigate('/poker-mode')} className="game-back-btn">
+                        <i className="fas fa-arrow-left"></i>
+                        <span>{t('common.back')}</span>
+                    </button>
+                </div>
+                <div className="game-header-center">
+                    <div className="game-title">
+                        <span className="game-title-word">POKER</span>
+                        <span className="game-title-word">LOBBY</span>
+                    </div>
+                </div>
+                <div className="game-header-right">
+                </div>
             </header>
 
             <div className="pk-lobby-content">
                 <div className="pk-lobby-intro">
                   <p className="pk-lobby-subtitle">{t('lobby.selectTable')}</p>
-                  
-                    <GameHelpModal content={POKER_MULTIPLAYER_HELP} position="prominent" />
                 </div>
 
                 {isConnected ? (

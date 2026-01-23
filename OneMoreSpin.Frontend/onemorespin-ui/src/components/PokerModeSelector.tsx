@@ -9,7 +9,6 @@ const PokerModeSelector: React.FC = () => {
 
   return (
     <div className="pk-mode-selector">
-      {/* SINGLE PLAYER */}
       <div className="pk-mode-tile pk-single" onClick={() => navigate('/single-poker')}>
         <div className="pk-tile-shine"></div>
         <div className="pk-particles">
@@ -33,7 +32,6 @@ const PokerModeSelector: React.FC = () => {
         </div>
       </div>
 
-      {/* MULTIPLAYER */}
       <div className="pk-mode-tile pk-multiplayer" onClick={() => navigate('/poker')}>
         <div className="pk-tile-shine"></div>
         <div className="pk-particles">

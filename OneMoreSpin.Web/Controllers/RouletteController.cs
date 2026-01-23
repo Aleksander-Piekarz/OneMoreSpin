@@ -8,6 +8,11 @@ using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Web.Controllers
 {
+    /// <summary>
+    /// Kontroler API dla gry Ruletka.
+    /// Endpoint spin przyjmuje listę zakładów i zwraca wylosowany numer oraz wygrane.
+    /// Obsługuje różne typy zakładów: numery, kolory, parzyste/nieparzyste, dziesiątki.
+    /// </summary>
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]

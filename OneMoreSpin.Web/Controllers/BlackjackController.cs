@@ -5,6 +5,11 @@ using System.Security.Claims;
 
 namespace OneMoreSpin.Web.Controllers;
 
+/// <summary>
+/// Kontroler API dla gry Blackjack (tryb solo).
+/// Endpointy: start gry, hit (dobierz), stand (pasuj), double (podwój), pobierz stan sesji.
+/// Wymaga autoryzacji JWT.
+/// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]

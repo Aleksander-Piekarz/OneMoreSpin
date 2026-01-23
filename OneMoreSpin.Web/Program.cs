@@ -14,6 +14,7 @@ using OneMoreSpin.Services.Configuration.AutoMapperProfiles;
 using OneMoreSpin.Services.Email;
 using OneMoreSpin.Services.Hubs;
 using OneMoreSpin.Services.Interfaces;
+using OneMoreSpin.Web.Middleware;
 using Stripe;
 
 namespace OneMoreSpin.Web;
@@ -36,7 +37,6 @@ public class Program
             options.UseLazyLoadingProxies();
         });
 
-        // --- Identity ---
         builder
             .Services.AddIdentity<User, Role>(opt =>
             {
@@ -51,8 +51,6 @@ public class Program
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-        // --- JWT CONFIGURATION ---
-        // 1. Definiujemy zmienne z bezpiecznymi wartościami domyślnymi
         var jwtKey = builder.Configuration["Jwt:Key"] ?? "super_secret_dev_key_change_this";
         var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "onemorespin.local";
         var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "onemorespin.local";
@@ -69,20 +67,18 @@ public class Program
                 options.SaveToken = true;
                 options.RequireHttpsMetadata = false;
 
-                // 2. Używamy tych zmiennych w walidacji!
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
-                    ValidateAudience = true, // Jeśli token generowany ma aud, to musi być true
+                    ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
 
-                    ValidIssuer = jwtIssuer, // <-- TU BYŁ BŁĄD (używamy zmiennej)
-                    ValidAudience = jwtAudience, // <-- TU BYŁ BŁĄD (używamy zmiennej)
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)), // <-- TU TEŻ
+                    ValidIssuer = jwtIssuer,
+                    ValidAudience = jwtAudience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
                 };
 
-                // Obsługa SignalR (Token w URL)
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
@@ -106,7 +102,7 @@ public class Program
                 };
             });
 
-        // --- Services ---
+
         builder.Services.Configure<EmailSenderOptions>(
             builder.Configuration.GetSection("EmailSender")
         );
@@ -160,7 +156,6 @@ public class Program
             );
         });
 
-        // Rejestracja serwisów
         builder.Services.AddScoped<ISlotService, SlotService>();
         builder.Services.AddScoped<IGameService, GameService>();
         builder.Services.AddAutoMapper(typeof(MainProfile));
@@ -176,7 +171,6 @@ public class Program
         builder.Services.AddHostedService<MissionResetService>();
         builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 
-        // CORS Policy
         builder.Services.AddCors(opt =>
         {
             opt.AddPolicy(
@@ -196,18 +190,15 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        // else
-        // {
-        //     app.UseHttpsRedirection();
-        // }
 
         app.UseRouting();
 
-        // --- CORS (Tylko raz!) ---
         app.UseCors("SpaDev");
 
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.UseLastSeen();
 
         app.UseStaticFiles();
 

@@ -12,6 +12,12 @@ using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Services.ConcreteServices
 {
+    /// <summary>
+    /// Serwis zarządzający systemem misji i wyzwań dla użytkowników.
+    /// Typy misji: MakeSpins (wykonaj spiny), WinInARow (wygraj pod rząd),
+    /// WinTotalAmount (wygraj łącznie X), PlayGames (zagraj we wszystkie gry), MakeDeposits (dokonaj wpłat).
+    /// Śledzi postęp, oznacza ukończone misje i obsługuje odbieranie nagród.
+    /// </summary>
     public class MissionService : BaseService, IMissionService
     {
         public MissionService(
@@ -28,23 +34,18 @@ namespace OneMoreSpin.Services.ConcreteServices
                 return new List<UserMissionVm>();
             }
 
-            // 1. Pobierz wszystkie możliwe misje
             var allMissions = await DbContext.Missions.ToListAsync();
 
-            // 2. Pobierz misje, które użytkownik już rozpoczął
             var userMissions = await DbContext
                 .UserMissions.Where(um => um.UserId == parsedUserId)
-                .Include(um => um.Mission) // Dołącz dane z tabeli Mission
+                .Include(um => um.Mission)
                 .ToListAsync();
 
-            // 3. Użyj AutoMappera do zmapowania rozpoczętych misji na ViewModel
             var result = Mapper.Map<List<UserMissionVm>>(userMissions);
 
-            // 4. Znajdź misje, których użytkownik jeszcze nie zaczął
             var startedMissionIds = userMissions.Select(um => um.MissionId).ToHashSet();
             var unstartedMissions = allMissions.Where(m => !startedMissionIds.Contains(m.Id));
 
-            // Zamiast pętli, użyj mapowania na całej kolekcji
             result.AddRange(Mapper.Map<IEnumerable<UserMissionVm>>(unstartedMissions));
 
             return result;
@@ -200,30 +201,26 @@ namespace OneMoreSpin.Services.ConcreteServices
                 return;
             }
 
-            // 1. Sprawdź, czy użytkownik już zagrał w tę grę
             var alreadyPlayed = await DbContext.UserPlayedGames.AnyAsync(upg =>
                 upg.UserId == parsedUserId && upg.GameId == gameId
             );
 
             if (alreadyPlayed)
             {
-                return; // Użytkownik już grał w tę grę, nic nie rób
+                return;
             }
 
-            // 2. Zapisz, że użytkownik zagrał w tę grę
             var newUserPlayedGame = new UserPlayedGame { UserId = parsedUserId, GameId = gameId };
             DbContext.UserPlayedGames.Add(newUserPlayedGame);
 
-            // 3. Znajdź misję "PlayGames"
             var mission = await DbContext.Missions.FirstOrDefaultAsync(m =>
                 m.MissionType == MissionType.PlayGames
             );
             if (mission == null)
             {
-                return; // Misja nie istnieje
+                return;
             }
 
-            // 4. Znajdź lub utwórz UserMission dla tej misji
             var userMission = await DbContext
                 .UserMissions.Include(um => um.Mission)
                 .FirstOrDefaultAsync(um => um.UserId == parsedUserId && um.MissionId == mission.Id);
@@ -247,7 +244,6 @@ namespace OneMoreSpin.Services.ConcreteServices
                 return;
             }
 
-            // 5. Zaktualizuj postęp
             userMission.CurrentProgress++;
 
             if (userMission.CurrentProgress >= userMission.Mission.RequiredAmount)

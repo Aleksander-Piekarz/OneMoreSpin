@@ -18,7 +18,7 @@ public class UsersController : ControllerBase
     [HttpGet("me")]
     public async Task<IActionResult> Me()
     {
-        var sub = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub"); // fallback
+        var sub = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
         if (string.IsNullOrWhiteSpace(sub))
             return Unauthorized();
 

@@ -7,6 +7,10 @@ using OneMoreSpin.Services.Interfaces;
 
 namespace OneMoreSpin.Web.Controllers;
 
+/// <summary>
+/// Kontroler profilu użytkownika.
+/// Endpointy: dane profilu, historia gier, historia płatności, dzienna nagroda, zmiana hasła.
+/// </summary>
 [ApiController]
 [Authorize]
 [Route("api/[controller]")]
@@ -33,7 +37,6 @@ public class ProfileController : ControllerBase
         _userManager = userManager;
     }
 
-    //  GET /api/profile/me
     [HttpGet("me")]
     public async Task<IActionResult> GetProfile()
     {
@@ -48,7 +51,6 @@ public class ProfileController : ControllerBase
         return Ok(profile);
     }
 
-    // 🔹 GET /api/profile/payments
     [HttpGet("payments")]
     public async Task<IActionResult> GetPaymentHistory()
     {
@@ -60,7 +62,6 @@ public class ProfileController : ControllerBase
         return Ok(history);
     }
 
-    // 🔹 GET /api/profile/games
     [HttpGet("games")]
     public async Task<IActionResult> GetGameHistory()
     {
@@ -85,7 +86,6 @@ public class ProfileController : ControllerBase
 
         if (!result.Success)
         {
-            // Zwróć informacje o tym, kiedy będzie dostępna następna nagroda
             var response = new
             {
                 message = "Nie można jeszcze odebrać nagrody.",
@@ -95,7 +95,6 @@ public class ProfileController : ControllerBase
             return BadRequest(response);
         }
 
-        // Zwróć pełne informacje o odebranej nagrodzie
         return Ok(
             new
             {

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using OneMoreSpin.Services.ConcreteServices;
-using OneMoreSpin.ViewModels.VM; // Użyj VM z Kroku 1
+using OneMoreSpin.ViewModels.VM;
 using System.Threading.Tasks;
 
 namespace OneMoreSpin.Services.Interfaces

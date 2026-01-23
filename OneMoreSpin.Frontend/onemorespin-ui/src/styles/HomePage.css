@@ -99,15 +99,31 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 100;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+  height: 90px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
-.header-spacer {
-  width: 125px;
-}
-
-.header-right-icons {
+.home-header-left {
+  flex: 1;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+}
+
+.home-header-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-header-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
   gap: 15px;
 }
 
@@ -166,17 +182,15 @@
 }
 
 .home-page-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   font-family: 'Big Shoulders', 'Bebas Neue', 'Poppins', sans-serif;
-  font-size: 52px;
+  font-size: 40px;
   font-weight: 900;
   color: #ffffff;
   letter-spacing: 6px;
   margin: 0;
   display: flex;
   gap: 15px;
+  line-height: 1;
 }
 
 .title-word {
@@ -186,6 +200,8 @@
     0 0 10px rgba(255, 255, 255, 0.8),
     0 0 20px rgba(102, 126, 234, 0.6),
     0 0 30px rgba(118, 75, 162, 0.4);
+  margin: 0;
+  line-height: 1;
 }
 
 .title-word:nth-child(1) {
@@ -203,10 +219,10 @@
 
 @keyframes titleWave {
   0%, 100% {
-    transform: translateY(0px) scale(1);
+    transform: scale(1);
   }
   50% {
-    transform: translateY(-8px) scale(1.05);
+    transform: scale(1);
   }
 }
 

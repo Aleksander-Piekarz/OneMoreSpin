@@ -241,6 +241,7 @@
   position: relative;
   z-index: 10;
   overflow: hidden;
+  transform: translateY(-30px);
 }
 
 .blackjack-container {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { blackjackMultiplayerService } from "../services/blackjackMultiplayerService";
 import { type BlackjackTable } from "../types/blackjack";
 
@@ -35,24 +35,25 @@ export const useBlackjackGame = (tableId: string) => {
     const [isConnected, setIsConnected] = useState(false);
     const [myUserId, setMyUserId] = useState("");
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+    const hasLeftRef = useRef(false);
 
     useEffect(() => {
         let isMounted = true;
+        hasLeftRef.current = false;
 
         const id = getMyId();
         setMyUserId(id);
 
-        // Rejestruj listenery PRZED połączeniem
         blackjackMultiplayerService.onUpdateGameState((updatedTable) => {
             if (isMounted) setTable(updatedTable);
         });
 
         blackjackMultiplayerService.onPlayerJoined((username) => {
-            if (isMounted) setLogs(prev => [...prev, `Gracz ${username} dołączył.`]);
+            if (isMounted) setLogs(prev => [...prev, `Gracz ${username.split('@')[0]} dołączył.`]);
         });
 
         blackjackMultiplayerService.onPlayerLeft((username) => {
-            if (isMounted) setLogs(prev => [...prev, `Gracz ${username} opuścił stół.`]);
+            if (isMounted) setLogs(prev => [...prev, `Gracz ${username.split('@')[0]} opuścił stół.`]);
         });
 
         blackjackMultiplayerService.onActionLog((msg) => {
@@ -90,6 +91,9 @@ export const useBlackjackGame = (tableId: string) => {
 
         return () => {
             isMounted = false;
+            if (!hasLeftRef.current) {
+                blackjackMultiplayerService.leaveTable(tableId).catch(console.error);
+            }
             blackjackMultiplayerService.offEvents();
         };
     }, [tableId]);
@@ -124,6 +128,16 @@ export const useBlackjackGame = (tableId: string) => {
         await blackjackMultiplayerService.sendMessage(tableId, msg);
     };
 
+    const leaveTable = async () => {
+        if (!isConnected || hasLeftRef.current) return;
+        hasLeftRef.current = true;
+        try {
+            await blackjackMultiplayerService.leaveTable(tableId);
+        } catch (e) {
+            console.error("Error in leaveTable:", e);
+        }
+    };
+
     return {
         table,
         logs,
@@ -135,6 +149,7 @@ export const useBlackjackGame = (tableId: string) => {
         hit,
         stand,
         double,
-        sendChatMessage
+        sendChatMessage,
+        leaveTable
     };
 };

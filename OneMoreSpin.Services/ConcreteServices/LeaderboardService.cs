@@ -7,6 +7,11 @@ using OneMoreSpin.Services.Interfaces;
 
 namespace OneMoreSpin.Services.ConcreteServices;
 
+/// <summary>
+/// Serwis obsługujący rankingi i tabele liderów.
+/// Pobiera top 10 graczy według wygranych kwot dla konkretnej gry.
+/// Używany do wyświetlania rankingów na stronach gier.
+/// </summary>
 public class LeaderboardService : ILeaderboardService
 {
     private readonly ApplicationDbContext _db;

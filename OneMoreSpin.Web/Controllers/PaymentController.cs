@@ -14,6 +14,11 @@ using System.Threading.Tasks;
 
 namespace OneMoreSpin.Web.Controllers
 {
+    /// <summary>
+    /// Kontroler obsługujący płatności przez Stripe.
+    /// Endpointy: tworzenie sesji Checkout (wpłata), webhook Stripe, wypłaty, historia płatności.
+    /// Integruje się z Stripe API do bezpiecznego przetwarzania płatności.
+    /// </summary>
     [Authorize] 
     [ApiController]
     [Route("api/[controller]")]
@@ -45,7 +50,6 @@ namespace OneMoreSpin.Web.Controllers
 
             var envUrl = Environment.GetEnvironmentVariable("CLIENT_URL");
             _clientUrl = !string.IsNullOrEmpty(envUrl) ? envUrl : "http://91.123.188.186:5173";
-           // _clientUrl = config["ClientUrl"] ?? "http://localhost:5173";
 
             _logger.LogInformation($"[PAYMENT CONFIG] CLIENT_URL z PM2: '{envUrl}'. Używam adresu: '{_clientUrl}'");
 

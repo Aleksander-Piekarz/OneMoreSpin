@@ -6,8 +6,8 @@ import { api } from '../api';
 import DemoToggle from '../components/DemoToggle';
 import { refreshMissions } from "../events";
 import Leaderboard from '../components/Leaderboard';
-import { GameHelpModal, ROULETTE_HELP } from '../components/GameHelpModal';
 import "../styles/RoulettePage.css";
+import "../styles/GameHeader.css";
 
 const WHEEL_NUMBERS = [
   0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
@@ -17,7 +17,6 @@ const RED_NUMBERS = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 
 
 const CHIP_VALUES = [10, 50, 100, 500];
 
-// Typy zakładów
 type BetType = 'NUMBER' | 'COLOR' | 'PARITY' | 'HALF';
 type BetValue = number | 'RED' | 'BLACK' | 'EVEN' | 'ODD' | 'LOW' | 'HIGH';
 
@@ -221,8 +220,6 @@ export default function RouletteGame() {
 
   const isRed = (num: number) => RED_NUMBERS.includes(num);
 
-  // --- Logika Gry ---
-
   const placeBet = (type: BetType, value: BetValue) => {
     if (isSpinning) return;
     if (!unlimitedMode && balance < currentChip) {
@@ -276,7 +273,6 @@ export default function RouletteGame() {
 
         const winningNumber = result.winNumber;
 
-        // logika rotacji
         const indexOnWheel = WHEEL_NUMBERS.indexOf(winningNumber);
         const segmentAngle = 360 / 37;
         
@@ -406,19 +402,21 @@ export default function RouletteGame() {
         <div className="floating-shape shape-5"></div>
       </div>
 
-      <header className="roulette-header">
-        <button className="back-btn" onClick={() => navigate("/home")}>
-          <ArrowLeft size={20} />
-          <span>POWRÓT</span>
-        </button>
-        
-        <div className="roulette-title">
-          <span className="title-word">RULETKA</span>
+      <header className="game-header">
+        <div className="game-header-left">
+          <button className="game-back-btn" onClick={() => navigate("/home")}>
+            <i className="fas fa-arrow-left"></i>
+            <span>{t('common.back')}</span>
+          </button>
         </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="game-header-center">
+          <div className="game-title">
+            <span className="game-title-word">RULETKA</span>
+          </div>
+        </div>
+        <div className="game-header-right">
           <DemoToggle checked={unlimitedMode} onChange={setUnlimitedMode} />
-          <div className="balance-display">
+          <div className="game-balance-display">
             <i className="fas fa-coins"></i>
             <span>{balance.toLocaleString()} PLN</span>
           </div>
@@ -454,7 +452,6 @@ export default function RouletteGame() {
 
       <div className="flex-1 w-full max-w-[1500px] mx-auto flex flex-row gap-8 items-center justify-center relative z-10 px-8 py-4 leaderboard-host overflow-hidden">
         
-        {/* LEWA STRONA - KOŁO */}
         <div className="flex flex-col items-center justify-center shrink-0">
            <div className="relative transition-transform duration-700 transform">
              <RouletteWheel 
@@ -466,7 +463,6 @@ export default function RouletteGame() {
            </div>
         </div>
 
-        {/* PRAWA STRONA - PANEL STAWEK + HISTORIA */}
         <div className="flex-1 min-w-0 max-w-[700px] bg-slate-900/95 p-5 rounded-2xl border-2 border-cyan-500/30 shadow-lg relative overflow-hidden">
            <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] pointer-events-none"></div>
 
@@ -520,7 +516,6 @@ export default function RouletteGame() {
                   </div>
               </div>
 
-              {/* HISTORIA I WYNIK - przeniesione tutaj */}
               <div className="flex items-center gap-4 w-full p-3 bg-black/30 rounded-xl border border-white/10">
                  <div className="flex flex-col items-center gap-1 px-4 border-r border-white/10">
                     <span className="text-[10px] font-bold tracking-widest uppercase text-slate-500">Wynik</span>
@@ -604,13 +599,9 @@ export default function RouletteGame() {
             aria-expanded={leaderboardOpen}
             title={leaderboardOpen ? t('games.roulette.hideLeaderboard') : t('games.roulette.showLeaderboard')}
           >
-            <i className="fas fa-trophy"></i>
             <span>TOP</span>
           </button>
         </div>
-
-        {/* PRZYCISK POMOCY */}
-        <GameHelpModal content={ROULETTE_HELP} position="floating" />
 
       </div>
 

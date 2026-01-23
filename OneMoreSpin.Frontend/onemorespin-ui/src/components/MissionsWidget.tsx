@@ -36,7 +36,6 @@ export const MissionsWidget: React.FC<MissionsWidgetProps> = ({ onRewardClaimed 
       const data = await api.missions.getUserMissions();
       console.debug("[MissionsWidget] raw missions response", data);
       
-      // mapping
       type BackendMission = {
         missionId: number;
         name: string;

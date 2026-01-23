@@ -1,4 +1,3 @@
-// src/services/blackjackMultiplayerService.ts
 import * as signalR from "@microsoft/signalr";
 import { type BlackjackTable } from "../types/blackjack";
 
@@ -47,7 +46,10 @@ class BlackjackMultiplayerService {
         }
     }
 
-    // --- Metody ---
+    public async leaveTable(tableId: string) {
+        if (this.connection.state !== signalR.HubConnectionState.Connected) return;
+        await this.connection.invoke("LeaveTable", tableId);
+    }
 
     public async joinTable(tableId: string) {
         if (this.connection.state !== signalR.HubConnectionState.Connected) {
@@ -86,8 +88,6 @@ class BlackjackMultiplayerService {
         if (this.connection.state !== signalR.HubConnectionState.Connected) return;
         await this.connection.invoke("SendMessage", tableId, message);
     }
-
-    // --- Listenery ---
 
     public onUpdateGameState(callback: (table: BlackjackTable) => void) {
         this.connection.on("UpdateGameState", callback);

@@ -5,9 +5,8 @@ namespace OneMoreSpin.Model.DataModels
         public int Id { get; set; }
         public decimal CurrentProgress { get; set; }
         public bool IsCompleted { get; set; }
-        public bool IsClaimed { get; set; } // Czy nagroda została odebrana
+        public bool IsClaimed { get; set; }
 
-        // Klucze obce i właściwości nawigacyjne
         public int UserId { get; set; }
         public virtual User User { get; set; } = null!;
 

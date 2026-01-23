@@ -2,8 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import * as signalR from "@microsoft/signalr";
-import { GameHelpModal, BLACKJACK_MULTIPLAYER_HELP } from '../components/GameHelpModal';   
 import '../styles/BlackjackLobby.css';
+import '../styles/GameHeader.css';
 
 interface TableInfo {
     id: string;
@@ -76,7 +76,6 @@ export const BlackjackLobby = () => {
         return 'bj-card-beginner';
     };
 
-    // Sortowanie stołów: Beginner -> Advanced -> VIP
     const sortedTables = [...tables].sort((a, b) => {
         const getOrder = (id: string) => {
             if (id.includes('vip')) return 2;
@@ -94,19 +93,26 @@ export const BlackjackLobby = () => {
                 <div className="bj-lobby-shape bj-lobby-shape-3"></div>
             </div>
 
-            <header className="bj-lobby-header">
-                <button onClick={() => navigate('/blackjack')} className="bj-lobby-back-btn">
-                    <i className="fas fa-arrow-left"></i>
-                    <span>{t('common.back')}</span>
-                </button>
-                <h1 className="bj-lobby-title">BLACKJACK ROOMS</h1>
-                <div className="bj-lobby-spacer"></div>
+            <header className="game-header">
+                <div className="game-header-left">
+                    <button onClick={() => navigate('/blackjack')} className="game-back-btn">
+                        <i className="fas fa-arrow-left"></i>
+                        <span>{t('common.back')}</span>
+                    </button>
+                </div>
+                <div className="game-header-center">
+                    <div className="game-title">
+                        <span className="game-title-word">BLACKJACK</span>
+                        <span className="game-title-word">LOBBY</span>
+                    </div>
+                </div>
+                <div className="game-header-right">
+                </div>
             </header>
 
             <div className="bj-lobby-content">
                 <div className="bj-lobby-intro">
                      <p className="bj-lobby-subtitle">{t('lobby.selectTable')}</p>
-                    <GameHelpModal content={BLACKJACK_MULTIPLAYER_HELP} position="prominent" />
                 </div>
 
                 {isConnected ? (

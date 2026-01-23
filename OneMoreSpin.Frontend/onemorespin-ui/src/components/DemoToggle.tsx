@@ -12,11 +12,11 @@ const DemoToggle: React.FC<Props> = ({ checked, onChange }) => {
       className={`demo-toggle ${checked ? 'active' : ''}`}
       onClick={() => onChange(!checked)}
       aria-pressed={checked}
-      title={checked ? 'Demo włączone' : 'Włącz demo'}
+      title={checked ? 'Wyłącz tryb demo' : 'Włącz tryb demo'}
     >
       <span className="demo-pill">
         <span className="demo-dot" />
-        <span className="demo-label">DEMO</span>
+        <span className="demo-label">{checked ? 'Wyłącz tryb demo' : 'Włącz tryb demo'}</span>
       </span>
     </button>
   );

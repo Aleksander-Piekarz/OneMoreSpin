@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import BlackjackModeSelector from '../components/BlackjackModeSelector';
-import { GameHelpModal, BLACKJACK_HELP } from '../components/GameHelpModal';
 import '../styles/BlackjackModePage.css';
+import '../styles/GameHeader.css';
 
 const BlackjackModePage: React.FC = () => {
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <div className="bj-mode-page">
@@ -16,18 +16,20 @@ const BlackjackModePage: React.FC = () => {
         <div className="bj-floating-shape bj-shape-3"></div>
       </div>
 
-      <header className="bj-mode-header">
-        <button className="bj-back-btn" onClick={() => navigate('/home')}>
-          <i className="fas fa-arrow-left"></i>
-          <span>{language === 'pl' ? 'POWRÓT' : 'BACK'}</span>
-        </button>
-
-        <h1 className="bj-page-title">
-          <span className="bj-title-word">BLACK</span>
-          <span className="bj-title-word">JACK</span>
-        </h1>
-        <GameHelpModal content={BLACKJACK_HELP} position="header" />
-        <div className="bj-header-spacer"></div>
+      <header className="game-header">
+        <div className="game-header-left">
+          <button className="game-back-btn" onClick={() => navigate('/home')}>
+            <i className="fas fa-arrow-left"></i>
+            <span>{t('common.back')}</span>
+          </button>
+        </div>
+        <div className="game-header-center">
+          <div className="game-title">
+            <span className="game-title-word">BLACKJACK</span>
+          </div>
+        </div>
+        <div className="game-header-right">
+        </div>
       </header>
 
       <main className="bj-mode-main">

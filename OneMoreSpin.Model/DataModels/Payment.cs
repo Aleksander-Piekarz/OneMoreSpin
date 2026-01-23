@@ -7,7 +7,6 @@ public class Payment
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public TransactionType TransactionType { get; set; }
 
-    // Navigation properties
     public int UserId { get; set; }
     public virtual User User { get; set; } = null!;
 }

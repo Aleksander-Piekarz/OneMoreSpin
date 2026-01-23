@@ -7,13 +7,11 @@ import DailyRewardWidget from '../components/DailyRewardWidget';
 import MissionsWidget from '../components/MissionsWidget';
 import '../styles/UserPage.css';
 
-// Ikony
 const UserIcon = () => <span className="userpage-card-header-icon">👤</span>;
 const WalletIcon = () => <span className="userpage-card-header-icon">💰</span>;
 const HistoryIcon = () => <span className="userpage-card-header-icon">📜</span>;
 const SecurityIcon = () => <span className="userpage-card-header-icon">🔒</span>;
 
-// Typy
 type MeUser = {
     id: number;
     email: string;
@@ -93,9 +91,6 @@ function UserProfile() {
      const [visibleTransactions, setVisibleTransactions] = useState(10);
     const [visibleGames, setVisibleGames] = useState(10);
     
-    // --- EFEKTY ---
-
-    // 1. Pobieranie danych użytkownika
     useEffect(() => {
         const token = localStorage.getItem('jwt');
         if (!token) {
@@ -114,7 +109,6 @@ function UserProfile() {
         })();
     }, [navigate]);
 
-    // 2. Obsługa powrotu ze Stripe
     useEffect(() => {
         const paymentStatus = searchParams.get('payment');
 
@@ -146,7 +140,6 @@ function UserProfile() {
         
     }, [searchParams, setSearchParams]);
 
-    // 3. Pobieranie danych do zakładek
     useEffect(() => {
         if (activeTab === 'transakcje') {
             setHistoryLoading(true);
@@ -189,7 +182,6 @@ function UserProfile() {
         try {
             const user = await api.auth.me();
             setMe(user as MeUser);
-            // Odśwież historię transakcji
             api.payment.getHistory().then(setTransactions).catch(() => {});
             refreshMissions();
         } catch {
@@ -455,7 +447,6 @@ function UserProfile() {
                                 const response = await api.payment.createWithdrawal(withdrawalAmount);
                                 setMe(prev => prev ? { ...prev, balance: response.newBalance } : null);
                                 setToast(`Wypłacono ${withdrawalAmount.toFixed(2)} PLN. Saldo zaktualizowane!`);
-                                // Odśwież historię transakcji
                                 api.payment.getHistory().then(setTransactions);
                                 refreshMissions();
                                 setTimeout(() => {

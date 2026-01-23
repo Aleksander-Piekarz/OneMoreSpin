@@ -9,6 +9,12 @@ using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Services.ConcreteServices;
 
+/// <summary>
+/// Serwis administracyjny do zarządzania użytkownikami.
+/// Funkcje: pobieranie listy użytkowników, edycja salda, nadawanie/odbieranie VIP,
+/// usuwanie użytkowników
+/// Dostępny tylko dla użytkowników z rolą "Admin".
+/// </summary>
 public class AdminService : BaseService, IAdminService
 {
     private readonly UserManager<User> _userManager;

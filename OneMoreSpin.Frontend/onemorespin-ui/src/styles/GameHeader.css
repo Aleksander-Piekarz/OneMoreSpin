@@ -1,0 +1,224 @@
+/* Wspólny styl dla headerów wszystkich gier */
+
+.game-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 25px 40px;
+  background: rgba(10, 14, 39, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 100;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+  height: 90px;
+  box-sizing: border-box;
+}
+
+/* LEWA STRONA - przycisk powrotu */
+.game-header-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.game-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.4) 0%, rgba(118, 75, 162, 0.4) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Big Shoulders', 'Bebas Neue', sans-serif;
+}
+
+.game-back-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.game-back-btn:hover::before {
+  left: 100%;
+}
+
+.game-back-btn:hover {
+  transform: translateX(-3px);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 25px rgba(102, 126, 234, 0.5);
+}
+
+/* ŚRODEK - tytuł gry */
+.game-header-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.game-title {
+  font-family: 'Big Shoulders', 'Bebas Neue', sans-serif;
+  font-size: 40px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 6px;
+  text-shadow: 
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(102, 126, 234, 0.6);
+  display: flex;
+  gap: 15px;
+  margin: 0;
+  line-height: 1;
+}
+
+.game-title-word {
+  display: inline-block;
+}
+
+/* PRAWA STRONA - demo toggle i balance */
+.game-header-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.game-balance-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: rgba(67, 233, 123, 0.1);
+  border: 2px solid rgba(67, 233, 123, 0.3);
+  border-radius: 50px;
+}
+
+.game-balance-display i {
+  color: #43e97b;
+  font-size: 18px;
+}
+
+.game-balance-display span {
+  color: #43e97b;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+/* Informacje dodatkowe (opcjonalne - dla multiplayer) */
+.game-info-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: rgba(10, 14, 39, 0.7);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  z-index: 99;
+}
+
+.game-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.game-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.game-stat-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+}
+
+.game-stat-value {
+  color: #43e97b;
+  font-weight: 700;
+}
+
+.game-stat-value-gold {
+  color: #ffd700;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+}
+
+/* Responsywność */
+@media (max-width: 1024px) {
+  .game-header {
+    padding: 20px 30px;
+  }
+
+  .game-title {
+    font-size: 42px;
+    letter-spacing: 5px;
+  }
+}
+
+@media (max-width: 768px) {
+  .game-header {
+    padding: 20px 20px;
+  }
+
+  .game-back-btn span {
+    display: none;
+  }
+
+  .game-back-btn {
+    padding: 10px 12px;
+  }
+
+  .game-title {
+    font-size: 28px;
+    letter-spacing: 3px;
+    gap: 8px;
+  }
+
+  .game-info-row,
+  .game-info-panel {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-header {
+    padding: 12px 15px;
+  }
+
+  .game-balance-display {
+    padding: 6px 12px;
+  }
+
+  .game-balance-display span {
+    font-size: 12px;
+  }
+}

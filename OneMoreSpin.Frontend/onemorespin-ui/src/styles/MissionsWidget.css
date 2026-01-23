@@ -64,9 +64,16 @@
     max-width: 900px;
     max-height: 85vh;
     overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
     z-index: 2001;
     box-shadow: 0 0 60px rgba(67, 233, 123, 0.2), 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
     animation: slideUp 0.3s ease;
+}
+
+.missions-content::-webkit-scrollbar {
+    width: 0;
+    display: none;
 }
 
 .missions-close-btn {

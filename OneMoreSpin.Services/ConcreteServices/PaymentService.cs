@@ -11,6 +11,12 @@ using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Services.ConcreteServices
 {
+    /// <summary>
+    /// Serwis obsługujący transakcje finansowe użytkowników.
+    /// Obsługuje wpłaty (Deposit), wypłaty (Withdrawal) i bonusy.
+    /// Wszystkie operacje są wykonywane w transakcjach bazodanowych dla bezpieczeństwa.
+    /// Rejestruje historię płatności i aktualizuje saldo użytkownika.
+    /// </summary>
     public class PaymentService : BaseService, IPaymentService
     {
         private readonly IMissionService _missionService;
@@ -30,13 +36,12 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             if (!int.TryParse(userId, out int parsedUserId))
             {
-                // Możesz tu rzucić wyjątek lub zwrócić pustą listę
                 return new List<PaymentHistoryItemVm>(); 
             }
 
             
             var payments = await DbContext
-                .Payments.Where(p => p.UserId == parsedUserId) // <-- ZMIANA TUTAJ
+                .Payments.Where(p => p.UserId == parsedUserId)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
 
@@ -84,7 +89,6 @@ namespace OneMoreSpin.Services.ConcreteServices
                 throw;
             }
 
-            // Call external service after transaction is complete
             await _missionService.UpdateMakeDepositsProgressAsync(userId);
 
             return user;
@@ -123,7 +127,7 @@ namespace OneMoreSpin.Services.ConcreteServices
 
                 var payment = new Payment
                 {
-                    Amount = -amount, // Ujemna kwota dla wypłaty
+                    Amount = -amount,
                     CreatedAt = DateTime.UtcNow,
                     TransactionType = TransactionType.Withdrawal,
                     UserId = user.Id

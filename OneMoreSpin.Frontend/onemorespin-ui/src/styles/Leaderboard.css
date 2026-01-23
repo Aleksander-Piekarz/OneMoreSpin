@@ -152,12 +152,19 @@
   max-height: calc(100vh - 200px);
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
   background: linear-gradient(160deg, rgba(18, 22, 52, 0.95) 0%, rgba(8, 10, 28, 0.95) 100%);
   border: 1px solid rgba(102, 126, 234, 0.3);
   border-right: none;
-  border-radius: 12px 0 0 12px;
+  border-radius: 0 0 0 12px;
   box-shadow: -4px 4px 20px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(15px);
+}
+
+.leaderboard-panel::-webkit-scrollbar {
+  width: 0;
+  display: none;
 }
 
 /* Toggle - przycisk do otwierania/zamykania */
@@ -195,7 +202,7 @@
 }
 
 .leaderboard-drawer.closed .leaderboard-toggle i {
-  transform: rotate(180deg);
+  transform: rotate(0deg);
 }
 
 .leaderboard-toggle span {
@@ -215,6 +222,7 @@
   border-radius: 0;
   box-shadow: none;
   background: transparent;
+  overflow: visible;
 }
 
 .leaderboard-panel .leaderboard-header {

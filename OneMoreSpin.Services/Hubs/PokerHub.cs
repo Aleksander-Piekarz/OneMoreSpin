@@ -10,6 +10,11 @@ using OneMoreSpin.Services.Interfaces;
 
 namespace OneMoreSpin.Services.Hubs
 {
+    /// <summary>
+    /// SignalR Hub dla wieloosobowego Pokera Texas Hold'em.
+    /// Obsługuje komunikację real-time: dołączanie do stołu, akcje graczy (fold, call, raise, check),
+    /// synchronizację stanu gry między wszystkimi graczami przy stole.
+    /// </summary>
     [Authorize]
     public class PokerHub : Hub
     {
@@ -59,13 +64,10 @@ namespace OneMoreSpin.Services.Hubs
 
         public async Task LeaveTable(string tableId)
         {
-            // First leave the table (this sends update to group)
             _pokerService.LeaveTable(Context.ConnectionId);
             
-            // Then remove from SignalR group
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, tableId);
             
-            // Send final update to remaining players
             var table = _pokerService.GetTable(tableId);
             if (table != null)
             {
@@ -78,6 +80,12 @@ namespace OneMoreSpin.Services.Hubs
             _pokerService.StartNewHand(tableId);
             var table = _pokerService.GetTable(tableId);
             await Clients.Group(tableId).SendAsync("UpdateGameState", table);
+        }
+
+        public async Task SetReady(string tableId, bool isReady)
+        {
+            var userId = Context.UserIdentifier ?? Context.User?.FindFirst("sub")?.Value ?? "";
+            _pokerService.SetPlayerReady(tableId, userId, isReady);
         }
 
         public async Task<List<TableInfoDto>> GetTables()
