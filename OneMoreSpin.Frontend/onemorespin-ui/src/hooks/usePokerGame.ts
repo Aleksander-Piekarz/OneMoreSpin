@@ -42,11 +42,9 @@ export const usePokerGame = (tableId: string) => {
         let isMounted = true;
         hasLeftRef.current = false;
         
-        // 1. Ustaw ID
         const id = getMyId();
         setMyUserId(id);
 
-        // 2. Rejestruj listenery PRZED połączeniem
         pokerService.onUpdateGameState((updatedTable) => {
             if (isMounted) {
                 console.log("[POKER] Otrzymano stan stołu:", updatedTable);
@@ -83,7 +81,6 @@ export const usePokerGame = (tableId: string) => {
         const connectAndJoin = async () => {
             try {
                 console.log("Hook: Próba startConnection()...");
-                // To wywołanie teraz bezpiecznie poczeka, jeśli połączenie już trwa
                 await pokerService.startConnection();
                 
                 if (isMounted && !hasLeftRef.current) {
@@ -102,7 +99,6 @@ export const usePokerGame = (tableId: string) => {
 
         return () => {
             isMounted = false;
-            // Only call leaveTable on unmount if user hasn't already left explicitly
             if (!hasLeftRef.current) {
                 pokerService.leaveTable(tableId).catch(console.error);
             }

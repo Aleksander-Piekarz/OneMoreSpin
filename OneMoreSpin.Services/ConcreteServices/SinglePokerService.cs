@@ -14,6 +14,12 @@ using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Services.ConcreteServices;
 
+/// <summary>
+/// Serwis obsługujący Poker jednoosobowy 
+/// Gracz dostaje 5 kart, może wymienić do 4 kart,
+/// następnie porównuje swój układ z krupierem.
+/// Ocenia układy od High Card do Royal Flush.
+/// </summary>
 public class SinglePokerService : BaseService, ISinglePokerService
 {
     private static readonly Random Rng = new();
@@ -46,7 +52,6 @@ public class SinglePokerService : BaseService, ISinglePokerService
             if (user.Balance < betAmount)
                 throw new InvalidOperationException("Niewystarczające środki");
 
-            // Zabezpieczenie proste: odejmujemy zakład teraz
             user.Balance -= betAmount;
             await DbContext.SaveChangesAsync();
         }
@@ -108,13 +113,11 @@ public class SinglePokerService : BaseService, ISinglePokerService
         var deck = CreateShuffledDeck().Where(c => !used.Contains((c.Rank, c.Suit))).ToList();
         int deckPos = 0;
 
-        // Replace player's discarded cards
         foreach (var idx in indices)
         {
             session.PlayerHand[idx] = deck[deckPos++];
         }
 
-        // Evaluate hands
         session.EvaluatedPlayerHand = EvaluateHand(session.PlayerHand);
         session.EvaluatedDealerHand = EvaluateHand(session.DealerHand);
 
@@ -223,14 +226,12 @@ public class SinglePokerService : BaseService, ISinglePokerService
         var distinctRanks = ranks.Distinct().OrderByDescending(r => r).ToList();
 
         bool isStraight = false;
-        // handle wheel A-2-3-4-5
         var ordered = ranks.OrderBy(r => r).ToList();
         if (ordered.SequenceEqual(new List<int> { 2, 3, 4, 5, 14 }))
             isStraight = true;
         else if (ordered.Zip(ordered.Skip(1), (a, b) => b - a).All(d => d == 1))
             isStraight = true;
 
-        // counts
         var groups = ranks
             .GroupBy(r => r)
             .OrderByDescending(g => g.Count())

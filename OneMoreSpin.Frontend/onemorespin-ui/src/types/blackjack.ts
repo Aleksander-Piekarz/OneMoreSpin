@@ -1,5 +1,3 @@
-// src/types/blackjack.ts
-
 export const Suit = {
     Hearts: 0,
     Diamonds: 1,
@@ -34,7 +32,7 @@ export interface BlackjackPlayer {
     hasBusted: boolean;
     hasBlackjack: boolean;
     hasDoubledDown: boolean;
-    isVip: boolean; // VIP status for crown display
+    isVip: boolean;
     result: string;
     payout: number;
 }
@@ -48,7 +46,7 @@ export interface BlackjackTable {
     dealerHasBlackjack: boolean;
     minBet: number;
     currentPlayerIndex: number;
-    stage: string; // "Waiting", "Betting", "Dealing", "PlayerTurns", "DealerTurn", "Showdown"
+    stage: string;
     gameInProgress: boolean;
     playersReady: number;
     bettingCountdown?: number;

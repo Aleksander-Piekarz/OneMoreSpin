@@ -44,7 +44,6 @@ export const useBlackjackGame = (tableId: string) => {
         const id = getMyId();
         setMyUserId(id);
 
-        // Rejestruj listenery PRZED połączeniem
         blackjackMultiplayerService.onUpdateGameState((updatedTable) => {
             if (isMounted) setTable(updatedTable);
         });
@@ -92,7 +91,6 @@ export const useBlackjackGame = (tableId: string) => {
 
         return () => {
             isMounted = false;
-            // Opuść stół przy odmontowaniu komponentu
             if (!hasLeftRef.current) {
                 blackjackMultiplayerService.leaveTable(tableId).catch(console.error);
             }

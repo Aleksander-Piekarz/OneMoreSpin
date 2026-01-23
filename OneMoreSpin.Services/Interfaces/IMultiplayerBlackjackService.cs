@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace OneMoreSpin.Services.Interfaces
 {
-    // DTO do przesyłania info o stołach blackjackowych
     public class BlackjackTableInfoDto
     {
         public string Id { get; set; } = "";

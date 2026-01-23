@@ -64,7 +64,6 @@ const HomePage: React.FC = () => {
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("jwt");
-      // Wyślij żądanie do API aby ustawić IsActive = false
       const response = await fetch(`${import.meta.env.VITE_API_BASE}/auth/logout`, {
         method: 'POST',
         headers: { 
@@ -131,12 +130,10 @@ const HomePage: React.FC = () => {
       </div>
 
       <header className="home-header">
-        {/* LEWA STRONA */}
         <div className="home-header-left">
           <LanguageSwitcher />
         </div>
         
-        {/* ŚRODEK */}
         <div className="home-header-center">
           <h1 className="home-page-title">
             <span className="title-word">ONE</span>
@@ -145,7 +142,6 @@ const HomePage: React.FC = () => {
           </h1>
         </div>
 
-        {/* PRAWA STRONA */}
         <div className="home-header-right">
           <button className="user-icon-btn" onClick={() => navigate('/profile')}> 
             <div className="icon-wrapper">
@@ -195,12 +191,10 @@ const HomePage: React.FC = () => {
                 }}
                 onMouseEnter={() => setHoveredTile(tile.id)}
                 onMouseLeave={() => setHoveredTile(null)}
-                // Teraz każdy kafelek ma onClick (Poker też)
                 onClick={tile.onClick}
               >
                 {hoveredTile === tile.id && (
                   <div className="particles-container">
-                    {/* ... (logika particles bez zmian) */}
                     {[...Array(20)].map((_, i) => (
                       <div 
                         key={i} 
@@ -230,7 +224,6 @@ const HomePage: React.FC = () => {
                   </div>
                   <h3 className="tile-title">{tile.title}</h3>
                   
-                  {/* Zawsze wyświetlamy przycisk ZAGRAJ (usunięto logikę isDoubleButton) */}
                   <div className="tile-play-btn">
                     <i className="fas fa-play"></i>
                     <span>{t('common.play').toUpperCase()}</span>

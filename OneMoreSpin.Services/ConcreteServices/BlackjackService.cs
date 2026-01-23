@@ -10,6 +10,11 @@ using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Services.ConcreteServices;
 
+/// <summary>
+/// Serwis obsługujący grę Blackjack w trybie jednoosobowym (gracz vs krupier AI).
+/// Zarządza sesjami gier, rozdawaniem kart, obliczaniem wyników i wypłatami.
+/// Obsługuje akcje: Hit (dobierz kartę), Stand (pasuj), Double Down (podwój zakład).
+/// </summary>
 public class BlackjackService : BaseService, IBlackjackService
 {
     private readonly Random _rng = new();
@@ -44,10 +49,8 @@ public class BlackjackService : BaseService, IBlackjackService
             user.Balance -= bet;
         }
 
-        // Create new deck and shuffle
         var deck = CreateAndShuffleDeck();
 
-        // Deal initial cards
         var playerHand = new List<BlackjackCardVm>
         {
             DrawCard(deck),
@@ -64,7 +67,6 @@ public class BlackjackService : BaseService, IBlackjackService
         var sessionId = Interlocked.Increment(ref _nextSessionId);
         var sessionKey = $"{userId}_{sessionId}";
 
-        // Create session in memory
         var session = new BlackjackGameSession
         {
             Id = sessionId,
@@ -81,7 +83,6 @@ public class BlackjackService : BaseService, IBlackjackService
             DealerScore = dealerHand.Count > 0 ? dealerHand[0].Value : 0
         };
 
-        // Check for blackjack
             if (playerScore == 21)
         {
             var dealerScore = CalculateScore(dealerHand);
@@ -91,15 +92,14 @@ public class BlackjackService : BaseService, IBlackjackService
             if (dealerScore == 21)
             {
                 session.Result = BlackjackResult.Push;
-                session.Payout = bet; // Return bet
+                session.Payout = bet;
                     if (!unlimitedMode) user.Balance += bet;
             }
             else
             {
                 session.Result = BlackjackResult.Blackjack;
-                session.Payout = bet * 2.5m; // 3:2 payout
+                session.Payout = bet * 2.5m;
                 
-                // VIP BONUS: +10% do wygranych za Blackjacka dla użytkowników VIP
                 if (user.IsVip)
                 {
                     decimal vipBonus = (session.Payout - bet) * 0.10m;
@@ -111,7 +111,6 @@ public class BlackjackService : BaseService, IBlackjackService
             session.FinishedAt = DateTime.UtcNow;
             await RecordGameHistory(parsedUserId, bet, session.Payout - bet);
             
-            // Update missions for instant blackjack
             var blackjackGame = await DbContext.Games.FirstOrDefaultAsync(g => g.Name == "Blackjack");
             if (blackjackGame != null)
             {
@@ -156,14 +155,12 @@ public class BlackjackService : BaseService, IBlackjackService
         var dealerHand = JsonSerializer.Deserialize<List<BlackjackCardVm>>(session.DealerHandJson) ?? new();
         var deck = JsonSerializer.Deserialize<List<BlackjackCardVm>>(session.DeckJson) ?? new();
 
-        // Draw card for player
         playerHand.Add(DrawCard(deck));
         var playerScore = CalculateScore(playerHand);
         session.PlayerScore = playerScore;
         session.PlayerHandJson = JsonSerializer.Serialize(playerHand);
         session.DeckJson = JsonSerializer.Serialize(deck);
 
-        // Check if player busted
         if (playerScore > 21)
         {
             session.PlayerBusted = true;
@@ -173,13 +170,11 @@ public class BlackjackService : BaseService, IBlackjackService
             session.FinishedAt = DateTime.UtcNow;
             session.DealerScore = CalculateScore(dealerHand);
             
-            // Balance already decreased at start (unless unlimitedMode)
             if (!unlimitedMode)
             {
                 await RecordGameHistory(parsedUserId, session.Bet, -session.Bet);
             }
             
-            // Update missions
             var blackjackGame = await DbContext.Games.FirstOrDefaultAsync(g => g.Name == "Blackjack");
             if (blackjackGame != null)
             {
@@ -216,7 +211,6 @@ public class BlackjackService : BaseService, IBlackjackService
 
         session.GameState = BlackjackGameState.DealerTurn;
 
-        // Dealer draws until 17 or higher
         var dealerScore = CalculateScore(dealerHand);
         while (dealerScore < 17)
         {
@@ -228,7 +222,6 @@ public class BlackjackService : BaseService, IBlackjackService
         session.DealerHandJson = JsonSerializer.Serialize(dealerHand);
         session.DeckJson = JsonSerializer.Serialize(deck);
 
-        // Determine winner
         var playerScore = session.PlayerScore;
         
         if (dealerScore > 21)
@@ -253,11 +246,10 @@ public class BlackjackService : BaseService, IBlackjackService
             session.Payout = session.Bet;
         }
 
-        // VIP BONUS: +10% do wygranych dla użytkowników VIP
         decimal vipBonus = 0;
         if (session.Result == BlackjackResult.PlayerWin && user.IsVip)
         {
-            vipBonus = (session.Payout - session.Bet) * 0.10m; // 10% od zysku
+            vipBonus = (session.Payout - session.Bet) * 0.10m;
             session.Payout += vipBonus;
         }
 
@@ -267,7 +259,6 @@ public class BlackjackService : BaseService, IBlackjackService
 
         await RecordGameHistory(parsedUserId, session.Bet, session.Payout - session.Bet);
 
-        // Update missions
         var blackjackGame = await DbContext.Games.FirstOrDefaultAsync(g => g.Name == "Blackjack");
         if (blackjackGame != null)
         {
@@ -321,14 +312,12 @@ public class BlackjackService : BaseService, IBlackjackService
         var dealerHand = JsonSerializer.Deserialize<List<BlackjackCardVm>>(session.DealerHandJson) ?? new();
         var deck = JsonSerializer.Deserialize<List<BlackjackCardVm>>(session.DeckJson) ?? new();
 
-        // Draw one card for player
         playerHand.Add(DrawCard(deck));
         var playerScore = CalculateScore(playerHand);
         session.PlayerScore = playerScore;
         session.PlayerHandJson = JsonSerializer.Serialize(playerHand);
         session.DeckJson = JsonSerializer.Serialize(deck);
 
-        // Check if player busted
         if (playerScore > 21)
         {
             session.PlayerBusted = true;
@@ -339,7 +328,6 @@ public class BlackjackService : BaseService, IBlackjackService
             session.DealerScore = CalculateScore(dealerHand);
             await RecordGameHistory(parsedUserId, session.Bet, -session.Bet);
             
-            // Update missions for bust after double
             var blackjackGameBust = await DbContext.Games.FirstOrDefaultAsync(g => g.Name == "Blackjack");
             if (blackjackGameBust != null)
             {
@@ -352,10 +340,8 @@ public class BlackjackService : BaseService, IBlackjackService
             return MapToVm(session, playerHand, dealerHand, user.Balance);
         }
 
-        // Continue to dealer turn
         session.GameState = BlackjackGameState.DealerTurn;
 
-        // Dealer draws until 17 or higher
         var dealerScore = CalculateScore(dealerHand);
         while (dealerScore < 17)
         {
@@ -366,7 +352,6 @@ public class BlackjackService : BaseService, IBlackjackService
         session.DealerScore = dealerScore;
         session.DealerHandJson = JsonSerializer.Serialize(dealerHand);
 
-        // Determine winner
         if (dealerScore > 21)
         {
             session.DealerBusted = true;
@@ -395,7 +380,6 @@ public class BlackjackService : BaseService, IBlackjackService
 
         await RecordGameHistory(parsedUserId, session.Bet, session.Payout - session.Bet);
 
-        // Update missions
         var blackjackGame = await DbContext.Games.FirstOrDefaultAsync(g => g.Name == "Blackjack");
         if (blackjackGame != null)
         {
@@ -444,7 +428,6 @@ public class BlackjackService : BaseService, IBlackjackService
             }
         }
 
-        // Shuffle using Fisher-Yates
         for (int i = deck.Count - 1; i > 0; i--)
         {
             int j = _rng.Next(i + 1);
@@ -476,7 +459,6 @@ public class BlackjackService : BaseService, IBlackjackService
                 aceCount++;
         }
 
-        // Adjust for aces
         while (score > 21 && aceCount > 0)
         {
             score -= 10;
@@ -494,7 +476,7 @@ public class BlackjackService : BaseService, IBlackjackService
         {
             SessionId = session.Id,
             PlayerHand = playerHand,
-            DealerHand = isFinished ? dealerHand : new List<BlackjackCardVm> { dealerHand[0] }, // Hide dealer's second card until finished
+            DealerHand = isFinished ? dealerHand : new List<BlackjackCardVm> { dealerHand[0] },
             PlayerScore = session.PlayerScore,
             DealerScore = isFinished ? session.DealerScore : (dealerHand.Count > 0 ? dealerHand[0].Value : 0),
             GameState = session.GameState.ToString(),

@@ -513,7 +513,6 @@ const SlotsPage: React.FC = () => {
           </button>
         </div>
 
-        {/* PRZYCISK POMOCY */}
         <GameHelpModal content={SLOTS_HELP} position="floating" />
 
         {error && (

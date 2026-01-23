@@ -22,7 +22,6 @@ type PokerSessionVm = {
   playerWon?: boolean;
 };
 
-// Funkcja tłumacząca rangi
 function formatRank(rank: string | undefined) {
   if (!rank) return '';
   const map: Record<string, string> = {
@@ -132,14 +131,12 @@ export default function PokerGame() {
 
   return (
     <div className="poker-container leaderboard-host">
-      {/* ANIMOWANE TŁO */}
       <div className="animated-bg">
         <div className="floating-shape shape-1"></div>
         <div className="floating-shape shape-2"></div>
         <div className="floating-shape shape-3"></div>
       </div>
 
-      {/* HEADER */}
       <header className="game-header">
         <div className="game-header-left">
           <button className="game-back-btn" onClick={() => window.history.back()}>
@@ -162,12 +159,9 @@ export default function PokerGame() {
         </div>
       </header>
 
-      {/* WRAPPER NA STÓŁ I GRACZY */}
       <div className="poker-game-wrapper">
-        {/* STÓŁ */}
         <div className={`poker-table table-theme-${currentTheme}`}>
           <div className="table-center-content">
-            {/* KOMUNIKATY - SELECT CARDS / MESSAGES */}
             {(message || (session && !isGameFinished)) && (
               <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '8px 16px', background: 'rgba(0, 0, 0, 0.25)', borderRadius: '12px'}}>
                 {message ? (
@@ -180,7 +174,6 @@ export default function PokerGame() {
               </div>
             )}
             
-            {/* WYNIK DEALERA - NAD KARTAMI */}
             {session && isGameFinished && session.dealerHandRank && (
               <div style={{width: '100%', textAlign: 'center'}}>
                 <span style={{color: '#ffd700', fontSize: '18px', fontWeight: 'bold', letterSpacing: '0.5px', textShadow: '0 2px 8px rgba(255, 215, 0, 0.3)'}}>
@@ -189,7 +182,6 @@ export default function PokerGame() {
               </div>
             )}
             
-            {/* KARTY DEALERA (COMMUNITY CARDS) */}
             <div className="community-cards" style={{marginTop: '-5px'}}>
               {session && isGameFinished && session.dealerHand.map((card, idx) => (
                 <GameCard key={`d-${idx}`} card={card} theme={currentTheme} size="large" />
@@ -200,7 +192,6 @@ export default function PokerGame() {
             </div>
           </div>
           
-          {/* WIN/LOSE MIĘDZY KARTAMI */}
           {session && isGameFinished && (
             <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '12px 20px', background: 'rgba(0, 0, 0, 0.4)', borderRadius: '16px', margin: '10px 0', zIndex: 100}}>
               <span style={{color: hasWon ? '#43e97b' : '#f44336', fontSize: '24px', fontWeight: 'bold', textTransform: 'uppercase', textShadow: `0 3px 12px ${hasWon ? 'rgba(67, 233, 123, 0.6)' : 'rgba(244, 67, 54, 0.6)'}`}}>
@@ -209,7 +200,6 @@ export default function PokerGame() {
             </div>
           )}
 
-          {/* GRACZE - NA DOLE STOŁU */}
           <div className="poker-players-container">
             <div className="player-seat is-me">
               <div className="player-cards">
@@ -242,7 +232,6 @@ export default function PokerGame() {
         </div>
       </div>
 
-      {/* PANEL STEROWANIA */}
       <div className="controls-bar">
         {(!session || isGameFinished) ? (
           <>
@@ -272,7 +261,6 @@ export default function PokerGame() {
         )}
       </div>
 
-      {/* LEADERBOARD */}
       <div className={`leaderboard-drawer ${leaderboardOpen ? 'open' : 'closed'}`}>
         <div className="leaderboard-panel">
           <Leaderboard gameId={4} title="🏆 TOP WINS" className="leaderboard-widget" />

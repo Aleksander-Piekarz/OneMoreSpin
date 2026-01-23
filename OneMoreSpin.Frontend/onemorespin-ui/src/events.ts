@@ -21,7 +21,6 @@ export function emit(event: string, ...args: any[]) {
   }
 }
 
-// Convenience specific events
 export function refreshMissions() {
   emit("missions:refresh");
 }

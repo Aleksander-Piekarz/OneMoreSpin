@@ -12,6 +12,12 @@ using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Services.ConcreteServices
 {
+    /// <summary>
+    /// Serwis obsługujący grę na automatach (Slots).
+    /// Generuje siatkę 3x5 symboli z ważonym losowaniem (weighted random).
+    /// Sprawdza 10 linii wygrywających i oblicza wypłaty według tabeli mnożników.
+    /// Symbole: LEMON, CHERRIES, GRAPES, BELL, CLOVER, DIAMOND, SEVEN (rosnące wartości).
+    /// </summary>
     public class SlotService : BaseService, ISlotService
     {
         private const int Rows = 3;
@@ -20,7 +26,6 @@ namespace OneMoreSpin.Services.ConcreteServices
         private readonly Random _rng = new();
         private readonly IMissionService _missionService;
 
-        // Tabela wypłat
         private static readonly Dictionary<string, Dictionary<int, decimal>> PayoutTable = new()
         {
             {
@@ -88,7 +93,6 @@ namespace OneMoreSpin.Services.ConcreteServices
             },
         };
 
-        // --- WOREK Z WAGAMI (ODDS) ---
         private static readonly Dictionary<string, int> SymbolWeights = new()
         {
             { "LEMON", 40 },
@@ -100,7 +104,6 @@ namespace OneMoreSpin.Services.ConcreteServices
             { "SEVEN", 8 },
         };
 
-        // Linie wygrywające
         private static readonly List<List<(int row, int col)>> Paylines = new()
         {
             new() { (1, 0), (1, 1), (1, 2), (1, 3), (1, 4) },
@@ -143,31 +146,23 @@ namespace OneMoreSpin.Services.ConcreteServices
                 user.Balance -= bet;
             }
 
-            // --- GENEROWANIE SIATKI (Weighted Random) ---
-            // Nie używamy reelsów/taśm. Każde pole losuje z worka niezależnie.
-
-            // Obliczamy sumę wag raz (można to przenieść do static constructora dla optymalizacji, ale tu jest czytelniej)
             int totalWeight = SymbolWeights.Values.Sum();
 
             var grid = new List<List<string>>();
 
-            // Generujemy wiersz po wierszu
             for (int r = 0; r < Rows; r++)
             {
                 var rowList = new List<string>();
                 for (int c = 0; c < Cols; c++)
                 {
-                    // Losowanie ważone dla pojedynczej komórki
                     string randomSymbol = GetRandomWeightedSymbol(totalWeight);
                     rowList.Add(randomSymbol);
                 }
                 grid.Add(rowList);
             }
-            // --- KONIEC GENEROWANIA ---
 
             var (totalWin, winDetails) = CalculateWins(grid, bet);
 
-            // VIP BONUS: +15% do wygranych dla użytkowników VIP
             decimal vipBonus = 0;
             if (totalWin > 0 && user.IsVip)
             {
@@ -191,7 +186,6 @@ namespace OneMoreSpin.Services.ConcreteServices
             };
             await DbContext.UserScores.AddAsync(gameHistoryEntry);
 
-            // --- MISJE ---
             var isWin = totalWin > 0;
             var slotGame = await DbContext.Games.FirstOrDefaultAsync(g => g.Name == "Slots");
             if (slotGame != null)
@@ -216,7 +210,6 @@ namespace OneMoreSpin.Services.ConcreteServices
             };
         }
 
-        // Metoda pomocnicza do losowania z wagami
         private string GetRandomWeightedSymbol(int totalWeight)
         {
             int randomNumber = _rng.Next(0, totalWeight);
@@ -231,7 +224,6 @@ namespace OneMoreSpin.Services.ConcreteServices
                 }
             }
 
-            // Zabezpieczenie (teoretycznie nieosiągalne przy poprawnej logice)
             return SymbolWeights.Keys.Last();
         }
 
@@ -251,7 +243,6 @@ namespace OneMoreSpin.Services.ConcreteServices
 
                 for (int i = 1; i < payline.Count; i++)
                 {
-                    // Sprawdzamy kolejne symbole w linii
                     if (grid[payline[i].row][payline[i].col] == firstSymbol)
                     {
                         count++;

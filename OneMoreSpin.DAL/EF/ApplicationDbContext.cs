@@ -6,19 +6,15 @@ namespace OneMoreSpin.DAL.EF;
 
 public class ApplicationDbContext : IdentityDbContext<User, Role, int>
 {
-    // table properties
     public DbSet<ChatMessage> ChatMessages { get; set; }
     public DbSet<Game> Games { get; set; }
     public DbSet<Lobby> Lobbies { get; set; }
     public DbSet<Payment> Payments { get; set; }
     public DbSet<UserScore> UserScores { get; set; }
 
-    // --- NOWE ---
     public DbSet<Mission> Missions { get; set; }
     public DbSet<UserMission> UserMissions { get; set; }
     public DbSet<UserPlayedGame> UserPlayedGames { get; set; }
-
-    // --- KONIEC NOWEGO ---
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }
@@ -33,7 +29,6 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        // Fluent API commands
         modelBuilder
             .Entity<ChatMessage>()
             .HasOne(u => u.User)
@@ -73,7 +68,6 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int>
             .HasForeignKey(l => l.LobbyId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // --- NOWE ---
         modelBuilder
             .Entity<UserMission>()
             .HasOne(um => um.User)

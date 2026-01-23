@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OneMoreSpin.Services.Interfaces; // Użyj ISlotService
+using OneMoreSpin.Services.Interfaces;
 using System;
 using System.Security.Claims;
-using OneMoreSpin.Services.Interfaces; // Zmieniono na interfejs
 
 namespace OneMoreSpin.Web.Controllers
 {
+    /// <summary>
+    /// Kontroler API dla gry na automatach (Slots).
+    /// Endpoint spin przyjmuje kwotę zakładu i zwraca siatkę symboli z wygranymi.
+    /// </summary>
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
@@ -18,7 +21,6 @@ namespace OneMoreSpin.Web.Controllers
             _slotService = slotService;
         }
 
-        // Klasa DTO (Data Transfer Object) dla żądania
         public class SpinRequest
         {
             public decimal Bet { get; set; }
@@ -42,16 +44,14 @@ namespace OneMoreSpin.Web.Controllers
             try
             {
                 var result = await _slotService.SpinAsync(userId, request.Bet, unlimited);
-                return Ok(result); // Zwróć obiekt SpinResultVm
+                return Ok(result);
             }
             catch (InvalidOperationException e)
             {
-                // Np. "Niewystarczające środki"
                 return BadRequest(new { message = e.Message });
             }
             catch (Exception e)
             {
-                // Inne błędy
                 return StatusCode(500, new { message = $"Wystąpił błąd serwera: {e.Message}" });
             }
         }

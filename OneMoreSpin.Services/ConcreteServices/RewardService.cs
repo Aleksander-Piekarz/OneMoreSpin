@@ -10,6 +10,12 @@ using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Services.ConcreteServices
 {
+    /// <summary>
+    /// Serwis obsługujący dzienny system nagród (Daily Reward).
+    /// Gracz może odebrać nagrodę raz dziennie. Streak (seria dni) zwiększa nagrodę.
+    /// Bazowa nagroda: 50pln, maksymalny streak: 7 dni.
+    /// Przerwanie serii resetuje streak do 1.
+    /// </summary>
     public class RewardService : BaseService, IRewardService
     {
         private const decimal BaseRewardAmount = 50;
@@ -34,7 +40,6 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             if (!user.LastRewardClaimedDate.HasValue)
             {
-                // Pierwsze odebranie w historii
                 return (true, 1, 0, null);
             }
 
@@ -43,12 +48,10 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             if (daysDifference == 0)
             {
-                // blok jesli juz odebral
                 canClaim = false;
                 var nextMidnight = currentDate.AddDays(1);
                 timeUntilNext = nextMidnight - currentTime;
 
-                // Następny streak to obecny + 1
                 nextStreak = user.DailyStreak + 1;
                 if (nextStreak > MaxStreakDays)
                 {
@@ -57,7 +60,6 @@ namespace OneMoreSpin.Services.ConcreteServices
             }
             else if (daysDifference == 1)
             {
-                // Wczoraj odebrał wiec moze odebrac
                 canClaim = true;
                 nextStreak = user.DailyStreak + 1;
                 if (nextStreak > MaxStreakDays)
@@ -67,7 +69,6 @@ namespace OneMoreSpin.Services.ConcreteServices
             }
             else 
             {
-                // Przerwał serię - reset
                 canClaim = true;
                 currentStreak = 0;
                 nextStreak = 1;
@@ -96,7 +97,6 @@ namespace OneMoreSpin.Services.ConcreteServices
             var (canClaim, nextStreak, currentStreak, timeUntilNext) = 
                 CalculateRewardEligibility(user, currentTime, currentDate);
 
-            // Jeśli nie może odebrać
             if (!canClaim)
             {
                 return new ClaimRewardResultVm
@@ -107,7 +107,6 @@ namespace OneMoreSpin.Services.ConcreteServices
                 };
             }
 
-            // Jeśli reset streak 
             if (currentStreak == 0 && user.DailyStreak > 0)
             {
                 user.DailyStreak = 0;
@@ -118,10 +117,8 @@ namespace OneMoreSpin.Services.ConcreteServices
                 );
             }
 
-            // Zaktualizuj streak
             user.DailyStreak = nextStreak;
 
-            // Oblicz nagrodę
             decimal rewardAmount = BaseRewardAmount + (BaseRewardAmount * (user.DailyStreak - 1));
 
             user.Balance += rewardAmount;
@@ -179,11 +176,9 @@ namespace OneMoreSpin.Services.ConcreteServices
             var currentTime = DateTime.UtcNow;
             var currentDate = currentTime.Date;
 
-            // Użyj wspólnej logiki
             var (canClaim, nextStreak, currentStreak, timeUntilNext) = 
                 CalculateRewardEligibility(user, currentTime, currentDate);
 
-            // Oblicz kwotę następnej nagrody
             decimal nextRewardAmount = BaseRewardAmount + (BaseRewardAmount * (nextStreak - 1));
 
             return new DailyRewardStatusVm

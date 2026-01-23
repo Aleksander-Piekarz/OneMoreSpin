@@ -11,6 +11,11 @@ using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Web.Controllers;
 
+/// <summary>
+/// Kontroler obsługujący autentykację i autoryzację użytkowników.
+/// Endpointy: rejestracja, logowanie, potwierdzenie email, reset hasła.
+/// Generuje tokeny JWT dla zalogowanych użytkowników.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
@@ -79,7 +84,6 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
 
-        //
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var confirmUrl =
@@ -130,7 +134,6 @@ public class AuthController : ControllerBase
         if (!ok.Succeeded)
             return Unauthorized(new { error = "Invalid credentials" });
 
-        // Ustawienie IsActive = true i LastSeenAt przy logowaniu
         if (!user.IsActive)
         {
             user.IsActive = true;
@@ -158,7 +161,6 @@ public class AuthController : ControllerBase
     }
 
 
-// 1. Endpoint: Żądanie resetu hasła
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordVm model)
         {
@@ -173,16 +175,13 @@ public class AuthController : ControllerBase
                 return Ok(new { message = "Jeśli konto istnieje, link do resetowania hasła został wysłany." });
             }
 
-            // Generowanie tokenu
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
 
-            var frontendUrl = "http://localhost:5173"; // Adres frontendu aplikacji
-            // Token w URLu wymaga zakodowania, bo zawiera znaki + / =
+            var frontendUrl = "http://localhost:5173";
             var encodedToken = System.Net.WebUtility.UrlEncode(token);
             var resetLink = $"{frontendUrl}/reset-password?token={encodedToken}&email={model.Email}";
 
-            // Wysyłka maila
             await _emailSender.SendEmailAsync(
                 model.Email, 
                 "Resetowanie hasła w OneMoreSpin", 
@@ -192,7 +191,6 @@ public class AuthController : ControllerBase
             return Ok(new { message = "Jeśli konto istnieje, link do resetowania hasła został wysłany." });
         }
 
-        // 2. Endpoint: Ustawienie nowego hasła
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordVm model)
         {

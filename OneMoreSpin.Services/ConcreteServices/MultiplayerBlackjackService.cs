@@ -12,6 +12,12 @@ using OneMoreSpin.Services.Interfaces;
 
 namespace OneMoreSpin.Services.ConcreteServices
 {
+    /// <summary>
+    /// Serwis obsługujący wieloosobowy Blackjack w czasie rzeczywistym.
+    /// Wykorzystuje SignalR do synchronizacji stanu gry między graczami.
+    /// Do 5 graczy przy jednym stole, każdy gra przeciwko wspólnemu krupierowi.
+    /// Obsługuje obstawianie, countdown, rozdawanie, Hit/Stand/Double i rozliczenia.
+    /// </summary>
     public class MultiplayerBlackjackService : IMultiplayerBlackjackService
     {
         private readonly ConcurrentDictionary<string, BlackjackTable> _tables = new();
@@ -24,7 +30,6 @@ namespace OneMoreSpin.Services.ConcreteServices
             _scopeFactory = scopeFactory;
             _hubContext = hubContext;
             
-            // Tworzenie stołów przy starcie
             CreateTable("blackjack-1", "Stół Początkujący", 10);
             CreateTable("blackjack-2", "Stół Zaawansowany", 50);
             CreateTable("blackjack-vip", "VIP ROOM", 200);
@@ -92,7 +97,6 @@ namespace OneMoreSpin.Services.ConcreteServices
                     existing.Chips = playerChips;
                     existing.IsVip = isVip;
                     
-                    // Resetuj wyniki z poprzedniej gry gdy gracz wraca
                     if (!table.GameInProgress)
                     {
                         existing.Result = "";
@@ -111,7 +115,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                     var takenSeats = table.Players.Select(p => p.SeatIndex).ToList();
                     int freeSeat = -1;
                     
-                    for (int i = 0; i < 5; i++) // Max 5 graczy + dealer
+                    for (int i = 0; i < 5; i++)
                     {
                         if (!takenSeats.Contains(i))
                         {
@@ -155,11 +159,9 @@ namespace OneMoreSpin.Services.ConcreteServices
 
                 if (table.GameInProgress)
                 {
-                    // Jeśli gra w toku, oznacz gracza jako spasowanego
                     player.HasStood = true;
                     player.HasBusted = true;
                     
-                    // Sprawdź czy trzeba przejść do następnego gracza
                     if (table.Players[table.CurrentPlayerIndex]?.ConnectionId == connectionId)
                     {
                         MoveTurnToNextPlayer(table);
@@ -206,7 +208,6 @@ namespace OneMoreSpin.Services.ConcreteServices
 
                 _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"💰 {player.Username.Split('@')[0]} postawił ${amount}");
                 
-                // Sprawdź czy wszyscy postawili - jeśli tak, rozpocznij od razu
                 if (table.PlayersReady >= table.Players.Count && table.Players.Count >= 1)
                 {
                     table.WaitingForBets = false;
@@ -216,7 +217,6 @@ namespace OneMoreSpin.Services.ConcreteServices
                 }
                 else if (!table.WaitingForBets && table.PlayersReady == 1)
                 {
-                    // Pierwszy gracz postawił - uruchom timer 30 sekund
                     StartBettingCountdown(tableId, table);
                 }
                 else
@@ -244,7 +244,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                     
                     lock (table)
                     {
-                        if (!table.WaitingForBets || table.GameInProgress) return; // Przerwano lub gra się zaczęła
+                        if (!table.WaitingForBets || table.GameInProgress) return;
                         
                         table.BettingCountdown = i - 1;
                         
@@ -264,14 +264,12 @@ namespace OneMoreSpin.Services.ConcreteServices
                     table.WaitingForBets = false;
                     table.BettingCountdown = 0;
                     
-                    // Usuń graczy, którzy nie postawili
                     var playersWithoutBet = table.Players.Where(p => p.CurrentBet <= 0).ToList();
                     foreach (var p in playersWithoutBet)
                     {
                         _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"❌ {p.Username.Split('@')[0]} nie postawił - pomija rundę");
                     }
                     
-                    // Jeśli ktoś postawił, rozpocznij grę
                     if (table.Players.Any(p => p.CurrentBet > 0))
                     {
                         StartRoundInternal(table, tableId);
@@ -292,7 +290,6 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             lock (table)
             {
-                // Zatrzymaj timer jeśli działa
                 table.WaitingForBets = false;
                 table.BettingCountdown = 0;
                 
@@ -304,10 +301,8 @@ namespace OneMoreSpin.Services.ConcreteServices
         {
             Console.WriteLine($"[BLACKJACK START] Próba startu gry na stole {tableId}. Graczy: {table.Players.Count}");
 
-            // Usuwamy graczy bez żetonów
             table.Players.RemoveAll(p => p.Chips <= 0 && p.CurrentBet <= 0);
 
-            // Filtrujemy graczy, którzy postawili zakład
             var activePlayers = table.Players.Where(p => p.CurrentBet > 0).ToList();
             
             if (activePlayers.Count < 1)
@@ -317,7 +312,6 @@ namespace OneMoreSpin.Services.ConcreteServices
                 return;
             }
 
-            // Resetuj stan gry
             table.Deck = GenerateDeck();
             ShuffleDeck(table.Deck);
             table.DealerHand.Clear();
@@ -328,7 +322,6 @@ namespace OneMoreSpin.Services.ConcreteServices
             table.GameInProgress = true;
             table.PlayersReady = 0;
 
-            // Resetuj graczy
             foreach (var p in table.Players)
             {
                 p.Hand.Clear();
@@ -341,33 +334,27 @@ namespace OneMoreSpin.Services.ConcreteServices
                 p.Payout = 0;
             }
 
-            // Rozdaj karty graczom (2 karty każdemu)
             foreach (var p in activePlayers)
             {
                 p.Hand.Add(DrawCard(table.Deck));
                 p.Hand.Add(DrawCard(table.Deck));
                 p.Score = CalculateScore(p.Hand);
                 
-                // Sprawdź blackjacka
                 if (p.Score == 21)
                 {
                     p.HasBlackjack = true;
                 }
             }
 
-            // Rozdaj karty dealerowi (2 karty)
             table.DealerHand.Add(DrawCard(table.Deck));
-            table.DealerScore = CalculateScore(table.DealerHand); // Oblicz score po pierwszej karcie
+            table.DealerScore = CalculateScore(table.DealerHand);
             table.DealerHand.Add(DrawCard(table.Deck));
-            // Pełny score zostanie obliczony dopiero po turze dealera
 
-            // Sprawdź blackjacka dealera
             if (table.DealerScore == 21)
             {
                 table.DealerHasBlackjack = true;
             }
 
-            // Rozpocznij turę pierwszego aktywnego gracza
             table.Stage = "PlayerTurns";
             var firstActivePlayer = activePlayers.FirstOrDefault(p => !p.HasBlackjack);
             if (firstActivePlayer != null)
@@ -376,7 +363,6 @@ namespace OneMoreSpin.Services.ConcreteServices
             }
             else
             {
-                // Wszyscy mają blackjacka - przejdź do rozstrzygnięcia
                 table.Stage = "DealerTurn";
                 ProcessDealerTurn(table);
                 return;
@@ -402,7 +388,6 @@ namespace OneMoreSpin.Services.ConcreteServices
                 if (table.Players[table.CurrentPlayerIndex].UserId != userId) return false;
                 if (player.HasStood || player.HasBusted) return false;
 
-                // Dobierz kartę
                 player.Hand.Add(DrawCard(table.Deck));
                 player.Score = CalculateScore(player.Hand);
 
@@ -462,15 +447,13 @@ namespace OneMoreSpin.Services.ConcreteServices
                 if (table.Stage != "PlayerTurns") return false;
                 if (table.Players[table.CurrentPlayerIndex].UserId != userId) return false;
                 if (player.HasStood || player.HasBusted || player.HasDoubledDown) return false;
-                if (player.Hand.Count != 2) return false; // Można podwoić tylko przy pierwszym ruchu
-                if (player.Chips < player.CurrentBet) return false; // Sprawdź czy ma wystarczająco na podwojenie
+                if (player.Hand.Count != 2) return false;
+                if (player.Chips < player.CurrentBet) return false;
 
-                // Podwój zakład
                 player.Chips -= player.CurrentBet;
                 player.CurrentBet *= 2;
                 player.HasDoubledDown = true;
 
-                // Dobierz jedną kartę
                 player.Hand.Add(DrawCard(table.Deck));
                 player.Score = CalculateScore(player.Hand);
 
@@ -482,7 +465,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                     _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"💥 {player.Username.Split('@')[0]} BUST!");
                 }
 
-                player.HasStood = true; // Po podwojeniu gracz automatycznie stoi
+                player.HasStood = true;
                 MoveTurnToNextPlayer(table);
                 _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
                 return true;
@@ -493,7 +476,6 @@ namespace OneMoreSpin.Services.ConcreteServices
         {
             var activePlayers = table.Players.Where(p => p.CurrentBet > 0).ToList();
             
-            // Znajdź następnego gracza, który może grać
             int currentIdx = table.CurrentPlayerIndex;
             int attempts = 0;
 
@@ -510,7 +492,6 @@ namespace OneMoreSpin.Services.ConcreteServices
                 }
             } while (attempts < table.Players.Count);
 
-            // Wszyscy gracze zakończyli - tura dealera
             table.Stage = "DealerTurn";
             ProcessDealerTurn(table);
         }
@@ -521,14 +502,12 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             var activePlayers = table.Players.Where(p => p.CurrentBet > 0 && !p.HasBusted).ToList();
 
-            // Jeśli wszyscy gracze zbustowali, krupier nie musi grać
             if (activePlayers.All(p => p.HasBusted))
             {
                 EndRound(table);
                 return;
             }
 
-            // Krupier dobiera karty do 17
             while (table.DealerScore < 17)
             {
                 table.DealerHand.Add(DrawCard(table.Deck));
@@ -611,7 +590,6 @@ namespace OneMoreSpin.Services.ConcreteServices
                     _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🤝 {player.Username.Split('@')[0]}: Remis ({player.Score} = {table.DealerScore}) +${player.Payout}");
                 }
 
-                // Zapisz wynik do bazy - WAŻNE: zapisz wartości PRZED Task.Run, bo CurrentBet będzie zresetowany
                 decimal savedBet = player.CurrentBet;
                 decimal savedPayout = player.Payout;
                 decimal savedMoneyWon = savedPayout - savedBet;
@@ -625,11 +603,9 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", "=========================");
 
-            // Reset stanu na następną rundę
             table.GameInProgress = false;
             table.CurrentPlayerIndex = -1;
 
-            // Reset zakładów graczy
             foreach (var p in table.Players)
             {
                 p.CurrentBet = 0;
@@ -656,7 +632,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                             var gameHistoryEntry = new UserScore
                             {
                                 UserId = idAsInt,
-                                GameId = 2, // Blackjack
+                                GameId = 2,
                                 Stake = bet,
                                 MoneyWon = moneyWon > 0 ? moneyWon : 0,
                                 Score = moneyWon > 0 ? "Wygrana" : (moneyWon == 0 ? "Remis" : "Przegrana"),
@@ -685,11 +661,11 @@ namespace OneMoreSpin.Services.ConcreteServices
             foreach (var card in hand)
             {
                 int value = (int)card.Rank;
-                if (value >= 11 && value <= 13) // J, Q, K
+                if (value >= 11 && value <= 13)
                 {
                     score += 10;
                 }
-                else if (value == 14) // Ace
+                else if (value == 14)
                 {
                     score += 11;
                     aceCount++;
@@ -700,7 +676,6 @@ namespace OneMoreSpin.Services.ConcreteServices
                 }
             }
 
-            // Dostosuj asy
             while (score > 21 && aceCount > 0)
             {
                 score -= 10;
@@ -713,7 +688,6 @@ namespace OneMoreSpin.Services.ConcreteServices
         private List<Card> GenerateDeck()
         {
             var deck = new List<Card>();
-            // 6 talii
             for (int d = 0; d < 6; d++)
             {
                 foreach (Suit s in Enum.GetValues(typeof(Suit)))

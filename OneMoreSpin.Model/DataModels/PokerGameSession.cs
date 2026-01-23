@@ -17,7 +17,6 @@ public class PokerGameSession
 
     public PokerGameSession() { }
 
-    //Nvigation properties
     public string UserId { get; set; } = null!;
     public User? User { get; set; }
 }

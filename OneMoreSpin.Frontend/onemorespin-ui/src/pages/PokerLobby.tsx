@@ -26,7 +26,6 @@ export const PokerLobby = () => {
             if (connectionRef.current) return;
 
             const newConnection = new signalR.HubConnectionBuilder()
-               // .withUrl("http://localhost:5046/pokerHub", {
             .withUrl("http://91.123.188.186:5000/pokerHub", { 
                     accessTokenFactory: () => localStorage.getItem("jwt") || ""
                 })
@@ -77,7 +76,6 @@ export const PokerLobby = () => {
         return 'pk-card-beginner';
     };
 
-    // Sortowanie stołów: Beginner -> Advanced -> VIP
     const sortedTables = [...tables].sort((a, b) => {
         const getOrder = (id: string) => {
             if (id.includes('vip')) return 2;

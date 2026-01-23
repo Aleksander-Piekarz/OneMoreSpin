@@ -24,7 +24,6 @@ public class LastSeenMiddleware
                 var user = await userManager.FindByIdAsync(userId.ToString());
                 if (user != null)
                 {
-                    // Update only if more than 1 minute has passed since last update
                     if (!user.LastSeenAt.HasValue || DateTime.UtcNow - user.LastSeenAt.Value > UpdateInterval)
                     {
                         user.LastSeenAt = DateTime.UtcNow;

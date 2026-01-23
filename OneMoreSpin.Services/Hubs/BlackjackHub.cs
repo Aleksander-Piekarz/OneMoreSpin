@@ -9,6 +9,12 @@ using OneMoreSpin.Services.Interfaces;
 
 namespace OneMoreSpin.Services.Hubs
 {
+    /// <summary>
+    /// SignalR Hub dla wieloosobowego Blackjacka.
+    /// Obsługuje komunikację real-time: dołączanie do stołu, obstawianie,
+    /// akcje graczy (hit, stand, double), synchronizację stanu gry.
+    /// Do 5 graczy przy jednym stole przeciwko krupierowi.
+    /// </summary>
     [Authorize]
     public class BlackjackHub : Hub
     {

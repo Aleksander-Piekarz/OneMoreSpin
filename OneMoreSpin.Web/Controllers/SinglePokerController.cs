@@ -9,6 +9,11 @@ using OneMoreSpin.ViewModels.VM;
 
 namespace OneMoreSpin.Web.Controllers;
 
+/// <summary>
+/// Kontroler API dla Pokera jednoosobowego (Video Poker).
+/// Endpointy: start sesji, wymiana kart (draw), pobierz stan sesji.
+/// Gracz dostaje 5 kart, może wymienić do 4, następnie porównanie z krupierem.
+/// </summary>
 [ApiController]
 [Route("api/singlepoker")]
 public class SinglePokerController : ControllerBase

@@ -9,6 +9,11 @@ using OneMoreSpin.DAL.EF;
 
 namespace OneMoreSpin.Services.ConcreteServices
 {
+    /// <summary>
+    /// Usługa działająca w tle (IHostedService) resetująca misje co tydzień.
+    /// Sprawdza co godzinę czy jest poniedziałek i resetuje postępy wszystkich misji.
+    /// Pozwala graczom rozpocząć nowe tygodniowe wyzwania.
+    /// </summary>
     public class MissionResetService : IHostedService, IDisposable
     {
         private readonly ILogger<MissionResetService> _logger;
@@ -29,7 +34,7 @@ namespace OneMoreSpin.Services.ConcreteServices
         {
             _logger.LogInformation("Mission Reset Service is starting.");
 
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(1)); // Check every hour
+            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromHours(1));
 
             return Task.CompletedTask;
         }
@@ -51,7 +56,6 @@ namespace OneMoreSpin.Services.ConcreteServices
                 var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 bool changesMade = false;
 
-                // 1. Reset Missions
                 if (dbContext.UserMissions.Any() && WasLastResetMoreThanAWeekAgo(dbContext))
                 {
                     _logger.LogInformation("Resetting all user missions.");
@@ -76,7 +80,6 @@ namespace OneMoreSpin.Services.ConcreteServices
                         "Missions have either already been reset this week or there are no missions to reset."
                     );
                 }
-                // Save all changes
                 if (changesMade)
                 {
                     try
@@ -94,9 +97,6 @@ namespace OneMoreSpin.Services.ConcreteServices
 
         private bool WasLastResetMoreThanAWeekAgo(ApplicationDbContext dbContext)
         {
-            // This logic is tricky without a dedicated place to store the last reset time.
-            // For now, we'll assume if it's Monday and there are missions, we should reset.
-            // This is a simplification. A better way would be to have a `SystemSettings` table.
             return true;
         }
 

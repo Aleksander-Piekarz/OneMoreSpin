@@ -11,6 +11,12 @@ using Microsoft.Extensions.Logging;
 
 namespace OneMoreSpin.Services.ConcreteServices
 {
+    /// <summary>
+    /// Serwis obsługujący grę w Ruletkę (europejską, 0-36).
+    /// Obsługuje różne typy zakładów: pojedyncze numery (35:1), kolory (1:1),
+    /// parzyste/nieparzyste (1:1), dziesiątki (2:1), połowy (1:1).
+    /// Losuje wynik, sprawdza wszystkie zakłady i oblicza łączną wygraną.
+    /// </summary>
     public class RouletteService : IRouletteService
     {
         private readonly ApplicationDbContext _dbContext;

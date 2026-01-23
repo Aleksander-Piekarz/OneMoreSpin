@@ -184,7 +184,6 @@ const BlackjackPage: React.FC = () => {
 
   return (
     <div className="bj-game-page leaderboard-host">
-      {/* HEADER */}
       <header className="game-header">
         <div className="game-header-left">
           <button onClick={() => navigate(-1)} className="game-back-btn">
@@ -206,19 +205,15 @@ const BlackjackPage: React.FC = () => {
         </div>
       </header>
 
-      {/* MAIN GAME AREA */}
       <main className="bj-game-main">
-        {/* ANIMOWANE TŁO */}
         <div className="bj-animated-bg">
           <div className="bj-floating-shape bj-shape-1"></div>
           <div className="bj-floating-shape bj-shape-2"></div>
           <div className="bj-floating-shape bj-shape-3"></div>
         </div>
 
-        {/* STÓŁ BLACKJACKOWY */}
         <div className="bj-table-container">
           <div className={`bj-table bj-table-${currentTheme}`}>
-            {/* DEALER */}
             <div className="bj-dealer-area">
               <div className="bj-dealer-label">Dealer</div>
               <div className="bj-dealer-cards">
@@ -246,7 +241,6 @@ const BlackjackPage: React.FC = () => {
             </div>
           </div>
 
-          {/* GRACZ - poza stołem, pod nim */}
           <div className="bj-players-container">
             <div className="bj-player-seat bj-is-me">
               <div className="bj-player-cards">
@@ -274,7 +268,6 @@ const BlackjackPage: React.FC = () => {
         </div>
       </main>
 
-      {/* PANEL STEROWANIA */}
       <div className="bj-controls-bar">
         {error && (
           <div style={{ color: '#ef4444', fontWeight: 600 }}>
@@ -347,7 +340,6 @@ const BlackjackPage: React.FC = () => {
         )}
       </div>
 
-      {/* LEADERBOARD */}
       <div className={`leaderboard-drawer ${leaderboardOpen ? 'open' : 'closed'}`}>
         <div className="leaderboard-panel">
           <Leaderboard gameId={2} title="🏆 TOP WINS" className="leaderboard-widget" />
@@ -362,7 +354,6 @@ const BlackjackPage: React.FC = () => {
         </button>
       </div>
 
-      {/* RESULT OVERLAY */}
       {showResultOverlay && (
         <div className="sp-result-overlay">
           <div className={`sp-result-text ${hasWon ? 'sp-win' : 'sp-lose'}`}>

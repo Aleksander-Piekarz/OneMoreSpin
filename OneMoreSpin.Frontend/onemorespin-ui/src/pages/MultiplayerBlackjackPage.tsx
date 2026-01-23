@@ -39,33 +39,28 @@ export const MultiplayerBlackjackPage = () => {
     const logsEndRef = useRef<HTMLDivElement>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
 
-    // --- WYBÓR MOTYWU NA PODSTAWIE ID STOŁU ---
     let currentTheme: ThemeType = 'beginner';
     if (currentTableId.includes('blackjack-2')) currentTheme = 'advanced';
     if (currentTableId.includes('vip')) currentTheme = 'vip';
 
-    // Auto-scroll dla logów
     useEffect(() => {
         if (logsEndRef.current) {
             logsEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [logs]);
 
-    // Auto-scroll dla czatu
     useEffect(() => {
         if (chatEndRef.current) {
             chatEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [chatMessages]);
 
-    // Ustaw początkową wartość bet na minBet gdy tabla się załaduje
     useEffect(() => {
         if (table && table.minBet) {
             setBetAmount(table.minBet);
         }
     }, [table?.minBet]);
 
-    // Obsługa powiadomień wygranej/przegranej
     useEffect(() => {
         const myPlayer = table?.players.find(p => p.userId === myUserId);
         if (!myPlayer || !myPlayer.result || myPlayer.result === prevResultRef.current) return;
@@ -143,7 +138,6 @@ export const MultiplayerBlackjackPage = () => {
     const hasBet = myPlayer && myPlayer.currentBet > 0;
     const showDealerSecondCard = table.stage === "DealerTurn" || table.stage === "Showdown";
 
-    // Sortuj graczy tak, żeby mój był na środku
     let sortedPlayers = [...table.players];
     const myIndex = sortedPlayers.findIndex(p => p.userId === myUserId);
     if (myIndex !== -1 && sortedPlayers.length > 1) {
@@ -159,7 +153,6 @@ export const MultiplayerBlackjackPage = () => {
 
         let translated = log;
 
-        // Tłumaczenie logów blackjacka
         translated = translated.replace(/^Gracz\s+([^\s]+)\s+dołączył\.?/i, 'Player $1 joined.');
         translated = translated.replace(/^Gracz\s+([^\s]+)\s+opuścił stół\.?/i, 'Player $1 left the table.');
         translated = translated.replace(/🚪\s*([^\s]+)\s+opuścił stół\.?/i, '🚪 $1 left the table.');
@@ -191,7 +184,6 @@ export const MultiplayerBlackjackPage = () => {
 
     return (
         <div className="bj-game-page leaderboard-host">
-            {/* HEADER */}
             <header className="game-header">
                 <div className="game-header-left">
                     <button onClick={() => navigate('/blackjack-lobby')} className="game-back-btn">
@@ -221,19 +213,15 @@ export const MultiplayerBlackjackPage = () => {
                 </div>
             </header>
 
-            {/* MAIN GAME AREA */}
             <main className="bj-game-main">
-                {/* ANIMOWANE TŁO */}
                 <div className="bj-animated-bg">
                     <div className="bj-floating-shape bj-shape-1"></div>
                     <div className="bj-floating-shape bj-shape-2"></div>
                     <div className="bj-floating-shape bj-shape-3"></div>
                 </div>
 
-                {/* STÓŁ BLACKJACKOWY */}
                 <div className="bj-table-container">
                     <div className={`bj-table bj-table-${currentTheme}`}>
-                        {/* DEALER */}
                         <div className="bj-dealer-area">
                             <div className="bj-dealer-label">Dealer</div>
                             <div className="bj-dealer-cards">
@@ -260,7 +248,6 @@ export const MultiplayerBlackjackPage = () => {
                         </div>
                     </div>
 
-                    {/* GRACZE - poza stołem, pod nim */}
                     <div className="bj-players-container">
                         {sortedPlayers.map((p) => {
                             const isActiveTurn = table.currentPlayerIndex >= 0 && table.players[table.currentPlayerIndex]?.userId === p.userId;
@@ -304,7 +291,6 @@ export const MultiplayerBlackjackPage = () => {
                 </div>
             </main>
 
-            {/* PANEL LOGÓW */}
             <div className="bj-log-panel">
                 <div className="bj-log-header">
                     {t('games.blackjack.historyTitle')} <span style={{ color: '#4caf50' }}>● Live</span>
@@ -322,7 +308,6 @@ export const MultiplayerBlackjackPage = () => {
                 </div>
             </div>
 
-            {/* PANEL CZATU */}
             <div className="bj-chat-panel">
                 <div className="bj-chat-header">💬 {t('games.blackjack.tableChat')}</div>
                 <div className="bj-chat-messages">
@@ -355,11 +340,9 @@ export const MultiplayerBlackjackPage = () => {
                 </div>
             </div>
 
-            {/* PANEL STEROWANIA */}
             <div className="bj-controls-bar">
                 {!table.gameInProgress ? (
                     <>
-                        {/* Timer odliczania do startu */}
                         {table.waitingForBets && table.bettingCountdown !== undefined && table.bettingCountdown > 0 && (
                             <div className="bj-betting-timer">
                                 ⏱️ {t('games.blackjack.roundStartsIn')} <span className="bj-countdown">{table.bettingCountdown}s</span>
@@ -421,7 +404,6 @@ export const MultiplayerBlackjackPage = () => {
                 )}
             </div>
 
-            {/* LEADERBOARD - wysuwany panel z lewej strony */}
             <div className={`leaderboard-drawer ${leaderboardOpen ? 'open' : 'closed'}`}>
                 <div className="leaderboard-panel">
                     <Leaderboard gameId={2} title="🏆 TOP WINS" className="leaderboard-widget" />
@@ -436,7 +418,6 @@ export const MultiplayerBlackjackPage = () => {
                 </button>
             </div>
 
-            {/* RESULT OVERLAY - identyczny jak w singleplayer */}
             {showResultOverlay && (
                 <div className="sp-result-overlay">
                     <div className={`sp-result-text ${isWin ? 'sp-win' : 'sp-lose'}`}>

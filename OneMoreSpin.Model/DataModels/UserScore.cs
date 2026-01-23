@@ -8,7 +8,6 @@ public class UserScore
     public string Score { get; set; }
     public decimal MoneyWon { get; set; }
 
-    //Navigation properties
     public int GameId { get; set; }
     public virtual Game Game { get; set; } = null!;
     public int UserId { get; set; }

@@ -12,10 +12,8 @@ export const PokerPage = () => {
     const { tableId } = useParams();
     const navigate = useNavigate();
     const { t, language } = useLanguage();
-    // Używamy ID z URL lub domyślnego
     const currentTableId = tableId || "stol-1";
     
-    // Rozszerzamy destrukturyzację o chatMessages i sendChatMessage
     const { table, logs, isConnected, move, myUserId, chatMessages, sendChatMessage, leaveTable, kickReason, setReady } = usePokerGame(currentTableId);
     
     const [raiseAmount, setRaiseAmount] = useState(100);
@@ -25,31 +23,26 @@ export const PokerPage = () => {
     const [isWin, setIsWin] = useState(false);
     const prevStageRef = useRef<string>("");
     
-    // --- STAN I REF DLA CZATU ---
     const [newMessage, setNewMessage] = useState("");
     const logsEndRef = useRef<HTMLDivElement>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
 
-    // --- WYBÓR MOTYWU NA PODSTAWIE ID STOŁU ---
     let currentTheme: ThemeType = 'beginner';
     if (currentTableId.includes('stol-2')) currentTheme = 'advanced';
     if (currentTableId.includes('vip')) currentTheme = 'vip';
 
-    // Auto-scroll dla logów gry
     useEffect(() => {
         if (logsEndRef.current) {
             logsEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [logs]);
 
-    // Auto-scroll dla czatu
     useEffect(() => {
         if (chatEndRef.current) {
             chatEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [chatMessages]);
 
-    // Obsługa wyrzucenia z pokoju (np. brak VIP)
     useEffect(() => {
         if (kickReason) {
             alert(kickReason);
@@ -57,7 +50,6 @@ export const PokerPage = () => {
         }
     }, [kickReason, navigate]);
 
-    // Reset prevStageRef gdy zmienia się tableId lub brak table
     useEffect(() => {
         prevStageRef.current = "";
         setShowResultOverlay(false);
@@ -70,7 +62,6 @@ export const PokerPage = () => {
         }
     }, [table]);
 
-    // Obsługa powiadomień wygranej/przegranej dla pokera
     useEffect(() => {
         if (!table || table.stage !== 'Showdown' || prevStageRef.current === 'Showdown') return;
         
@@ -79,7 +70,6 @@ export const PokerPage = () => {
         const myPlayer = table.players.find(p => p.userId === myUserId);
         if (!myPlayer || myPlayer.isFolded) return;
 
-        // Sprawdzamy czy backend wysłał info o zwycięzcy
         if (!table.winnerId) return;
         
         const didIWin = table.winnerId === myUserId;
@@ -99,7 +89,6 @@ export const PokerPage = () => {
         }, 3000);
     }, [table, myUserId, t]);
     
-    // Cleanup przy odmontowywaniu komponentu
     useEffect(() => {
         return () => {
             prevStageRef.current = "";
@@ -108,10 +97,8 @@ export const PokerPage = () => {
         };
     }, []);
 
-    // Obsługa wysyłania wiadomości
     const handleSend = () => {
         if (!newMessage.trim()) return;
-        // Sprawdzenie czy funkcja istnieje (dla bezpieczeństwa, jeśli hook nie został jeszcze zaktualizowany)
         if (sendChatMessage) {
             sendChatMessage(newMessage);
             setNewMessage("");
@@ -154,14 +141,12 @@ export const PokerPage = () => {
 
     return (
         <div className="poker-container leaderboard-host">
-            {/* ANIMOWANE TŁO */}
             <div className="animated-bg">
                 <div className="floating-shape shape-1"></div>
                 <div className="floating-shape shape-2"></div>
                 <div className="floating-shape shape-3"></div>
             </div>
 
-            {/* HEADER - nowy układ */}
             <header className="game-header">
                 <div className="game-header-left">
                     <button onClick={async () => { 
@@ -199,9 +184,7 @@ export const PokerPage = () => {
                 </div>
             </header>
 
-            {/* WRAPPER NA STÓŁ I GRACZY */}
             <div className="poker-game-wrapper">
-                {/* STÓŁ Z KLASĄ MOTYWU */}
                 <div className={`poker-table table-theme-${currentTheme}`}>
                     <div className="table-center-content">
                         <div className="pot-display"><span className="pot-amount">${table.pot}</span></div>
@@ -212,7 +195,6 @@ export const PokerPage = () => {
                         </div>
                     </div>
 
-                    {/* GRACZE - wewnątrz stołu na dole */}
                     <div className="poker-players-container">
                         {sortedPlayers.map((p) => {
                     const isActiveTurn = table.players[table.currentPlayerIndex]?.userId === p.userId;
@@ -260,7 +242,6 @@ export const PokerPage = () => {
                 </div>
             </div>
 
-            {/* PANEL LOGÓW (LEWA STRONA) */}
             <div className="log-panel">
                 <div className="log-header">
                     <span>{t('games.poker.historyTitle').toUpperCase()}</span><span style={{color: '#66bb6a'}}>● Live</span>
@@ -278,7 +259,6 @@ export const PokerPage = () => {
                 </div>
             </div>
 
-            {/* PANEL CZATU - PO LEWEJ STRONIE POD LOGAMI */}
             <div className="chat-panel-widget">
                 <div className="chat-header">
                     <span>💬 {t('games.poker.tableChat')}</span>
@@ -393,7 +373,6 @@ export const PokerPage = () => {
                 </button>
             </div>
 
-            {/* RESULT OVERLAY - identyczny jak w singleplayer */}
             {showResultOverlay && (
                 <div className="sp-result-overlay">
                     <div className={`sp-result-text ${isWin ? 'sp-win' : 'sp-lose'}`}>

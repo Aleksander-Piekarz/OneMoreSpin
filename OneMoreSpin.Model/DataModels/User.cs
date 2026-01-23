@@ -15,7 +15,6 @@ public class User : IdentityUser<int>
     public DateTime? LastRewardClaimedDate { get; set; }
     public int DailyStreak { get; set; }
 
-    // Navigation properties
     public virtual ICollection<ChatMessage> ChatMessages { get; set; } = [];
     public virtual ICollection<Payment> Payments { get; set; } = [];
     public virtual ICollection<UserScore> UserScores { get; set; } = [];

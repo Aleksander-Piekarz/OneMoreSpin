@@ -2,7 +2,6 @@ using System;
 
 namespace OneMoreSpin.Model.DataModels
 {
-    // Te enumy możesz zostawić w tym samym pliku lub przenieść do np. OneMoreSpin.Model/Enums
     public enum Suit
     {
         Hearts,
@@ -33,7 +32,6 @@ namespace OneMoreSpin.Model.DataModels
         public Suit Suit { get; set; }
         public Rank Rank { get; set; }
 
-        // Konstruktor bezparametrowy może się przydać przy serializacji JSON
         public Card() { }
 
         public Card(Rank rank, Suit suit)

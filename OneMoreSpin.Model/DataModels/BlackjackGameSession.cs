@@ -28,7 +28,6 @@ public class BlackjackGameSession
     public DateTime CreatedAt { get; set; }
     public DateTime? FinishedAt { get; set; }
     
-    // Serialized as JSON
     public string PlayerHandJson { get; set; } = "[]";
     public string DealerHandJson { get; set; } = "[]";
     public string DeckJson { get; set; } = "[]";
@@ -38,6 +37,5 @@ public class BlackjackGameSession
     public bool PlayerBusted { get; set; }
     public bool DealerBusted { get; set; }
     
-    // Navigation
     public virtual User User { get; set; } = null!;
 }

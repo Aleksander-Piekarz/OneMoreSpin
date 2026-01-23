@@ -1,4 +1,3 @@
-// Lightweight confetti animation (no external deps)
 export function fireConfetti(duration = 1800) {
     const colors = ['#FFD166', '#FF6B6B', '#7BE4D6', '#FFFFFF'];
     const canvas = document.createElement('canvas');

@@ -34,7 +34,6 @@ export default function AdminPage() {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Check if user is online (last seen within 5 minutes)
   const isUserOnline = (lastSeenAt: string | null): boolean => {
     if (!lastSeenAt) return false;
     const lastSeen = new Date(lastSeenAt);

@@ -9,7 +9,6 @@ const BlackjackModeSelector: React.FC = () => {
 
   return (
     <div className="bj-mode-selector">
-      {/* SINGLE PLAYER */}
       <div className="bj-mode-tile bj-single" onClick={() => navigate('/blackjack-single')}>
         <div className="bj-tile-shine"></div>
         <div className="bj-particles">
@@ -33,7 +32,6 @@ const BlackjackModeSelector: React.FC = () => {
         </div>
       </div>
 
-      {/* MULTIPLAYER */}
       <div className="bj-mode-tile bj-multiplayer" onClick={() => navigate('/blackjack-lobby')}>
         <div className="bj-tile-shine"></div>
         <div className="bj-particles">

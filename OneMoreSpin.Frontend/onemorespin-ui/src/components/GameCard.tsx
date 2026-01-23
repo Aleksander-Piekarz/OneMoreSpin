@@ -1,16 +1,13 @@
 import React from 'react';
 import '../styles/GameCard.css';
 
-// Typy
 export type ThemeType = 'beginner' | 'advanced' | 'vip';
 
-// Format numeryczny (z backendu multiplayer)
 export interface CardDataNumeric {
     rank: number;
     suit: number;
 }
 
-// Format stringowy (z backendu singleplayer)
 export interface CardDataString {
     rank: string;
     suit: string;
@@ -18,7 +15,6 @@ export interface CardDataString {
 
 export type CardData = CardDataNumeric | CardDataString;
 
-// Stałe
 export const Suit = {
     Hearts: 0,
     Diamonds: 1,
@@ -35,7 +31,6 @@ const RANK_SYMBOLS: { [key: number]: string } = {
     14: "A" 
 };
 
-// Pomocnicze funkcje do konwersji
 function getSuitIndex(suit: number | string): number {
     if (typeof suit === 'number') return suit;
     const s = suit.toLowerCase();
@@ -50,7 +45,6 @@ function getRankDisplay(rank: number | string): string {
     if (typeof rank === 'number') {
         return RANK_SYMBOLS[rank] || rank.toString();
     }
-    // String rank - może być "A", "K", "Q", "J", "10", "Ace", "King", "Nine" etc.
     const r = rank.toLowerCase();
     if (r === 'ace' || r === 'a' || r === '1') return 'A';
     if (r === 'king' || r === 'k') return 'K';
@@ -99,7 +93,6 @@ export const GameCard: React.FC<GameCardProps> = ({
         className
     ].filter(Boolean).join(' ');
 
-    // Rewers karty
     if (!card || hidden) {
         return (
             <div 
@@ -111,7 +104,6 @@ export const GameCard: React.FC<GameCardProps> = ({
         );
     }
 
-    // Awers karty
     const suitIndex = getSuitIndex(card.suit);
     const rankDisplay = getRankDisplay(card.rank);
     const isRed = suitIndex === 0 || suitIndex === 1; // Hearts or Diamonds

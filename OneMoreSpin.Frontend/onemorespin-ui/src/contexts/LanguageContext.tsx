@@ -11,7 +11,6 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-// Tłumaczenia
 const translations: Record<Language, any> = {
   pl: {
     common: {
@@ -387,7 +386,6 @@ const translations: Record<Language, any> = {
       rules: "Zasady gry",
       actions: "Dostępne akcje",
       tips: "Porady",
-      // Poker
       pokerTitle: "Texas Hold'em Poker",
       pokerDesc: "Gra karciana, w której celem jest zdobycie najlepszego układu 5 kart z 7 dostępnych (2 własne + 5 wspólnych).",
       goalOfGame: "Cel gry",
@@ -412,7 +410,6 @@ const translations: Record<Language, any> = {
       dontFearFold: "Nie bój się pasować przy słabych kartach - oszczędność żetonów to też strategia.",
       positionMatters: "Pozycja ma znaczenie - grając jako ostatni masz więcej informacji.",
       manageBankroll: "Zarządzaj swoim bankrollem - nie ryzykuj wszystkiego na jedną rękę.",
-      // Blackjack
       blackjackTitle: "Blackjack (Oczko)",
       blackjackDesc: "Klasyczna gra karciana. Zbierz karty o wartości jak najbliższej 21, ale nie przekrocz tej liczby!",
       beatDealer: "Pokonaj krupiera mając więcej punktów (max 21). Przekroczenie 21 = przegrana.",
@@ -434,7 +431,6 @@ const translations: Record<Language, any> = {
       standAt17: "Stój przy 17+ - ryzyko przekroczenia 21 jest zbyt wysokie.",
       hitAt11Less: "Dobieraj przy sumie 11 lub mniej - nie możesz przegrać.",
       watchDealerCard: "Obserwuj odkrytą kartę krupiera - jeśli ma 6 lub mniej, częściej przekroczy 21.",
-      // Roulette
       rouletteTitle: "Ruletka",
       rouletteDesc: "Klasyczna gra kasynowa - postaw na numer, kolor lub zakres i czekaj na wynik!",
       predictNumber: "Przewiduj, na którym numerze zatrzyma się kulka. Wygrana zależy od typu zakładu.",
@@ -454,7 +450,6 @@ const translations: Record<Language, any> = {
       multipleBeats: "Możesz postawić wiele zakładów naraz - strategia pokrycia wielu numerów.",
       zeroHouseEdge: "Zero daje przewagę kasynu - unikaj zakładów tylko na zero.",
       setBettingLimit: "Ustal limit zakładów i trzymaj się go!",
-      // Slots
       slotsTitle: "Automaty (Slots)",
       slotsDesc: "Klasyczne jednorękie bandyty - pociągnij za dźwignię i wygraj!",
       lineUpSymbols: "Ułóż 3 takie same symbole w linii, aby wygrać. Różne symbole dają różne mnożniki.",
@@ -971,7 +966,6 @@ const translations: Record<Language, any> = {
       rules: "Game rules",
       actions: "Available actions",
       tips: "Tips",
-      // Poker
       pokerTitle: "Texas Hold'em Poker",
       pokerDesc: "A card game where the goal is to get the best 5-card hand from 7 available cards (2 own + 5 community).",
       goalOfGame: "Goal of the game",
@@ -996,7 +990,6 @@ const translations: Record<Language, any> = {
       dontFearFold: "Don't be afraid to fold weak cards - saving chips is also a strategy.",
       positionMatters: "Position matters - playing last gives you more information.",
       manageBankroll: "Manage your bankroll - don't risk everything on one hand.",
-      // Blackjack
       blackjackTitle: "Blackjack",
       blackjackDesc: "A classic card game. Collect cards worth as close to 21 as possible, but don't exceed it!",
       beatDealer: "Beat the dealer by having more points (max 21). Going over 21 = loss.",
@@ -1018,7 +1011,6 @@ const translations: Record<Language, any> = {
       standAt17: "Stand on 17+ - the risk of going over 21 is too high.",
       hitAt11Less: "Hit on 11 or less - you can't bust.",
       watchDealerCard: "Watch the dealer's up card - if it's 6 or lower, they often bust.",
-      // Roulette
       rouletteTitle: "Roulette",
       rouletteDesc: "A classic casino game - bet on a number, color, or range and wait for the result!",
       predictNumber: "Predict which number the ball will land on. Winnings depend on the bet type.",
@@ -1038,7 +1030,6 @@ const translations: Record<Language, any> = {
       multipleBeats: "You can place multiple bets at once - a strategy to cover many numbers.",
       zeroHouseEdge: "Zero gives the house an edge - avoid betting only on zero.",
       setBettingLimit: "Set a betting limit and stick to it!",
-      // Slots
       slotsTitle: "Slots",
       slotsDesc: "Classic one-armed bandits - pull the lever and win!",
       lineUpSymbols: "Line up 3 matching symbols to win. Different symbols give different multipliers.",
@@ -1219,7 +1210,6 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('language', lang);
   };
 
-  // Expose help translations to window object for helpOverlay.js
   useEffect(() => {
     if (typeof window !== 'undefined') {
       (window as any).__HELP_TRANSLATIONS__ = {

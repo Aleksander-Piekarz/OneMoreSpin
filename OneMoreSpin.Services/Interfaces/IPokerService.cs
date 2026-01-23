@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace OneMoreSpin.Services.Interfaces
 {
-    // Prosta klasa DTO do przesyłania info o stołach
     public class TableInfoDto
     {
         public string Id { get; set; }

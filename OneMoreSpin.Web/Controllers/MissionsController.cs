@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace OneMoreSpin.Web.Controllers
 {
+    /// <summary>
+    /// Kontroler API dla systemu misji.
+    /// Endpointy: pobierz misje użytkownika, odbierz nagrodę za ukończoną misję.
+    /// Misje resetują się co tydzień (w poniedziałek).
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]

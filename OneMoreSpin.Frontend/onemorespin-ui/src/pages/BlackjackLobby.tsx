@@ -76,7 +76,6 @@ export const BlackjackLobby = () => {
         return 'bj-card-beginner';
     };
 
-    // Sortowanie stołów: Beginner -> Advanced -> VIP
     const sortedTables = [...tables].sort((a, b) => {
         const getOrder = (id: string) => {
             if (id.includes('vip')) return 2;
