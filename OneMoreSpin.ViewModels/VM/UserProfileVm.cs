@@ -12,4 +12,5 @@ public class UserProfileVm
     public decimal Balance { get; set; }
     public bool IsVip { get; set; }
     public bool IsActive { get; set; }
+    public DateTime? LastSeenAt { get; set; }
 }

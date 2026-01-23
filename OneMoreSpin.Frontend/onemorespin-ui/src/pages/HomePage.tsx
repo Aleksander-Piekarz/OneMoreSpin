@@ -131,18 +131,22 @@ const HomePage: React.FC = () => {
       </div>
 
       <header className="home-header">
-        {/* LEWA STRONA NAGŁÓWKA */}
-        <div className="header-left">
+        {/* LEWA STRONA */}
+        <div className="home-header-left">
           <LanguageSwitcher />
         </div>
         
-        <h1 className="home-page-title">
-          <span className="title-word">ONE</span>
-          <span className="title-word">MORE</span>
-          <span className="title-word">SPIN</span>
-        </h1>
+        {/* ŚRODEK */}
+        <div className="home-header-center">
+          <h1 className="home-page-title">
+            <span className="title-word">ONE</span>
+            <span className="title-word">MORE</span>
+            <span className="title-word">SPIN</span>
+          </h1>
+        </div>
 
-        <div className="header-right-icons">
+        {/* PRAWA STRONA */}
+        <div className="home-header-right">
           <button className="user-icon-btn" onClick={() => navigate('/profile')}> 
             <div className="icon-wrapper">
               <i className="fas fa-user"></i>
@@ -172,10 +176,6 @@ const HomePage: React.FC = () => {
               <span>{t('common.admin')}</span>
             </button>
           )}
-          <button className="menu-item" onClick={() => console.log("Settings")}>
-            <i className="fas fa-cog"></i>
-            <span>{t('common.settings')}</span>
-          </button>
           <button className="menu-item logout" onClick={handleLogout}>
             <i className="fas fa-sign-out-alt"></i>
             <span>{t('common.logout')}</span>

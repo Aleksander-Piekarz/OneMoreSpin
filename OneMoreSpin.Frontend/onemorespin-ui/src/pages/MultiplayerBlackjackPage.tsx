@@ -7,11 +7,12 @@ import { GameCard, type ThemeType } from '../components/GameCard';
 import { fireConfetti } from '../utils/confetti';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import '../styles/MultiplayerBlackjackPage.css';
+import '../styles/GameHeader.css';
 
 export const MultiplayerBlackjackPage = () => {
     const { tableId } = useParams();
     const navigate = useNavigate();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const currentTableId = tableId || "blackjack-1";
 
     const {
@@ -28,7 +29,7 @@ export const MultiplayerBlackjackPage = () => {
         sendChatMessage
     } = useBlackjackGame(currentTableId);
 
-    const [betAmount, setBetAmount] = useState(10);
+    const [betAmount, setBetAmount] = useState(50);
     const [leaderboardOpen, setLeaderboardOpen] = useState(false);
     const [newMessage, setNewMessage] = useState("");
     const [showResultOverlay, setShowResultOverlay] = useState(false);
@@ -56,6 +57,13 @@ export const MultiplayerBlackjackPage = () => {
             chatEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, [chatMessages]);
+
+    // Ustaw początkową wartość bet na minBet gdy tabla się załaduje
+    useEffect(() => {
+        if (table && table.minBet) {
+            setBetAmount(table.minBet);
+        }
+    }, [table?.minBet]);
 
     // Obsługa powiadomień wygranej/przegranej
     useEffect(() => {
@@ -146,26 +154,70 @@ export const MultiplayerBlackjackPage = () => {
         }
     }
 
+    const translateLog = (log: string) => {
+        if (language === 'pl') return log;
+
+        let translated = log;
+
+        // Tłumaczenie logów blackjacka
+        translated = translated.replace(/^Gracz\s+([^\s]+)\s+dołączył\.?/i, 'Player $1 joined.');
+        translated = translated.replace(/^Gracz\s+([^\s]+)\s+opuścił stół\.?/i, 'Player $1 left the table.');
+        translated = translated.replace(/🚪\s*([^\s]+)\s+opuścił stół\.?/i, '🚪 $1 left the table.');
+        translated = translated.replace(/💰\s*([^\s]+)\s+postawił\s+\$(\d+)/i, '💰 $1 bet $$2');
+        translated = translated.replace(/❌\s*([^\s]+)\s+nie postawił - pomija rundę/i, '❌ $1 didn\'t bet - skips round');
+        translated = translated.replace(/❌\s+Nikt nie postawił - gra anulowana/i, '❌ No one bet - game cancelled');
+        translated = translated.replace(/🃏\s+Karty rozdane!/i, '🃏 Cards dealt!');
+        translated = translated.replace(/🎴\s*([^\s]+)\s+dobiera kartę\s+\((\d+)\)/i, '🎴 $1 hits ($2)');
+        translated = translated.replace(/💥\s*([^\s]+)\s+BUST!/i, '💥 $1 BUST!');
+        translated = translated.replace(/🎯\s*([^\s]+)\s+ma 21!/i, '🎯 $1 has 21!');
+        translated = translated.replace(/✋\s*([^\s]+)\s+stoi\s+\((\d+)\)/i, '✋ $1 stands ($2)');
+        translated = translated.replace(/✖️2\s*([^\s]+)\s+podwaja!\s+\((\d+)\)/i, '✖️2 $1 doubles! ($2)');
+        translated = translated.replace(/🎰\s+Tura krupiera\.\.\./i, '🎰 Dealer\'s turn...');
+        translated = translated.replace(/💥\s+Krupier BUST!\s+\((\d+)\)/i, '💥 Dealer BUST! ($1)');
+        translated = translated.replace(/🎰\s+Krupier stoi z\s+(\d+)/i, '🎰 Dealer stands at $1');
+        translated = translated.replace(/❌\s*([^\s]+):\s+Przegrana\s+\(Bust\)/i, '❌ $1: Loss (Bust)');
+        translated = translated.replace(/🏆\s*([^\s]+):\s+BLACKJACK!\s+\+\$(\d+)/i, '🏆 $1: BLACKJACK! +$$2');
+        translated = translated.replace(/🤝\s*([^\s]+):\s+Remis\s+\(oba Blackjack\)\s+\+\$(\d+)/i, '🤝 $1: Push (both Blackjack) +$$2');
+        translated = translated.replace(/❌\s*([^\s]+):\s+Przegrana\s+\(Dealer Blackjack\)/i, '❌ $1: Loss (Dealer Blackjack)');
+        translated = translated.replace(/🏆\s*([^\s]+):\s+Wygrana!\s+\+\$(\d+)/i, '🏆 $1: Win! +$$2');
+        translated = translated.replace(/🏆\s*([^\s]+):\s+Wygrana!\s+\((\d+)\s+vs\s+(\d+)\)\s+\+\$(\d+)/i, '🏆 $1: Win! ($2 vs $3) +$$4');
+        translated = translated.replace(/❌\s*([^\s]+):\s+Przegrana\s+\((\d+)\s+vs\s+(\d+)\)/i, '❌ $1: Loss ($2 vs $3)');
+        translated = translated.replace(/🤝\s*([^\s]+):\s+Remis\s+\((\d+)\s+=\s+(\d+)\)\s+\+\$(\d+)/i, '🤝 $1: Push ($2 = $3) +$$4');
+        translated = translated.replace(/⏱️\s+30 sekund na obstawianie!/i, '⏱️ 30 seconds to bet!');
+        translated = translated.replace(/⏱️\s+Pozostało\s+(\d+)\s+sekund!/i, '⏱️ $1 seconds left!');
+
+        return translated;
+    };
+
     return (
         <div className="bj-game-page leaderboard-host">
             {/* HEADER */}
-            <header className="bj-game-header">
-                <div className="bj-game-brand">MULTIPLAYER 21</div>
-                <div className="bj-game-info">
-                    <div className="bj-game-stat">
-                         <span className="bj-game-stat-label">{t('games.blackjack.tableLabel')}:</span>
-                        <span className="bj-game-stat-value">{table.id}</span>
-                    </div>
-                    <div className="bj-game-stat">
-                        <span className="bj-game-stat-label">{t('games.blackjack.stageLabel')}:</span>
-                        <span className="bj-game-stat-value">{table.stage}</span>
-                  </div>
-                </div>
-                <div className="bj-header-actions">
-                    <button onClick={() => navigate('/blackjack-lobby')} className="bj-leave-btn">
-                        <i className="fas fa-sign-out-alt"></i>
-                        <span>Wyjdź</span>
+            <header className="game-header">
+                <div className="game-header-left">
+                    <button onClick={() => navigate('/blackjack-lobby')} className="game-back-btn">
+                        <i className="fas fa-arrow-left"></i>
+                        <span>{t('common.back')}</span>
                     </button>
+                </div>
+                <div className="game-header-center">
+                    <div className="game-title">
+                        <span className="game-title-word">MULTIPLAYER</span>
+                        <span className="game-title-word">21</span>
+                    </div>
+                </div>
+                <div className="game-header-right">
+                    <div className="game-stat">
+                        <span className="game-stat-label">{t('games.blackjack.tableLabel')}:</span>
+                        <span className="game-stat-value">{table.id}</span>
+                    </div>
+                    <div className="game-stat">
+                        <span className="game-stat-label">{t('games.blackjack.stageLabel')}:</span>
+                        <span className="game-stat-value-gold">{table.stage}</span>
+                    </div>
+                    <div className="game-balance-display">
+                        <i className="fas fa-coins"></i>
+                        <span>{myPlayer?.chips.toLocaleString() || '0'} PLN</span>
+                    </div>
                 </div>
             </header>
 
@@ -200,7 +252,7 @@ export const MultiplayerBlackjackPage = () => {
                                     </>
                                 )}
                             </div>
-                            {showDealerSecondCard && (
+                            {table.dealerHand.length > 0 && (
                                 <div className="bj-dealer-score">
                                     {table.dealerBusted ? "BUST!" : table.dealerScore}
                                 </div>
@@ -227,12 +279,11 @@ export const MultiplayerBlackjackPage = () => {
 
                                     <div className={`bj-player-name ${p.isVip ? 'bj-vip-name' : ''}`}>
                                         {p.isVip && <span className="bj-vip-crown">👑</span>}
-                                        {p.username.split('@')[0]} {isMe && `(${t('common.you')})`}
+                                        {p.username.split('@')[0]}
                                     </div>
 
-                                    <div className="bj-player-cards">
-                                        {p.hand && p.hand.length > 0 ? (
-                                            p.hand.map((c, idx) => <GameCard key={idx} card={c} theme={currentTheme} />)
+                                    <div className="bj-player-cards">{p.hand && p.hand.length > 0 ? (
+                                            p.hand.map((c, idx) => <GameCard key={idx} card={c} theme={currentTheme} size="large" />)
                                         ) : (
                                             <div className="bj-empty-hand">{t('games.blackjack.waiting')}</div>
                                         )}
@@ -242,18 +293,8 @@ export const MultiplayerBlackjackPage = () => {
                                         {p.hand && p.hand.length > 0 && (
                                             <span className="bj-player-score">{p.hasBusted ? "BUST" : p.score}</span>
                                         )}
-                                        <span className="bj-player-chips">${p.chips}</span>
                                         {p.currentBet > 0 && <span className="bj-player-bet">${p.currentBet}</span>}
                                     </div>
-
-                                    {p.result && (
-                                        <div className={`bj-result-badge bj-${p.result.toLowerCase()}`}>
-                                            {p.result === "Win" && `🏆 ${t('games.blackjack.win')}`}
-                                            {p.result === "Lose" && `❌ ${t('games.blackjack.lose')}`}
-                                            {p.result === "Push" && `🤝 ${t('games.blackjack.push')}`}
-                                            {p.result === "Blackjack" && "🎰 BLACKJACK!"}
-                                        </div>
-                                    )}
 
                                     {p.hasBlackjack && !p.result && <div className="bj-badge-blackjack">BLACKJACK!</div>}
                                 </div>
@@ -271,10 +312,11 @@ export const MultiplayerBlackjackPage = () => {
                 <div className="bj-log-content">
                     {logs.map((log, i) => {
                         let c = 'rgba(255,255,255,0.7)';
-                        if (log.includes("WYGRANA") || log.includes("Wygrana") || log.includes("BLACKJACK")) c = '#4caf50';
-                        if (log.includes("PRZEGRANA") || log.includes("Przegrana") || log.includes("BUST")) c = '#f44336';
-                        if (log.includes("Remis")) c = '#ffd700';
-                        return <div key={i} style={{ color: c }}>{log}</div>
+                        if (log.includes("WYGRANA") || log.includes("Wygrana") || log.includes("BLACKJACK") || log.includes("Win!") || log.includes("WIN")) c = '#4caf50';
+                        if (log.includes("PRZEGRANA") || log.includes("Przegrana") || log.includes("BUST") || log.includes("Loss")) c = '#f44336';
+                        if (log.includes("Remis") || log.includes("Push")) c = '#ffd700';
+                        const displayLog = translateLog(log);
+                        return <div key={i} style={{ color: c }}>{displayLog}</div>;
                     })}
                     <div ref={logsEndRef} />
                 </div>
@@ -288,7 +330,7 @@ export const MultiplayerBlackjackPage = () => {
                         chatMessages.map((msg, i) => (
                             <div key={i} className="bj-chat-message">
                                 <span className="bj-chat-username" style={{ color: msg.username === myPlayer?.username ? '#667eea' : '#ffd700' }}>
-                                    {msg.username}:
+                                    {msg.username.split('@')[0]}:
                                 </span>
                                 <span className="bj-chat-text">{msg.text}</span>
                             </div>
@@ -390,7 +432,6 @@ export const MultiplayerBlackjackPage = () => {
                     aria-expanded={leaderboardOpen}
                     title={leaderboardOpen ? t('games.blackjack.hideLeaderboard') : t('games.blackjack.showLeaderboard')}
                 >
-                    <i className={`fas fa-trophy`}></i>
                     <span>TOP</span>
                 </button>
             </div>

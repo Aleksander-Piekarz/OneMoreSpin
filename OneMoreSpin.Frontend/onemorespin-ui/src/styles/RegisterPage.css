@@ -41,6 +41,13 @@
   padding: 20px;
   max-height: 90vh;
   overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.register-container::-webkit-scrollbar {
+  width: 0;
+  display: none;
 }
 
 .register-box {

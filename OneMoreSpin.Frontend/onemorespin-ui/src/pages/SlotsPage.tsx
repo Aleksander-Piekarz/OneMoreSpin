@@ -7,6 +7,7 @@ import { fireConfetti } from "../utils/confetti";
 import Leaderboard from "../components/Leaderboard";
 import { GameHelpModal, SLOTS_HELP } from "../components/GameHelpModal";
 import "../styles/SlotsPage.css";
+import "../styles/GameHeader.css";
 import DemoToggle from "../components/DemoToggle";
 
 import lemonImg from "../assets/img/slots/lemon.png";
@@ -43,7 +44,7 @@ const SlotsPage: React.FC = () => {
   const [autoSpinCount, setAutoSpinCount] = useState<number>(Infinity);
   const [remainingSpins, setRemainingSpins] = useState<number>(Infinity);
   const [isShowingWin, setIsShowingWin] = useState(false);
-  const [leaderboardOpen, setLeaderboardOpen] = useState(true);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [unlimitedMode, setUnlimitedMode] = useState(false);
 
 
@@ -287,26 +288,24 @@ const SlotsPage: React.FC = () => {
         <div className="floating-shape shape-5"></div>
       </div>
 
-      <header className="slots-header">
-        <button className="back-btn" onClick={() => navigate("/home")}>
-          <i className="fas fa-arrow-left"></i>
-          <span>POWRÓT</span>
-        </button>
-
-        <h1 className="slots-title">
-          <span className="title-word">SLOT</span>
-          <span className="title-word">MACHINE</span>
-        </h1>
-
-        <div className="header-right-cluster">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <DemoToggle checked={unlimitedMode} onChange={setUnlimitedMode} />
-            </div>
-            <div className="balance-display">
-              <i className="fas fa-coins"></i>
-              <span>{balance.toLocaleString()} PLN</span>
-            </div>
+      <header className="game-header">
+        <div className="game-header-left">
+          <button className="game-back-btn" onClick={() => navigate("/home")}>
+            <i className="fas fa-arrow-left"></i>
+            <span>{t('common.back')}</span>
+          </button>
+        </div>
+        <div className="game-header-center">
+          <div className="game-title">
+            <span className="game-title-word">SLOT</span>
+            <span className="game-title-word">MACHINE</span>
+          </div>
+        </div>
+        <div className="game-header-right">
+          <DemoToggle checked={unlimitedMode} onChange={setUnlimitedMode} />
+          <div className="game-balance-display">
+            <i className="fas fa-coins"></i>
+            <span>{balance.toLocaleString()} PLN</span>
           </div>
         </div>
       </header>
@@ -510,7 +509,6 @@ const SlotsPage: React.FC = () => {
             aria-expanded={leaderboardOpen}
             title={leaderboardOpen ? t('games.slots.hideLeaderboard') : t('games.slots.showLeaderboard')}
           >
-            <i className="fas fa-trophy"></i>
             <span>TOP</span>
           </button>
         </div>

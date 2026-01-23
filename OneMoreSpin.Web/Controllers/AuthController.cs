@@ -130,12 +130,13 @@ public class AuthController : ControllerBase
         if (!ok.Succeeded)
             return Unauthorized(new { error = "Invalid credentials" });
 
-        // Ustawienie IsActive = true przy logowaniu
+        // Ustawienie IsActive = true i LastSeenAt przy logowaniu
         if (!user.IsActive)
         {
             user.IsActive = true;
-            await _userManager.UpdateAsync(user);
         }
+        user.LastSeenAt = DateTime.UtcNow;
+        await _userManager.UpdateAsync(user);
 
         var token = GenerateJwt(user, cfg);
 

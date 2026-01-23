@@ -247,6 +247,27 @@
   box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
 }
 
+.admin-btn-vip {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.admin-btn-vip:hover {
+  background: rgba(255, 215, 0, 0.25);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.admin-btn-vip-active {
+  background: rgba(255, 215, 0, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.6);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.admin-btn-vip-active:hover {
+  background: rgba(255, 215, 0, 0.4);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+}
+
 /* Pagination */
 .admin-pagination {
   display: flex;

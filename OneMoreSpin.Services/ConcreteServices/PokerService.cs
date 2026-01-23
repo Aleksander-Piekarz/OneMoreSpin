@@ -178,7 +178,7 @@ namespace OneMoreSpin.Services.ConcreteServices
 
                 string playerName = player.Username;
                 
-                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"🚪 {playerName} opuścił stół.");
+                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"🚪 {playerName.Split('@')[0]} opuścił stół.");
 
                 if (table.GameInProgress)
                 {
@@ -233,7 +233,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                 player.IsReady = isReady;
                 
                 _hubContext.Clients.Group(tableId).SendAsync("ActionLog", 
-                    isReady ? $"✅ {player.Username} jest gotowy!" : $"⏸️ {player.Username} nie jest gotowy");
+                    isReady ? $"✅ {player.Username.Split('@')[0]} jest gotowy!" : $"⏸️ {player.Username.Split('@')[0]} nie jest gotowy");
 
                 // Sprawdź czy wszyscy są gotowi (minimum 2 graczy)
                 var readyPlayers = table.Players.Where(p => p.IsReady).Count();
@@ -622,7 +622,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                 table.WinAmount = table.Pot + vipBonus;
                 
                 _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", "=========================");
-                _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🏆 WYGRAŁ: {winner.Username}");
+                _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🏆 WYGRAŁ: {winner.Username.Split('@')[0]}");
                 _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🃏 Układ: {winHandName}");
                 _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"💰 +{table.Pot} $" + (vipBonus > 0 ? $" (+{vipBonus:F0}$ VIP BONUS)" : ""));
                 _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", "=========================");

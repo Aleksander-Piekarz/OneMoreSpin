@@ -6,6 +6,7 @@ import Leaderboard from '../components/Leaderboard';
 import { GameCard, type ThemeType } from '../components/GameCard';
 import { fireConfetti } from '../utils/confetti';
 import '../styles/PokerPage.css';
+import '../styles/GameHeader.css';
 
 export const PokerPage = () => {
     const { tableId } = useParams();
@@ -56,6 +57,19 @@ export const PokerPage = () => {
         }
     }, [kickReason, navigate]);
 
+    // Reset prevStageRef gdy zmienia się tableId lub brak table
+    useEffect(() => {
+        prevStageRef.current = "";
+        setShowResultOverlay(false);
+        setResultMessage("");
+    }, [currentTableId]);
+    
+    useEffect(() => {
+        if (!table) {
+            prevStageRef.current = "";
+        }
+    }, [table]);
+
     // Obsługa powiadomień wygranej/przegranej dla pokera
     useEffect(() => {
         if (!table || table.stage !== 'Showdown' || prevStageRef.current === 'Showdown') return;
@@ -83,7 +97,16 @@ export const PokerPage = () => {
         setTimeout(() => {
             setShowResultOverlay(false);
         }, 3000);
-    }, [table, myUserId]);
+    }, [table, myUserId, t]);
+    
+    // Cleanup przy odmontowywaniu komponentu
+    useEffect(() => {
+        return () => {
+            prevStageRef.current = "";
+            setShowResultOverlay(false);
+            setResultMessage("");
+        };
+    }, []);
 
     // Obsługa wysyłania wiadomości
     const handleSend = () => {
@@ -104,15 +127,6 @@ export const PokerPage = () => {
     const minBet = table.currentMinBet || 0;
     const myBet = myPlayer?.currentBet || 0;
     const toCall = minBet - myBet;
-
-    // Pozycjonowanie graczy (Elipsa) - gracze względem wrappera
-    const getPosition = (index: number, total: number) => {
-        const angle = (index / total) * 2 * Math.PI + (Math.PI / 2);
-        // Zmniejszony promień - 38% zamiast 42% żeby gracze nie wychodziili poza ekran
-        const x = 50 + 38 * Math.cos(angle); 
-        const y = 50 + 38 * Math.sin(angle);
-        return { top: `${y}%`, left: `${x}%`, transform: 'translate(-50%, -50%)' };
-    };
 
     let sortedPlayers = [...table.players];
     const myIndex = sortedPlayers.findIndex(p => p.userId === myUserId);
@@ -148,8 +162,8 @@ export const PokerPage = () => {
             </div>
 
             {/* HEADER - nowy układ */}
-            <header className="poker-header">
-                <div className="poker-header-left">
+            <header className="game-header">
+                <div className="game-header-left">
                     <button onClick={async () => { 
                         try {
                             await leaveTable(); 
@@ -158,25 +172,30 @@ export const PokerPage = () => {
                         } finally {
                             navigate('/poker'); 
                         }
-                    }} className="poker-leave-btn">
+                    }} className="game-back-btn">
                         <i className="fas fa-arrow-left"></i>
                         <span>{t('games.poker.leaveTable')}</span>
                     </button>
                 </div>
-                <div className="poker-header-center">
-                    <div className="poker-brand">TEXAS HOLD'EM</div>
-                    <div className="poker-info">
-                        <div className="poker-stat">
-                            <span className="poker-stat-label">{t('games.poker.tableLabel')}:</span>
-                            <span className="poker-stat-value">{table.id}</span>
-                        </div>
-                        <div className="poker-stat">
-                            <span className="poker-stat-label">{t('games.poker.stageLabel')}:</span>
-                            <span className="poker-stat-value-gold">{table.stage}</span>
-                        </div>
+                <div className="game-header-center">
+                    <div className="game-title">
+                        <span className="game-title-word">TEXAS</span>
+                        <span className="game-title-word">HOLD'EM</span>
                     </div>
                 </div>
-                <div className="poker-header-right">
+                <div className="game-header-right">
+                    <div className="game-stat">
+                        <span className="game-stat-label">{t('games.poker.tableLabel')}:</span>
+                        <span className="game-stat-value">{table.id}</span>
+                    </div>
+                    <div className="game-stat">
+                        <span className="game-stat-label">{t('games.poker.stageLabel')}:</span>
+                        <span className="game-stat-value-gold">{table.stage}</span>
+                    </div>
+                    <div className="game-balance-display">
+                        <i className="fas fa-coins"></i>
+                        <span>{myPlayer?.chips.toLocaleString() || '0'} PLN</span>
+                    </div>
                 </div>
             </header>
 
@@ -185,22 +204,20 @@ export const PokerPage = () => {
                 {/* STÓŁ Z KLASĄ MOTYWU */}
                 <div className={`poker-table table-theme-${currentTheme}`}>
                     <div className="table-center-content">
-                        <div className="pot-display">{t('games.poker.pot').toUpperCase()} <span className="pot-amount">${table.pot}</span></div>
+                        <div className="pot-display"><span className="pot-amount">${table.pot}</span></div>
                         
                         <div className="community-cards">
                             {table.communityCards.map((c, i) => <GameCard key={i} card={c} theme={currentTheme} />)}
                             {table.communityCards.length === 0 && <div className="empty-flop-slot">FLOP</div>}
                         </div>
                     </div>
-                </div>
 
-                {/* GRACZE - pozycjonowani względem wrappera */}
-                {sortedPlayers.map((p, i) => {
+                    {/* GRACZE - wewnątrz stołu na dole */}
+                    <div className="poker-players-container">
+                        {sortedPlayers.map((p) => {
                     const isActiveTurn = table.players[table.currentPlayerIndex]?.userId === p.userId;
                     
                     const isMe = p.userId === myUserId; 
-                    
-                    const pos = getPosition(i, table.players.length);
                     
                     const showCards = isMe || (table.stage === 'Showdown' && !p.isFolded);
                     
@@ -213,25 +230,24 @@ export const PokerPage = () => {
                     if (p.isVip) seatClasses += " is-vip";
 
                     return (
-                        <div key={p.userId} className={seatClasses} style={pos}>
+                        <div key={p.userId} className={seatClasses}>
                             {isActiveTurn && <div className="badge-turn">{t('games.poker.turn')}</div>}
                             {p.isVip && <div className="badge-vip">👑</div>}
                             
                             <div className={`player-name ${p.isVip ? 'vip-name' : ''}`}>
                                 {p.isVip && <span className="vip-crown">👑</span>}
-                                {p.username.split('@')[0]} {isMe && `(${t('common.you')})`}
+                                {p.username.split('@')[0]}
                             </div>
                             
                             <div className="player-cards">
                                 {p.hand && p.hand.length > 0 ? (
-                                    p.hand.map((c, idx) => <GameCard key={idx} card={showCards ? c : undefined} theme={currentTheme} />)
+                                    p.hand.map((c, idx) => <GameCard key={idx} card={showCards ? c : undefined} theme={currentTheme} size="large" />)
                                 ) : (
-                                    <><GameCard theme={currentTheme} /><GameCard theme={currentTheme} /></>
+                                    <><GameCard theme={currentTheme} size="large" /><GameCard theme={currentTheme} size="large" /></>
                                 )}
                             </div>
 
                             <div className="player-stats">
-                                <span className="chips-count">${p.chips}</span>
                                 {p.currentBet > 0 && <span className="bet-amount">${p.currentBet}</span>}
                             </div>
 
@@ -240,6 +256,8 @@ export const PokerPage = () => {
                         </div>
                     );
                 })}
+                    </div>
+                </div>
             </div>
 
             {/* PANEL LOGÓW (LEWA STRONA) */}
@@ -371,7 +389,6 @@ export const PokerPage = () => {
                     aria-expanded={leaderboardOpen}
                     title={leaderboardOpen ? t('games.poker.hideLeaderboard') : t('games.poker.showLeaderboard')}
                 >
-                    <i className="fas fa-trophy"></i>
                     <span>TOP</span>
                 </button>
             </div>

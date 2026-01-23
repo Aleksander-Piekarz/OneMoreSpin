@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import * as signalR from "@microsoft/signalr";
 import '../styles/BlackjackLobby.css';
+import '../styles/GameHeader.css';
 
 interface TableInfo {
     id: string;
@@ -93,13 +94,21 @@ export const BlackjackLobby = () => {
                 <div className="bj-lobby-shape bj-lobby-shape-3"></div>
             </div>
 
-            <header className="bj-lobby-header">
-                <button onClick={() => navigate('/blackjack')} className="bj-lobby-back-btn">
-                    <i className="fas fa-arrow-left"></i>
-                    <span>{t('common.back')}</span>
-                </button>
-                <h1 className="bj-lobby-title">BLACKJACK ROOMS</h1>
-                <div className="bj-lobby-spacer"></div>
+            <header className="game-header">
+                <div className="game-header-left">
+                    <button onClick={() => navigate('/blackjack')} className="game-back-btn">
+                        <i className="fas fa-arrow-left"></i>
+                        <span>{t('common.back')}</span>
+                    </button>
+                </div>
+                <div className="game-header-center">
+                    <div className="game-title">
+                        <span className="game-title-word">BLACKJACK</span>
+                        <span className="game-title-word">LOBBY</span>
+                    </div>
+                </div>
+                <div className="game-header-right">
+                </div>
             </header>
 
             <div className="bj-lobby-content">

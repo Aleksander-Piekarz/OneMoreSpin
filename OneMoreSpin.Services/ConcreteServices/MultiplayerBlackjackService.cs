@@ -151,7 +151,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                 var player = table.Players.FirstOrDefault(p => p.ConnectionId == connectionId);
                 if (player == null) return;
 
-                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"🚪 {player.Username} opuścił stół.");
+                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"🚪 {player.Username.Split('@')[0]} opuścił stół.");
 
                 if (table.GameInProgress)
                 {
@@ -204,7 +204,7 @@ namespace OneMoreSpin.Services.ConcreteServices
 
                 Console.WriteLine($"[BLACKJACK BET] {player.Username} postawił ${amount}. Ready: {table.PlayersReady}/{table.Players.Count}");
 
-                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"💰 {player.Username} postawił ${amount}");
+                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"💰 {player.Username.Split('@')[0]} postawił ${amount}");
                 
                 // Sprawdź czy wszyscy postawili - jeśli tak, rozpocznij od razu
                 if (table.PlayersReady >= table.Players.Count && table.Players.Count >= 1)
@@ -268,7 +268,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                     var playersWithoutBet = table.Players.Where(p => p.CurrentBet <= 0).ToList();
                     foreach (var p in playersWithoutBet)
                     {
-                        _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"❌ {p.Username} nie postawił - pomija rundę");
+                        _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"❌ {p.Username.Split('@')[0]} nie postawił - pomija rundę");
                     }
                     
                     // Jeśli ktoś postawił, rozpocznij grę
@@ -357,8 +357,9 @@ namespace OneMoreSpin.Services.ConcreteServices
 
             // Rozdaj karty dealerowi (2 karty)
             table.DealerHand.Add(DrawCard(table.Deck));
+            table.DealerScore = CalculateScore(table.DealerHand); // Oblicz score po pierwszej karcie
             table.DealerHand.Add(DrawCard(table.Deck));
-            table.DealerScore = CalculateScore(table.DealerHand);
+            // Pełny score zostanie obliczony dopiero po turze dealera
 
             // Sprawdź blackjacka dealera
             if (table.DealerScore == 21)
@@ -405,18 +406,18 @@ namespace OneMoreSpin.Services.ConcreteServices
                 player.Hand.Add(DrawCard(table.Deck));
                 player.Score = CalculateScore(player.Hand);
 
-                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"🎴 {player.Username} dobiera kartę ({player.Score})");
+                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"🎴 {player.Username.Split('@')[0]} dobiera kartę ({player.Score})");
 
                 if (player.Score > 21)
                 {
                     player.HasBusted = true;
-                    _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"💥 {player.Username} BUST!");
+                    _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"💥 {player.Username.Split('@')[0]} BUST!");
                     MoveTurnToNextPlayer(table);
                 }
                 else if (player.Score == 21)
                 {
                     player.HasStood = true;
-                    _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"🎯 {player.Username} ma 21!");
+                    _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"🎯 {player.Username.Split('@')[0]} ma 21!");
                     MoveTurnToNextPlayer(table);
                 }
 
@@ -440,7 +441,7 @@ namespace OneMoreSpin.Services.ConcreteServices
                 if (player.HasStood || player.HasBusted) return false;
 
                 player.HasStood = true;
-                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"✋ {player.Username} stoi ({player.Score})");
+                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"✋ {player.Username.Split('@')[0]} stoi ({player.Score})");
 
                 MoveTurnToNextPlayer(table);
                 _hubContext.Clients.Group(tableId).SendAsync("UpdateGameState", table);
@@ -473,12 +474,12 @@ namespace OneMoreSpin.Services.ConcreteServices
                 player.Hand.Add(DrawCard(table.Deck));
                 player.Score = CalculateScore(player.Hand);
 
-                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"✖️2 {player.Username} podwaja! ({player.Score})");
+                _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"✖️2 {player.Username.Split('@')[0]} podwaja! ({player.Score})");
 
                 if (player.Score > 21)
                 {
                     player.HasBusted = true;
-                    _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"💥 {player.Username} BUST!");
+                    _hubContext.Clients.Group(tableId).SendAsync("ActionLog", $"💥 {player.Username.Split('@')[0]} BUST!");
                 }
 
                 player.HasStood = true; // Po podwojeniu gracz automatycznie stoi
@@ -560,54 +561,54 @@ namespace OneMoreSpin.Services.ConcreteServices
                 {
                     player.Result = "Lose";
                     player.Payout = 0;
-                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"❌ {player.Username}: Przegrana (Bust)");
+                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"❌ {player.Username.Split('@')[0]}: Przegrana (Bust)");
                 }
                 else if (player.HasBlackjack && !table.DealerHasBlackjack)
                 {
                     player.Result = "Blackjack";
                     player.Payout = player.CurrentBet * 2.5m;
                     player.Chips += player.Payout;
-                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🏆 {player.Username}: BLACKJACK! +${player.Payout}");
+                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🏆 {player.Username.Split('@')[0]}: BLACKJACK! +${player.Payout}");
                 }
                 else if (player.HasBlackjack && table.DealerHasBlackjack)
                 {
                     player.Result = "Push";
                     player.Payout = player.CurrentBet;
                     player.Chips += player.Payout;
-                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🤝 {player.Username}: Remis (oba Blackjack) +${player.Payout}");
+                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🤝 {player.Username.Split('@')[0]}: Remis (oba Blackjack) +${player.Payout}");
                 }
                 else if (table.DealerHasBlackjack)
                 {
                     player.Result = "Lose";
                     player.Payout = 0;
-                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"❌ {player.Username}: Przegrana (Dealer Blackjack)");
+                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"❌ {player.Username.Split('@')[0]}: Przegrana (Dealer Blackjack)");
                 }
                 else if (table.DealerBusted)
                 {
                     player.Result = "Win";
                     player.Payout = player.CurrentBet * 2;
                     player.Chips += player.Payout;
-                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🏆 {player.Username}: Wygrana! +${player.Payout}");
+                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🏆 {player.Username.Split('@')[0]}: Wygrana! +${player.Payout}");
                 }
                 else if (player.Score > table.DealerScore)
                 {
                     player.Result = "Win";
                     player.Payout = player.CurrentBet * 2;
                     player.Chips += player.Payout;
-                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🏆 {player.Username}: Wygrana! ({player.Score} vs {table.DealerScore}) +${player.Payout}");
+                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🏆 {player.Username.Split('@')[0]}: Wygrana! ({player.Score} vs {table.DealerScore}) +${player.Payout}");
                 }
                 else if (player.Score < table.DealerScore)
                 {
                     player.Result = "Lose";
                     player.Payout = 0;
-                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"❌ {player.Username}: Przegrana ({player.Score} vs {table.DealerScore})");
+                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"❌ {player.Username.Split('@')[0]}: Przegrana ({player.Score} vs {table.DealerScore})");
                 }
                 else
                 {
                     player.Result = "Push";
                     player.Payout = player.CurrentBet;
                     player.Chips += player.Payout;
-                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🤝 {player.Username}: Remis ({player.Score} = {table.DealerScore}) +${player.Payout}");
+                    _hubContext.Clients.Group(table.Id).SendAsync("ActionLog", $"🤝 {player.Username.Split('@')[0]}: Remis ({player.Score} = {table.DealerScore}) +${player.Payout}");
                 }
 
                 // Zapisz wynik do bazy - WAŻNE: zapisz wartości PRZED Task.Run, bo CurrentBet będzie zresetowany

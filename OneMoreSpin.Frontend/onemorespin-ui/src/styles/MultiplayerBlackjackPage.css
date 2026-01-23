@@ -176,6 +176,7 @@
   z-index: 10;
   min-height: 0;
   padding: 80px 10px 100px 10px;
+  transform: translateY(-30px);
 }
 
 /* === STÓŁ - RESPONSYWNY KONTENER === */
@@ -365,7 +366,10 @@
 
 .bj-game-page .bj-player-seat {
   flex: 0 1 auto;
-  width: clamp(140px, 20vw, 220px);
+  width: fit-content;
+  min-width: clamp(140px, 20vw, 220px);
+  max-width: 100%;
+  min-height: fit-content;
   padding: clamp(10px, 2vw, 15px);
   border-radius: 12px;
   background: rgba(15, 20, 40, 0.85);
@@ -473,22 +477,22 @@
   display: flex;
   justify-content: center;
   flex-wrap: nowrap;
-  gap: 3px;
-  min-height: clamp(50px, 8vw, 70px);
-  margin-bottom: 8px;
+  gap: 6px;
+  min-height: 100px;
+  margin-bottom: 6px;
 }
 
 .bj-game-page .bj-player-cards .bj-card {
-  width: clamp(45px, 6vw, 55px);
-  height: clamp(63px, 8.4vw, 77px);
+  width: clamp(80px, 10vw, 100px);
+  height: clamp(112px, 14vw, 140px);
 }
 
 .bj-game-page .bj-player-cards .bj-card-rank {
-  font-size: clamp(12px, 1.8vw, 18px);
+  font-size: clamp(20px, 3vw, 32px);
 }
 
 .bj-game-page .bj-player-cards .bj-card-suit {
-  font-size: clamp(14px, 2vw, 20px);
+  font-size: clamp(24px, 3.5vw, 36px);
 }
 
 .bj-game-page .bj-empty-hand {
@@ -515,8 +519,9 @@
 
 .bj-game-page .bj-player-score {
   color: #fff;
-  font-weight: 700;
-  font-size: clamp(14px, 2vw, 16px);
+  font-weight: 800;
+  font-size: clamp(18px, 2.5vw, 22px);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 .bj-game-page .bj-player-chips {
@@ -527,8 +532,9 @@
 
 .bj-game-page .bj-player-bet {
   color: #ffd700;
-  font-weight: 600;
-  font-size: clamp(14px, 2vw, 16px);
+  font-weight: 700;
+  font-size: clamp(18px, 2.5vw, 22px);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
 /* Znaczniki */
@@ -608,8 +614,8 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  min-height: 80px;
-  height: auto;
+  height: 110px;
+  min-height: 110px;
   background: rgba(10, 14, 39, 0.95);
   backdrop-filter: blur(20px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -620,6 +626,8 @@
   z-index: 200;
   padding: 15px 20px;
   box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* Przyciski gry - kompaktowe */
@@ -844,28 +852,22 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
 
 .bj-game-page .bj-log-content::-webkit-scrollbar,
 .bj-game-page .bj-chat-messages::-webkit-scrollbar {
-  width: 4px;
-}
-
-.bj-game-page .bj-log-content::-webkit-scrollbar-track,
-.bj-game-page .bj-chat-messages::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
-}
-
-.bj-game-page .bj-log-content::-webkit-scrollbar-thumb,
-.bj-game-page .bj-chat-messages::-webkit-scrollbar-thumb {
-  background: rgba(102, 126, 234, 0.3);
-  border-radius: 2px;
+  width: 0;
+  display: none;
 }
 
 /* Chat */
 .bj-game-page .bj-chat-messages {
   flex: 1;
   overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
   padding: 10px 12px;
   display: flex;
   flex-direction: column;

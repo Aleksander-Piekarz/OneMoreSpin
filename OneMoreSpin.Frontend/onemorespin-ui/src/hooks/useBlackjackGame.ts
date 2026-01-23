@@ -50,11 +50,11 @@ export const useBlackjackGame = (tableId: string) => {
         });
 
         blackjackMultiplayerService.onPlayerJoined((username) => {
-            if (isMounted) setLogs(prev => [...prev, `Gracz ${username} dołączył.`]);
+            if (isMounted) setLogs(prev => [...prev, `Gracz ${username.split('@')[0]} dołączył.`]);
         });
 
         blackjackMultiplayerService.onPlayerLeft((username) => {
-            if (isMounted) setLogs(prev => [...prev, `Gracz ${username} opuścił stół.`]);
+            if (isMounted) setLogs(prev => [...prev, `Gracz ${username.split('@')[0]} opuścił stół.`]);
         });
 
         blackjackMultiplayerService.onActionLog((msg) => {

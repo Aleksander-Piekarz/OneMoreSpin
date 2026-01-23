@@ -7,6 +7,7 @@ import DemoToggle from '../components/DemoToggle';
 import { refreshMissions } from "../events";
 import Leaderboard from '../components/Leaderboard';
 import "../styles/RoulettePage.css";
+import "../styles/GameHeader.css";
 
 const WHEEL_NUMBERS = [
   0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
@@ -405,19 +406,21 @@ export default function RouletteGame() {
         <div className="floating-shape shape-5"></div>
       </div>
 
-      <header className="roulette-header">
-        <button className="back-btn" onClick={() => navigate("/home")}>
-          <ArrowLeft size={20} />
-          <span>POWRÓT</span>
-        </button>
-        
-        <div className="roulette-title">
-          <span className="title-word">RULETKA</span>
+      <header className="game-header">
+        <div className="game-header-left">
+          <button className="game-back-btn" onClick={() => navigate("/home")}>
+            <i className="fas fa-arrow-left"></i>
+            <span>{t('common.back')}</span>
+          </button>
         </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div className="game-header-center">
+          <div className="game-title">
+            <span className="game-title-word">RULETKA</span>
+          </div>
+        </div>
+        <div className="game-header-right">
           <DemoToggle checked={unlimitedMode} onChange={setUnlimitedMode} />
-          <div className="balance-display">
+          <div className="game-balance-display">
             <i className="fas fa-coins"></i>
             <span>{balance.toLocaleString()} PLN</span>
           </div>
@@ -603,7 +606,6 @@ export default function RouletteGame() {
             aria-expanded={leaderboardOpen}
             title={leaderboardOpen ? t('games.roulette.hideLeaderboard') : t('games.roulette.showLeaderboard')}
           >
-            <i className="fas fa-trophy"></i>
             <span>TOP</span>
           </button>
         </div>

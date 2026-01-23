@@ -60,7 +60,7 @@ export const usePokerGame = (tableId: string) => {
         });
 
         pokerService.onPlayerJoined((username) => {
-            if (isMounted) setLogs(prev => [...prev, `Gracz ${username} dołączył.`]);
+            if (isMounted) setLogs(prev => [...prev, `Gracz ${username.split('@')[0]} dołączył.`]);
         });
 
         pokerService.onActionLog((msg) => {

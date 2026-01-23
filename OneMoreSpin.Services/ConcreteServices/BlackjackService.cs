@@ -78,7 +78,7 @@ public class BlackjackService : BaseService, IBlackjackService
             DealerHandJson = JsonSerializer.Serialize(dealerHand),
             DeckJson = JsonSerializer.Serialize(deck),
             PlayerScore = playerScore,
-            DealerScore = 0
+            DealerScore = dealerHand.Count > 0 ? dealerHand[0].Value : 0
         };
 
         // Check for blackjack
@@ -496,7 +496,7 @@ public class BlackjackService : BaseService, IBlackjackService
             PlayerHand = playerHand,
             DealerHand = isFinished ? dealerHand : new List<BlackjackCardVm> { dealerHand[0] }, // Hide dealer's second card until finished
             PlayerScore = session.PlayerScore,
-            DealerScore = isFinished ? session.DealerScore : 0,
+            DealerScore = isFinished ? session.DealerScore : (dealerHand.Count > 0 ? dealerHand[0].Value : 0),
             GameState = session.GameState.ToString(),
             Result = session.Result.ToString(),
             Bet = session.Bet,

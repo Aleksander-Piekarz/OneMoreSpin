@@ -6,9 +6,9 @@ import { refreshMissions } from "../events";
 import { fireConfetti } from "../utils/confetti";
 import Leaderboard from "../components/Leaderboard";
 import DemoToggle from "../components/DemoToggle";
-import "../styles/BlackjackPage.css";
-import { GameCard } from "../components/GameCard";
-import "../styles/SinglePokerPage.css";
+import { GameCard, type ThemeType } from "../components/GameCard";
+import "../styles/MultiplayerBlackjackPage.css";
+import "../styles/GameHeader.css";
 
 type BlackjackCardType = {
   rank: string;
@@ -43,9 +43,13 @@ const BlackjackPage: React.FC = () => {
   const [isDealing, setIsDealing] = useState(false);
   const [error, setError] = useState<string>("");
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
+  const [showResultOverlay, setShowResultOverlay] = useState(false);
+  const [resultMessage, setResultMessage] = useState("");
 
   const isGameFinished = gameState?.gameFinished ?? false;
   const hasWon = gameState?.result === "PlayerWin" || gameState?.result === "Blackjack";
+  const currentTheme: ThemeType = 'beginner';
+  const showDealerSecondCard = gameState && isGameFinished;
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
@@ -70,8 +74,33 @@ const BlackjackPage: React.FC = () => {
 
   useEffect(() => {
     if (gameState && isGameFinished && !isDealing) {
-      if (hasWon) {
-        fireConfetti();
+      let message = "";
+      switch (gameState.result) {
+        case "PlayerWin":
+          message = t('games.blackjack.win');
+          break;
+        case "Blackjack":
+          message = t('games.blackjack.blackjack');
+          break;
+        case "DealerWin":
+          message = t('games.blackjack.lose');
+          break;
+        case "Push":
+          message = t('games.blackjack.push');
+          break;
+      }
+
+      if (message) {
+        setResultMessage(message);
+        setShowResultOverlay(true);
+
+        if (hasWon) {
+          fireConfetti();
+        }
+
+        setTimeout(() => {
+          setShowResultOverlay(false);
+        }, 3000);
       }
     }
   }, [gameState, isDealing, isGameFinished]);
@@ -153,222 +182,194 @@ const BlackjackPage: React.FC = () => {
     }
   };
 
-  const getResultMessage = () => {
-    if (!gameState) return "";
-    switch (gameState.result) {
-      case "PlayerWin":
-        return t('games.blackjack.win');
-      case "Blackjack":
-        return t('games.blackjack.blackjack');
-      case "DealerWin":
-        return t('games.blackjack.lose');
-      case "Push":
-        return t('games.blackjack.push');
-      default:
-        return "";
-    }
-  };
-
   return (
-    <div className="sp-poker-page leaderboard-host">
-      <div className="sp-animated-bg">
-        <div className="sp-floating-shape sp-shape-1"></div>
-        <div className="sp-floating-shape sp-shape-2"></div>
-        <div className="sp-floating-shape sp-shape-3"></div>
-        <div className="sp-floating-shape sp-shape-4"></div>
-        <div className="sp-floating-shape sp-shape-5"></div>
-      </div>
-
-      <div className="sp-poker-container">
-        {/* HEADER */}
-        <div className="sp-poker-header slots-header">
-          <button className="back-btn" onClick={() => navigate("/home")}>
+    <div className="bj-game-page leaderboard-host">
+      {/* HEADER */}
+      <header className="game-header">
+        <div className="game-header-left">
+          <button onClick={() => navigate(-1)} className="game-back-btn">
             <i className="fas fa-arrow-left"></i>
-            <span>POWRÓT</span>
+            <span>{t('common.back')}</span>
           </button>
-
-          <h1 className="slots-title">
-            <span className="title-word">BLACK</span>
-            <span className="title-word">JACK</span>
-          </h1>
-
-        <div className="header-right-cluster">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <DemoToggle checked={unlimitedMode} onChange={setUnlimitedMode} />
-            <div className="balance-display">
-              <i className="fas fa-coins"></i>
-              <span>{balance.toLocaleString()} PLN</span>
-            </div>
+        </div>
+        <div className="game-header-center">
+          <div className="game-title">
+            <span className="game-title-word">BLACKJACK</span>
           </div>
         </div>
+        <div className="game-header-right">
+          <DemoToggle checked={unlimitedMode} onChange={setUnlimitedMode} />
+          <div className="game-balance-display">
+            <i className="fas fa-coins"></i>
+            <span>{balance.toLocaleString()} PLN</span>
+          </div>
+        </div>
+      </header>
 
+      {/* MAIN GAME AREA */}
+      <main className="bj-game-main">
+        {/* ANIMOWANE TŁO */}
+        <div className="bj-animated-bg">
+          <div className="bj-floating-shape bj-shape-1"></div>
+          <div className="bj-floating-shape bj-shape-2"></div>
+          <div className="bj-floating-shape bj-shape-3"></div>
         </div>
 
-        {/* STӣ DO GRY */}
-        <div className="sp-poker-table-wrapper">
-          <div className="sp-poker-table-felt">
-            {/* --- SEKCJA DEALERA (GORA) --- */}
-            <div className="sp-dealer-section">
-              {gameState ? (
-                <>
-                  <div className="sp-dealer-label">{t('games.blackjack.dealerCards')}</div>
-                  <div className="sp-dealer-hand-wrapper">
-                    {gameState.dealerHand.map((card, idx) => (
-                      <GameCard
-                        key={`d-${idx}`}
-                        card={card}
-                        size="small"
-                        hidden={!isGameFinished && idx === 1}
-                      />
-                    ))}
-                  </div>
-                  <div
-                    className={`sp-rank-badge sp-dealer-rank-badge ${
-                      isGameFinished ? "sp-active" : ""
-                    }`}
-                  >
-                    {isGameFinished ? gameState.dealerScore : "?"}
-                  </div>
-                </>
-              ) : (
-                <div className="sp-dealer-label" style={{ opacity: 0 }}>
-                  Oczekiwanie...
-                </div>
-              )}
-            </div>
-
-            {/* --- INFO SRODEK --- */}
-            <div className="sp-table-center-info">
-              {error ? (
-                <div className="sp-game-message sp-error">{error}</div>
-              ) : (
-                <>
-                  {!gameState && (
-                    <div className="sp-game-message sp-hint">
-                      {t('games.blackjack.dealToStart')}
-                    </div>
-                  )}
-                  {gameState && !isGameFinished && (
-                    <div className="sp-game-message sp-hint">
-                      {t('games.blackjack.currentBet').replace('{{bet}}', gameState.bet.toString())}
-                    </div>
-                  )}
-                  {gameState && isGameFinished && (
-                    <div
-                      className={`sp-result-text ${hasWon ? "sp-win" : "sp-lose"}`}
-                    >
-                      {getResultMessage()}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* --- SEKCJA GRACZA (DOL) --- */}
-            <div className="sp-player-section">
-              {gameState && (
-                <div className="sp-rank-badge sp-player-rank-badge">
-                  {gameState.playerScore}
-                </div>
-              )}
-
-              <div className="sp-hand-display">
+        {/* STÓŁ BLACKJACKOWY */}
+        <div className="bj-table-container">
+          <div className={`bj-table bj-table-${currentTheme}`}>
+            {/* DEALER */}
+            <div className="bj-dealer-area">
+              <div className="bj-dealer-label">Dealer</div>
+              <div className="bj-dealer-cards">
                 {gameState ? (
-                  gameState.playerHand.map((card, idx) => (
-                    <GameCard key={`p-${idx}`} card={card} size="medium" />
+                  gameState.dealerHand.map((card, i) => (
+                    <GameCard
+                      key={i}
+                      card={card}
+                      hidden={i === 1 && !showDealerSecondCard}
+                      theme={currentTheme}
+                    />
                   ))
                 ) : (
-                  [1, 2].map((i) => <div key={i} className="sp-card-slot"></div>)
+                  <>
+                    <GameCard theme={currentTheme} hidden />
+                    <GameCard theme={currentTheme} hidden />
+                  </>
+                )}
+              </div>
+              {gameState && gameState.dealerHand.length > 0 && (
+                <div className="bj-dealer-score">
+                  {gameState.dealerScore > 21 ? "BUST!" : gameState.dealerScore}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* GRACZ - poza stołem, pod nim */}
+          <div className="bj-players-container">
+            <div className="bj-player-seat bj-is-me">
+              <div className="bj-player-cards">
+                {gameState && gameState.playerHand.length > 0 ? (
+                  gameState.playerHand.map((card, idx) => (
+                    <GameCard key={idx} card={card} theme={currentTheme} size="large" />
+                  ))
+                ) : (
+                  <div className="bj-empty-hand">{t('games.blackjack.waiting')}</div>
+                )}
+              </div>
+
+              <div className="bj-player-info">
+                {gameState && gameState.playerHand.length > 0 && (
+                  <span className="bj-player-score">
+                    {gameState.playerScore > 21 ? "BUST" : gameState.playerScore}
+                  </span>
+                )}
+                {gameState && gameState.bet > 0 && (
+                  <span className="bj-player-bet">${gameState.bet}</span>
                 )}
               </div>
             </div>
-
-            {/* --- PANEL STEROWANIA --- */}
-            <div className="sp-controls-bar">
-              {!gameState || isGameFinished ? (
-                <>
-                  <div className="sp-bet-control-group">
-                    <button
-                      className="sp-bet-btn-small"
-                      onClick={() => setBet(Math.max(10, bet - 10))}
-                    >
-                      -
-                    </button>
-                    <div className="sp-bet-info">
-                      <span className="sp-bet-label">STAWKA</span>
-                      <input
-                        type="number"
-                        className="sp-bet-input"
-                        value={bet}
-                        onChange={(e) => setBet(Math.max(10, parseInt(e.target.value) || 10))}
-                        min={10}
-                      />
-                    </div>
-                    <button
-                      className="sp-bet-btn-small"
-                      onClick={() => setBet(bet + 10)}
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  <button
-                    className="sp-main-btn sp-btn-deal"
-                    onClick={startNewGame}
-                    disabled={isDealing}
-                  >
-                    {isDealing ? t('games.blackjack.dealing') : t('games.blackjack.dealCards')}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    className="sp-main-btn sp-btn-action sp-btn-hit"
-                    onClick={handleHit}
-                    disabled={!gameState.canHit}
-                  >
-                    <i className="fas fa-plus"></i>
-                    {t('games.blackjack.hit')}
-                  </button>
-
-                  <button
-                    className="sp-main-btn sp-btn-action sp-btn-stand"
-                    onClick={handleStand}
-                    disabled={!gameState.canStand}
-                  >
-                    <i className="fas fa-hand-paper"></i>
-                    {t('games.blackjack.stand')}
-                  </button>
-
-                  <button
-                    className="sp-main-btn sp-btn-action sp-btn-double"
-                    onClick={handleDouble}
-                    disabled={!gameState.canDouble}
-                  >
-                    <i className="fas fa-times"></i>
-                    {t('games.blackjack.double')}
-                  </button>
-                </>
-              )}
-            </div>
           </div>
         </div>
+      </main>
+
+      {/* PANEL STEROWANIA */}
+      <div className="bj-controls-bar">
+        {error && (
+          <div style={{ color: '#ef4444', fontWeight: 600 }}>
+            ⚠️ {error}
+          </div>
+        )}
+
+        {!gameState || isGameFinished ? (
+          <>
+            <div className="bj-bet-control">
+              <span className="bj-bet-label">{t('common.bet')}:</span>
+              <button 
+                onClick={() => setBet(Math.max(10, bet - 10))} 
+                className="bj-bet-btn"
+                disabled={isDealing}
+              >
+                -
+              </button>
+              <input
+                type="number"
+                className="bj-bet-input"
+                value={bet}
+                onChange={(e) => setBet(Math.max(10, parseInt(e.target.value) || 10))}
+                min={10}
+                disabled={isDealing}
+              />
+              <button 
+                onClick={() => setBet(bet + 10)} 
+                className="bj-bet-btn"
+                disabled={isDealing}
+              >
+                +
+              </button>
+            </div>
+
+            <button
+              onClick={startNewGame}
+              disabled={isDealing}
+              className="bj-game-btn bj-btn-start"
+            >
+              {isDealing ? t('games.blackjack.dealing') : t('games.blackjack.dealCards')}
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={handleHit}
+              disabled={!gameState.canHit}
+              className="bj-game-btn bj-btn-hit"
+            >
+              <i className="fas fa-plus"></i> {t('games.blackjack.hit')}
+            </button>
+
+            <button
+              onClick={handleStand}
+              disabled={!gameState.canStand}
+              className="bj-game-btn bj-btn-stand"
+            >
+              <i className="fas fa-hand-paper"></i> {t('games.blackjack.stand')}
+            </button>
+
+            <button
+              onClick={handleDouble}
+              disabled={!gameState.canDouble}
+              className="bj-game-btn bj-btn-double"
+            >
+              <i className="fas fa-times"></i> {t('games.blackjack.double')}
+            </button>
+          </>
+        )}
       </div>
 
-      <div className={`leaderboard-drawer ${leaderboardOpen ? "open" : "closed"}`}>
+      {/* LEADERBOARD */}
+      <div className={`leaderboard-drawer ${leaderboardOpen ? 'open' : 'closed'}`}>
         <div className="leaderboard-panel">
           <Leaderboard gameId={2} title="🏆 TOP WINS" className="leaderboard-widget" />
         </div>
         <button
           className="leaderboard-toggle"
-          onClick={() => setLeaderboardOpen((prev) => !prev)}
+          onClick={() => setLeaderboardOpen(prev => !prev)}
           aria-expanded={leaderboardOpen}
           title={leaderboardOpen ? t('games.blackjack.hideLeaderboard') : t('games.blackjack.showLeaderboard')}
         >
-          <i className="fas fa-trophy"></i>
           <span>TOP</span>
         </button>
       </div>
+
+      {/* RESULT OVERLAY */}
+      {showResultOverlay && (
+        <div className="sp-result-overlay">
+          <div className={`sp-result-text ${hasWon ? 'sp-win' : 'sp-lose'}`}>
+            {resultMessage}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

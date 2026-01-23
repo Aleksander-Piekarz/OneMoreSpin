@@ -14,6 +14,7 @@ using OneMoreSpin.Services.Configuration.AutoMapperProfiles;
 using OneMoreSpin.Services.Email;
 using OneMoreSpin.Services.Hubs;
 using OneMoreSpin.Services.Interfaces;
+using OneMoreSpin.Web.Middleware;
 using Stripe;
 
 namespace OneMoreSpin.Web;
@@ -208,6 +209,8 @@ public class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
+
+        app.UseLastSeen();
 
         app.UseStaticFiles();
 

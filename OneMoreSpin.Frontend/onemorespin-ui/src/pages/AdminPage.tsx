@@ -13,6 +13,7 @@ type UserProfile = {
   balance: number;
   isVip: boolean;
   isActive: boolean;
+  lastSeenAt: string | null;
   createdAt: string;
 };
 
@@ -32,6 +33,15 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Check if user is online (last seen within 5 minutes)
+  const isUserOnline = (lastSeenAt: string | null): boolean => {
+    if (!lastSeenAt) return false;
+    const lastSeen = new Date(lastSeenAt);
+    const now = new Date();
+    const diffMinutes = (now.getTime() - lastSeen.getTime()) / (1000 * 60);
+    return diffMinutes < 5;
+  };
 
   const fetchUsers = async (pageNum: number) => {
     setLoading(true);
@@ -118,6 +128,32 @@ export default function AdminPage() {
     }
   };
 
+  const handleToggleVip = async (userId: number, currentVipStatus: boolean) => {
+    const action = currentVipStatus ? 'remove VIP' : 'grant VIP';
+    if (!confirm(`Are you sure you want to ${action} for this user?`)) return;
+
+    try {
+      const token = localStorage.getItem('jwt');
+      const response = await fetch(`${API_BASE}/admin/users/${userId}/vip`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(!currentVipStatus)
+      });
+
+      if (response.ok) {
+        alert(`VIP status updated successfully!`);
+        fetchUsers(page);
+      } else {
+        alert('Failed to update VIP status');
+      }
+    } catch (err) {
+      alert(t('common.error') + ': ' + err);
+    }
+  };
+
   const filteredUsers = users.filter(user =>
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -147,10 +183,10 @@ export default function AdminPage() {
           </div>
         </div>
         <div className="admin-stat-card">
-          <div className="admin-stat-icon">✅</div>
+          <div className="admin-stat-icon">🟢</div>
           <div className="admin-stat-content">
             <div className="admin-stat-label">{t('admin.active')}</div>
-            <div className="admin-stat-value">{users.filter(u => u.isActive).length}</div>
+            <div className="admin-stat-value">{users.filter(u => isUserOnline(u.lastSeenAt)).length}</div>
           </div>
         </div>
         <div className="admin-stat-card">
@@ -202,10 +238,10 @@ export default function AdminPage() {
                   )}  
                 </td>
                 <td>
-                  {user.isActive ? (
-                    <span className="admin-badge admin-badge-active">✅ {t('admin.isActive')}</span>
+                  {isUserOnline(user.lastSeenAt) ? (
+                    <span className="admin-badge admin-badge-active">🟢 {t('admin.online')}</span>
                   ) : (
-                    <span className="admin-badge admin-badge-inactive">❌ {t('common.error')}</span>
+                    <span className="admin-badge admin-badge-inactive">⚫ {t('admin.offline')}</span>
                   )}
                 </td>
                 <td>
@@ -216,6 +252,13 @@ export default function AdminPage() {
                       title={t('admin.updateBalance')}
                     >
                       💰
+                    </button>
+                    <button
+                      onClick={() => handleToggleVip(user.id, user.isVip)}
+                      className={`admin-btn ${user.isVip ? 'admin-btn-vip-active' : 'admin-btn-vip'}`}
+                      title={user.isVip ? 'Remove VIP' : 'Grant VIP'}
+                    >
+                      ⭐
                     </button>
                     <button
                       onClick={() => handleDelete(user.id)}

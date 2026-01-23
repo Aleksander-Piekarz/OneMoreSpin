@@ -86,7 +86,6 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ gameId, gameName, titl
   return (
     <div className={`casino-leaderboard ${className || ''}`}>
       <div className="leaderboard-header">
-        <i className="fas fa-trophy"></i>
         <span>{title}</span>
       </div>
 
